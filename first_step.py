@@ -6,7 +6,7 @@ from scipy import stats
 from scipy.optimize import curve_fit
 from sklearn.linear_model import LinearRegression
 import statsmodels.api as sm
-import classes
+from classes import Model_fitting
  
 # with open('TGS2611_TGS2600_Calibration.csv', encoding='utf-8') as File:
 #     reader = csv.reader(File, delimiter = ";")
@@ -49,7 +49,7 @@ SS_Residual = sum((y-y_hat)**2)
 SS_Total = sum((y-np.mean(y))**2)     
 r_squared = 1 - (float(SS_Residual))/SS_Total
 adjusted_r_squared = 1 - (1-r_squared)*(len(y)-1)/(len(y)-X.shape[1]-1)
-print([r_squared, adjusted_r_squared])
+print("r_squared, adjusted_r_squared:",[r_squared, adjusted_r_squared])
 
 plt.plot(X, y_hat, '-g', label='sklearn LinearRegression, R^2(adj) = {:.3f}'.format(adjusted_r_squared))
 #Данные
@@ -61,14 +61,18 @@ plt.plot(x_data_humidity, y_data_v, 'o', linestyle = 'None', label='data')
 plt.xlabel('Humidity')
 plt.ylabel('V')
 # scipy stats
-res = stats.linregress(x_data_humidity, y_data_v)
+res = stats.linregress(x_data_humidity, x_data_humidity)
 print([res.slope,  res.intercept])
 print(f"R-squared: {res.rvalue**2:.4f}, Standart Error: {res.stderr :.4f}")
 plt.plot(x_data_humidity, lin_func(x_data_humidity, res.slope,  res.intercept), 'r', label='stats.linregress line, R^2 = {:.2f}'.format(res.rvalue**2))
 
-popt, pcov = curve_fit(lin_func, x_data_humidity, y_data_v)
-print(tuple(popt))
-plt.plot(x_data_humidity, lin_func(x_data_humidity, *popt), 'r-', label= 'fit: a = {:.5f}, b = {:.5f}'.format(tuple(popt)[0], tuple(popt)[1]))
+# popt, pcov = curve_fit(lin_func, x_data_humidity, y_data_v)
+# print(tuple(popt))
+# plt.plot(x_data_humidity, lin_func(x_data_humidity, *popt), 'r-', label= 'fit: a = {:.5f}, b = {:.5f}'.format(tuple(popt)[0], tuple(popt)[1]))
+
+my_class = Model_fitting(x_data_humidity, x_data_humidity, lin_func)
+print(tuple(my_class.popt))
+
 plt.legend()
 plt.show()
 
