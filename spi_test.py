@@ -33,7 +33,7 @@ try:
     spi.bits_per_word = 8
     spi.max_speed_hz = 1000
     
-    file_name = ('exp_{:%Y_%m_%d_%H%M%S}').format(dt.datetime.now())
+    file_name = ('exp_{:%Y_%m_%d_%H%M%S}.csv').format(dt.datetime.now())
     appendRowToCsv(file_name, ['Time','ADC value','Voltage', 'Resistance'])
 
     while True:
