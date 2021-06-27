@@ -14,6 +14,8 @@ from classes import Model_fitting
 #     for row in reader:
 #         if count == 0:
 #             print('Файл содержит столбцы\n{:}'.format(', '.join(row)))
+
+
 #             columns_names = row
 #         else:
 #             print(row)
@@ -50,6 +52,7 @@ SS_Total = sum((y-np.mean(y))**2)
 r_squared = 1 - (float(SS_Residual))/SS_Total
 adjusted_r_squared = 1 - (1-r_squared)*(len(y)-1)/(len(y)-X.shape[1]-1)
 print("r_squared, adjusted_r_squared:",[r_squared, adjusted_r_squared])
+
 
 plt.plot(X, y_hat, '-g', label='sklearn LinearRegression, R^2(adj) = {:.3f}'.format(adjusted_r_squared))
 #Данные

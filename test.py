@@ -21,14 +21,14 @@ plt.plot(xdata, ydata, 'b-', label='data')
 popt, pcov = curve_fit(exp_func, xdata, ydata)
 y_hat = exp_func(xdata, *popt)
 # Звёздочка означает распаковку позиционных аргументов
-print("a: {}, b: {}, c: {}".format(*popt))
-plt.plot(xdata, y_hat, 'r-', label='fit: a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt)) #% - форматирование строк в стиле printf
+legendStr = "a = {:2f}, b = {}, c = {}".format(*popt)
+plt.plot(xdata, y_hat, 'r-', label=legendStr) #% - форматирование строк в стиле printf
 plt.xlabel('x')
 plt.ylabel('y')
 plt.legend()
 
 test = classes.Model_fitting(exp_func, xdata, ydata)
-perr = np.sqrt(np.diag(pcov))
+perr = np.sqrt(np.diag(test.pcov))
 print("perr:", perr)
 print(test.ss_residual, test.ss_total, test.r_squared, test.adjusted_r_squared)
 
@@ -42,4 +42,4 @@ p0 = 8., 2., 7.# initial guesses for a,b,c:
 test2 = classes.Model_fitting(func, X , z)
 # print("popt2: {}, pcov2: {}".format(test2.popt, test2.pcov))
 
-# plt.show()
+plt.show()
