@@ -1,6 +1,7 @@
 import datetime as dt
 import time
 import csv
+import driver
 
 import spidev
 import smbus2
@@ -28,6 +29,11 @@ def adcGetData():
     adcData = adcData[6:22]
     adcValue = int(adcData,2)
     return adcValue
+
+
+def runExperiment(duration, periodicity, mode):
+	
+	return 0
 
 try:
     #bme280
