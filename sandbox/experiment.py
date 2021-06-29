@@ -1,7 +1,6 @@
 import datetime as dt
 import time
 import csv
-import driver
 
 import spidev
 import smbus2
@@ -49,7 +48,7 @@ try:
     spi.max_speed_hz = 1000
 
     file_name = ('exp_{:%Y_%m_%d_%H%M%S}.csv').format(dt.datetime.now())
-    appendRowToCsv(file_name, ['Time','ADC value','Voltage, V', 'Resistance, Om', 'Temperature,°C', 'Humidity, %% rH', 'Pressure, hPa'])
+    appendRowToCsv(file_name, ['Time','ADC value','Voltage, V', 'Resistance, Om', 'Temperature,°C', 'Humidity, % RH', 'Pressure, hPa'])
 
     while True:
         if time.time() - timing > period:

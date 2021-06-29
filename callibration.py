@@ -14,9 +14,9 @@ y_data_v = []
 
 #дублируется в файле experiment
 def appendRowToCsv(filename, listOfElements):
-    with open(filename, 'a+', newline ='') as writeObj:
-        writer = csv.writer(writeObj)
-        writer.writerow(listOfElements)
+	with open(filename, 'a+', newline ='') as writeObj:
+		writer = csv.writer(writeObj)
+		writer.writerow(listOfElements)
 
 def pow_func(X, g, m, S, h, n):
 	H,T = X
@@ -26,8 +26,8 @@ def lin_func(x, a, b):
 	return a * np.array(x) + b
 
 def funcV2(X, g, m, S):
-    H,T = X
-    return g*np.array(H) + m*np.array(T) + S
+	H,T = X
+	return g*np.array(H) + m*np.array(T) + S
 
 def funcV5(x, g, S):
 	return g* np.array(x)/(S +  np.array(x))
