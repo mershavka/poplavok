@@ -1,4 +1,4 @@
-from typing import final
+# from typing import final
 import pandas
 import numpy as np
 from classes import Model_fitting
