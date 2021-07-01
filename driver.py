@@ -9,7 +9,7 @@ class Driver:
 	bme280_address = 0x76
 	adcRange = 2.5 #V
 	adcQuantizationLevels = 2**16
-	const1 = 3*10**3
+	RL = 3*10**3
 	const2 = 1.024
 
 	timeString = 'Time'
@@ -46,16 +46,6 @@ class Driver:
 		self.spi = spidev.SpiDev()
 		self.__lastReceivedData = dict.fromkeys([Driver.timeString, Driver.adcString, Driver.voltageString, Driver.resistanceString, Driver.temperatureString, Driver.humidityString, Driver.pressureString])
 
-	# @property	
-	# def i2c_port(self):
-	# 	return self.i2c_port
-
-	# @i2c_port.setter
-	# def i2c_port(self, port):
-	# 	if port >= 0:
-	# 		self.i2c_port = port
-	# 	else:
-	# 		raise ValueError
 
 	def adcGetData(self):
 		adcData = str()
@@ -86,7 +76,7 @@ class Driver:
 			self.__lastReceivedData[Driver.timeString] = dt.datetime.now()
 			self.__lastReceivedData[Driver.adcString] = value
 			self.__lastReceivedData[Driver.voltageString] = value * Driver.adcRange / Driver.adcQuantizationLevels
-			self.__lastReceivedData[Driver.resistanceString] = Driver.const1 * Driver.const2 / (self.__lastReceivedData[Driver.voltageString] - Driver.const2)
+			self.__lastReceivedData[Driver.resistanceString] = Driver.RL * Driver.const2 / (self.__lastReceivedData[Driver.voltageString] - Driver.const2)
 			self.__lastReceivedData[Driver.temperatureString] = bme280_data.temperature
 			self.__lastReceivedData[Driver.humidityString] = bme280_data.humidity
 			self.__lastReceivedData[Driver.pressureString] = bme280_data.pressure

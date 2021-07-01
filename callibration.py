@@ -34,8 +34,11 @@ def funcV5(x, g, S):
 
 oneArgumentFunctions = [lin_func, funcV5]
 twoArgumentFunctions = [funcV2, pow_func]
+threeArgumentFunctions = []
 
+#step1
 try:
+	modelsFrame = pandas.DataFrame()
 	for name in fileNames:
 		df = pandas.read_csv(name, delimiter= ',')
 		df.set_axis(['Time', 'ADC', 'V', 'R', 'T', 'RH', 'P'], axis = 'columns', inplace = True)
@@ -52,6 +55,54 @@ try:
 	X = x_data_humidity, x_data_temperature
 	
 	for f1 in oneArgumentFunctions:
+		for x in X:
+			my_class = Model_fitting(f1, x, y_data_v)
+			print(tuple(my_class.popt))
+			appendRowToCsv(file_name, [f1.__name__, 1, my_class.adjusted_r_squared, my_class.rmse, my_class.popt])
+
+	for f2 in twoArgumentFunctions:
+		my_class = Model_fitting(f2, X, y_data_v)
+		print(tuple(my_class.popt))
+		appendRowToCsv(file_name, [f2.__name__, 2, my_class.adjusted_r_squared, my_class.rmse, my_class.popt])
+
+	# plt.show()
+
+
+finally:
+	print("")
+
+def Rs_by_R0_from_V0(V0, VL, Vref):
+	return (np.array(V0) - Vref) / (np.array(VL) - Vref)
+
+#step2
+dataFilePathes = []
+cal1FilePath = []
+try:
+	x_data_humidity = []
+	x_data_temperature = []
+	y_data_v = []
+
+	for name in dataFilePathes:
+		df = pandas.read_csv(name, delimiter= ',')
+		df.set_axis(['Time', 'ADC', 'V', 'R', 'T', 'RH', 'P'], axis = 'columns', inplace = True)
+		x_data_humidity = x_data_humidity + df['RH'].tolist()
+		x_data_temperature = x_data_temperature + df['T'].tolist()
+		y_data_v = y_data_v + df['V'].tolist()
+
+	model = pandas.read_csv(cal1FilePath, delimiter= ',')
+	df.set_axis(['FunctionName','NumberOfParametres', 'variables', 'R2Adjusted', 'RMSE','popt'], axis = 'columns', inplace = True)
+	functionName = model.loc[[0], "FunctionName"]
+	modelPopt = model.loc[[0], "popt"]
+
+	v0_data = eval(functionName + "()")
+	R_data = Rs_by_R0_from_V0(v0_data, y_data_v, 1.024)
+
+	file_name = ('calibration_2step_{:%Y_%m_%d_%H%M%S}.csv').format(dt.datetime.now())
+	appendRowToCsv(file_name, ['FunctionName','NumberOfParametres', 'variables', 'R2Adjusted', 'RMSE','popt'])
+
+	X = x_data_humidity, x_data_temperature
+	
+	for f1 in threeArgumentFunctions:
 		for x in X:
 			my_class = Model_fitting(f1, x, y_data_v)
 			print(tuple(my_class.popt))

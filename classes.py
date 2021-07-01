@@ -1,5 +1,6 @@
 import enum
 from math import sqrt
+from numpy.core.fromnumeric import nonzero
 from scipy.optimize import curve_fit
 import numpy as np
 from enum import Enum
@@ -40,6 +41,9 @@ class Model_fitting:
 		#Root Mean Square Error Среднеквадратическая ошибка модели
 		self.rmse = sqrt(self.ss_residual / len(self.y))
 
+class CalibrationModule:
+	pass
+
 class Status(enum.Enum):
 		NO = (0, "Nothing is happening")
 		ERROR = (1, "Error occured")
@@ -75,7 +79,8 @@ class MeasurementServer:
 	def __init__(self):
 		self.status = Status.NO
 		self.lastData = {}
-		self.event = Event()
+		self.stopingEvent = Event()
+		self.header = ['Time','ADC value','Voltage, V', 'Resistance, Om', 'Temperature,°C', 'Humidity, % RH', 'Pressure, hPa,', 'CH4, ppm']
 
 	def __runMeasurements(self, fileName, duration, periodicity, calibrationPath):
 		try:
@@ -84,11 +89,11 @@ class MeasurementServer:
 			if (dr.open() < 0):
 				raise BoardConnectionError
 
-			appendRowToCsv(fileName, ['Time','ADC value','Voltage, V', 'Resistance, Om', 'Temperature,°C', 'Humidity, % RH', 'Pressure, hPa,', 'CH4, ppm'])
+			appendRowToCsv(fileName, self.header)
 			timing = 0
 
 			while time.time() - expStart <= duration:
-				if self.event.is_set():
+				if self.stopingEvent.is_set():
 					break
 				if time.time() - timing >= periodicity:
 					timing = time.time()
@@ -115,6 +120,10 @@ class MeasurementServer:
 			dr = None
 		return 0
 
+	def startMeasurements(self, filePath, duration, periodicity):
+		self.th0 = Thread(target=self.__runMeasurements, args=(filePath, duration, periodicity, None))
+		self.th0.start()
+
 	def __runExperiment(self, filePath, duration, periodicity, calibrationPath):
 		self.th = Thread(target=self.__runMeasurements, args=(filePath, duration, periodicity, calibrationPath))
 		self.th.start()
@@ -124,7 +133,7 @@ class MeasurementServer:
 			time.sleep(1)
 
 	def startExperiment(self, filePath=None, duration=600, periodicity = 2, calibrationPath = None):
-		self.event.clear()
+		self.stopingEvent.clear()
 		if calibrationPath is None:
 			print('No calibration file')
 			self.status = Status.ERROR
@@ -136,13 +145,38 @@ class MeasurementServer:
 			self.status = Status.FIELD_EXPERIMENT
 			self.__runExperiment(filePath, duration, periodicity, calibrationPath)
 
-	def startCal1Experiment(self):
+	def __runCal1Experiment(self, filePath=None, duration=600, periodicity = 2):
+			self.th1 = Thread(target=self.__runMeasurements, args=(filePath, duration, periodicity, None))
+			self.th1.start()
+
+	def startCal1Experiment(self, filePath, duration, periodicity):
+		self.stopingEvent.clear()
+		self.__runCal1Experiment(filePath, duration, periodicity)
+		
+
+	def startCal2Experiment(self, dataFilePathes, cal1FilePath):
+		self.stopingEvent.clear()
 		pass
 
-	def startCal2Experiment(self):
-		pass
+	def startCalibrationStep1(self, filePathes, resultPath = None):
+		self.status = Status.CALIBRATION_1
+		resultPath = (resultPath, 'step1_{:%Y_%m_%d_%H%M%S}.csv'.format(dt.datetime.now()))[resultPath is None]
+		step1 = CalibrationModule()
+		step1.calibrateFirstStep(filePathes, resultPath)
+
+	def startCalibrationStep2(self, filePathes, step1resultPath, resultPath = None):
+		self.status = Status.CALIBRATION_2
+		if step1resultPath is None:
+			print('No file with model from first step')
+			self.status = Status.ERROR
+			return -1
+		resultPath = (resultPath, 'step1_{:%Y_%m_%d_%H%M%S}.csv'.format(dt.datetime.now()))[resultPath is None]
+		step2 = CalibrationModule()
+		step2.calibrateSecondStep(filePathes, resultPath)
+		bestModel = step2.bestModel()
+		return 
 
 	def stopExperiment(self):
-		if self.th.is_alive:
-			self.event.set()
+		if self.th.is_alive():
+			self.stopingEvent.set()
 		self.status = Status.NO
