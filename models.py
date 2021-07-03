@@ -42,6 +42,7 @@ class ModelSecond:
         self.function = dependence_function
         self.predictor_names = predictor_names
         self.popt = None
+        self.modelV0 = None
 
     def lin_func(self, ch4, k, M):
         return k * np.array(ch4) + M
@@ -51,18 +52,20 @@ class ModelSecond:
         self.ch4_observed = np.array(ch4_reference)
         self.__fit()
     
-    def calculate(self, X):
-        return 
+    def calculate(self, X1, X2 ):        
+        V0 = self.modelV0.calculate(X1, self.modelV0.popt)
 
     def __fit(self):
         self.popt, self.pcov = curve_fit(self.function, self.X, self.y)
         #Количество предикторов (независимых переменных)
         self.predictors_count = np.ndim(self.X)
         self.ch4_predicted = self.function(self.X, *self.popt)
-        self.model = ModelFirst(ModelSecond.lin_func, "Calculated CH4")
-        self.model.fit( self.ch4_predicted, self.ch4_observed)
-        self.adjusted_r_squared = self.model.adjusted_r_squared
-        self.rmse = self.model.rmse
+        self.modelLinCH4 = ModelFirst(ModelSecond.lin_func, "Calculated CH4")
+        self.modelLinCH4.fit( self.ch4_predicted, self.ch4_observed)
+        self.k = self.modelLinCH4.popt[0]
+        self.M = self.modelLinCH4.popt[1]
+        self.adjusted_r_squared = self.modelLinCH4.adjusted_r_squared
+        self.rmse = self.modelLinCH4.rmse
 
         
         
