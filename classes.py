@@ -1,8 +1,4 @@
 import enum
-from math import sqrt
-from numpy.core.fromnumeric import nonzero
-from scipy.optimize import curve_fit
-import numpy as np
 from enum import Enum
 from main import appendRowToCsv
 from driver import Driver
@@ -11,38 +7,10 @@ import time
 import csv
 import traceback
 from threading import Thread, Event
+import callibration
+from math import exp
 
-class Model_fitting:
 
-	def __init__(self,  dependence_function, predictors, dependent_variable, variable_name = 'undefined'):
-		 self.variable_name = variable_name
-		 self.X = predictors
-		 self.y = dependent_variable
-		 self.function = dependence_function
-		 self.__fit()
-
-	def display_info(self):
-		print('Это модель для параметра "{}"'.format(self.variable_name))
-
-	def __fit(self):
-
-		self.popt, self.pcov = curve_fit(self.function, self.X, self.y)
-		#Количество предикторов (независимых переменных)
-		self.predictors_count = np.ndim(self.X)
-		self.y_hat = self.function(self.X, *self.popt)
-		#Residual sum of squares (сумма квадратов остатков)
-		self.ss_residual = sum((self.y-self.y_hat)**2)
-		 #Total sum of squares (общая сумма квадратов)
-		self.ss_total = sum((self.y-np.mean(self.y))**2)
-		#Коэффициент детерминации — R-квадрат  
-		self.r_squared = 1 - (float(self.ss_residual))/self.ss_total
-		#Скорректированный коэффициент детерминации (adjusted)
-		self.adjusted_r_squared = 1 - (1-self.r_squared)*(len(self.y)-1)/(len(self.y)-self.predictors_count)
-		#Root Mean Square Error Среднеквадратическая ошибка модели
-		self.rmse = sqrt(self.ss_residual / len(self.y))
-
-class CalibrationModule:
-	pass
 
 class Status(enum.Enum):
 		NO = (0, "Nothing is happening")
@@ -80,7 +48,9 @@ class MeasurementServer:
 		self.status = Status.NO
 		self.lastData = {}
 		self.stopingEvent = Event()
-		self.header = ['Time','ADC value','Voltage, V', 'Resistance, Om', 'Temperature,°C', 'Humidity, % RH', 'Pressure, hPa,', 'CH4, ppm']
+		self.header = [Driver.timeString, Driver.adcString ,Driver.voltageString, Driver.resistanceString, Driver.temperatureString, Driver.rHumidityString, Driver.aHumidityString, Driver.pressureString, 'CH4, ppm']
+
+
 
 	def __runMeasurements(self, fileName, duration, periodicity, calibrationPath):
 		try:
@@ -100,13 +70,13 @@ class MeasurementServer:
 					dataDictionary = dr.readData()
 					newRow = ['{:%Y/%m/%d %H:%M:%S.%f}'.format(dataDictionary[Driver.timeString]), dataDictionary[Driver.adcString], \
 							round(dataDictionary[Driver.voltageString], 3), round(dataDictionary[Driver.resistanceString], 1), \
-							round(dataDictionary[Driver.temperatureString], 2), round(dataDictionary[Driver.humidityString], 2), round(dataDictionary[Driver.pressureString], 2)]
+							round(dataDictionary[Driver.temperatureString], 2), round(dataDictionary[Driver.rHumidityString], 2), round(dataDictionary[Driver.aHumidityString], 5),round(dataDictionary[Driver.pressureString], 2)]
 					if calibrationPath != None:
 						#Здесь нужно считать результат калибровки и рассчитывать ppm метана
 						ch4 = 0
 						newRow.append(ch4)
 						print("CH4, ppm: {}".format(ch4), end= " ")
-					print("Time: {}, ADC value: {}, Voltage: {:.3f}, Resistance: {:.1f}, Temperature: {:.2f}, Humidity: {:.2f}, Pressure: {:.2f}".format(*newRow))
+					print("Time: {}, ADC value: {}, Voltage: {:.3f}, Resistance: {:.1f}, Temperature: {:.2f}, RHumidity: {:.2f}, AHumidity: {:.4f} ,Pressure: {:.2f}".format(*newRow))
 					appendRowToCsv(fileName, newRow)
 			self.status = Status.NO
 		except BoardConnectionError:
@@ -164,7 +134,7 @@ class MeasurementServer:
 		step1 = CalibrationModule()
 		step1.calibrateFirstStep(filePathes, resultPath)
 
-	def startCalibrationStep2(self, filePathes, step1resultPath, resultPath = None):
+	def startCalibrationStep2(self, dirPath, step1resultPath, resultPath = None):
 		self.status = Status.CALIBRATION_2
 		if step1resultPath is None:
 			print('No file with model from first step')
@@ -172,7 +142,7 @@ class MeasurementServer:
 			return -1
 		resultPath = (resultPath, 'step1_{:%Y_%m_%d_%H%M%S}.csv'.format(dt.datetime.now()))[resultPath is None]
 		step2 = CalibrationModule()
-		step2.calibrateSecondStep(filePathes, resultPath)
+		step2.calibrateSecondStep(dirPath, resultPath)
 		bestModel = step2.bestModel()
 		return 
 
