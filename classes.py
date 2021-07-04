@@ -7,7 +7,7 @@ import time
 import csv
 import traceback
 from threading import Thread, Event
-import callibration
+from callibration import CalibrationModule
 from math import exp
 
 
