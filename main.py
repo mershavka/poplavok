@@ -1,6 +1,12 @@
-import csv
+from measurmentserver import MeasurementServer, Status
 
-def appendRowToCsv(filename, listOfElements):
-	with open(filename, 'a+', newline ='') as writeObj:
-		writer = csv.writer(writeObj)
-		writer.writerow(listOfElements)
+ms = MeasurementServer()
+
+ms.createSeries("Test Series", "Series for test")
+
+# ms.startMeasurements("1.csv", 10, 1)
+
+# while (ms.status != Status.NO):
+# 	pass
+
+# print('Experiment is over!')
