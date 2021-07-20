@@ -21,6 +21,7 @@ class Driver:
     rHumidityString = 'Related Humidity, %'
     aHumidityString = 'Absolute Humidity, kg/m^3'
     pressureString = 'Pressure, hPa'
+    ch4String = 'CH4, ppm'
 
     #0x2a - AmbiMate Sensor Module address (CO2)
     ambimate_addres = 0x2a

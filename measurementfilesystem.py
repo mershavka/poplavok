@@ -12,10 +12,11 @@ class MeasurementFileSystem:
         if bool(matched):
             id = int(matched.group('id'))
             type = Series.SeriesType(int(matched.group('type')))
-            date = datetime.datetime.strptime(
-                matched.group('date'), MeasurementFileSystem.timeformat)
+            date = datetime.datetime.strptime(matched.group('date'), MeasurementFileSystem.timeformat)
             with open(pathStr + '/description.txt') as f:
                 desription = f.read()
+            s = Series(id=id, description=desription, type=type, date=date)
+            return s
         else:
             return None
 
@@ -32,7 +33,7 @@ class MeasurementFileSystem:
             if (s.id > self.lastSeriesId):
                 self.lastSeriesId = s.id
 
-    def __init__(self, path) -> None:
+    def __init__(self, path):
         self.path = path
         self.series = {}        
         if not os.path.exists(self.path):
@@ -55,6 +56,11 @@ class MeasurementFileSystem:
 
     def getSeriesList(self):
         return self.series.values
+
+    def getSeriesById(self, id):
+        if id in self.series.keys():
+            return self.series[id]
+        return None
 
     def getMeasurementsList(self, series_id):
         pass

@@ -8,6 +8,7 @@ from series import Series
 from threading import Thread, Event
 from callibration import CalibrationModule
 import glob, os
+from measurementfilesystem import MeasurementFileSystem
 
 EXEC_DIR = "/home/pi/Documents/Repos/poplavok-algorithm/MServer"
 
@@ -43,30 +44,9 @@ class Status(enum.Enum):
 	
 class MeasurementServer:
 
-	# def __new__(cls, data=None):
-	# 	if data is None:
-	# 		print('Error while creating class MeasurementServer')
-	# 		return None
-	# 	else:
-	# 		return super().__new__(cls)
-
-	def __loadSeries(self):
-		self.series = {}
-		self.seriesNextId = 0
-		seriesNames = glob.glob(EXEC_DIR + "/series*")
-		id = 0
-		for seriesName in seriesNames:
-			s = Series(EXEC_DIR + seriesName)
-			self.series[s.id] = s
-			id = s.id
-		self.seriesNextId = id + 1
-
 	def __init__(self):
-		if not os.path.exists(EXEC_DIR):
-			os.mkdir(EXEC_DIR)
-		self.status = Status.NO		
-
-		self.__loadSeries()
+		self.fileSystem = MeasurementFileSystem(EXEC_DIR)
+		self.status = Status.NO
 		self.currentSeries = None
 
 		self.lastData = {}
@@ -74,7 +54,7 @@ class MeasurementServer:
 		self.header = [	Driver.timeString, Driver.adcString,
 						Driver.voltageString, Driver.resistanceString, 
 						Driver.temperatureString, Driver.rHumidityString, 
-						Driver.aHumidityString, Driver.pressureString, 'CH4, ppm']
+						Driver.aHumidityString, Driver.pressureString, Driver.ch4String]
 
 
 	def __measurementsThreadFunc(self, fileName, duration, periodicity, calibrationPath):
@@ -177,18 +157,16 @@ class MeasurementServer:
 
 	def createSeries(self, description="", type=Series.SeriesType.COMMON):		
 		new_series = Series(path=EXEC_DIR, id=self.seriesNextId, description=description, type=type)
-		self.series[self.seriesNextId] = new_series
+		self.fileSystem.addSeries(new_series)
 		self.seriesNextId += 1
 		return new_series
 
 	def chooseSeries(self, id):
-		if id in self.series.keys:
-			self.currentSeries = self.series[id]
-		else:
-			# Что делать при ошибке?
+		self.currentSeries = self.fileSystem.getSeriesById(id)
+		if self.currentSeries is None:
 			self.status = Status.ERROR
 			print("No series with id={}".format(id))		
 
 	def getListSeries(self):
 		# Какой интерфейс?? Кто будет читать это и как?
-		return self.series
+		return self.fileSystem.getSeriesList()
