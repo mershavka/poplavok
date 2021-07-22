@@ -10,12 +10,12 @@ class MeasurementFileSystem:
         pathStr = os.path.basename(os.path.normpath(path))
         matched = re.match(self.series_name_regex, pathStr)
         if bool(matched):
-            id = int(matched.group('id'))
-            type = Series.SeriesType(int(matched.group('type')))
-            date = datetime.datetime.strptime(matched.group('date'), MeasurementFileSystem.timeformat)
+            s_id = int(matched.group('id'))
+            s_type = Series.SeriesType(int(matched.group('type')))
+            s_date = datetime.datetime.strptime(matched.group('date'), MeasurementFileSystem.timeformat)
             with open(pathStr + '/description.txt') as f:
-                desription = f.read()
-            s = Series(id=id, description=desription, type=type, date=date)
+                s_desription = f.read()
+            s = Series(id=s_id, description=s_desription, type=s_type, date=s_date)
             return s
         else:
             return None
@@ -51,9 +51,6 @@ class MeasurementFileSystem:
             f.write(self.description)
         return s.id
 
-    def addMeasurement(self, series_id):
-        pass
-
     def getSeriesList(self):
         return self.series.values
 
@@ -61,6 +58,9 @@ class MeasurementFileSystem:
         if id in self.series.keys():
             return self.series[id]
         return None
+
+    def addMeasurement(self, series_id):
+        pass
 
     def getMeasurementsList(self, series_id):
         pass

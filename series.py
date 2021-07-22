@@ -1,19 +1,32 @@
-from enum import Enum
+from enums import MeasureType
 from datetime import datetime as dt
+from typing import Optional
 
 class Series:
 
-	class SeriesType(Enum):
-		COMMON = 0
-		EXPERIMENT = 1
-		CALIBRATION_1 = 2
-		CALIBRATION_2 = 3
+    def __init__(self, date=None, description: str ="", type=MeasureType.COMMON, id:  Optional[int] = None, measurements = None):
+        self.id = -1 if id is None else id
+        self.date = dt.now() if date is None else date
+        self.description = description
+        self.type = type
+        self.measurements = {} if measurements is None else measurements
 
-	def __init__(self, description="", type=SeriesType.COMMON):
-			self.id = -1
-			self.date = dt.now()
-			self.description = description
-			self.type = type
+    def setId(self, id):
+        self.id = id
 
-	def __str__(self) -> str:
-		pass
+    def updateDescription(self, newDescription: str):
+        self.description = newDescription
+
+    def addMeasurement(self, id, measurement):
+        if id not in self.measurements.keys():
+            self.measurements[id] = measurement
+        return self.measurements[id]
+
+    def popMeasurement(self, id):
+        if id in self.measurements.keys():
+            return self.measurements.pop(id)
+        else:
+            return None
+
+    def __str__(self) -> str:
+        pass
