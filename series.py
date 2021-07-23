@@ -28,5 +28,14 @@ class Series:
         else:
             return None
 
+    def getMeasurementsDict(self):
+        return self.measurements
+
+    def getMeasurementsList(self):
+        return [i for i in self.measurements.values()]
+
+    def getMeasurementsIds(self):
+        return [i for i in self.measurements.keys()]
+
     def __str__(self) -> str:
         pass

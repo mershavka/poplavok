@@ -5,7 +5,7 @@ from typing import Optional
 
 class Measurement:
 
-    def __new__(cls, seriesId, duration, periodicity, date, type=MeasureType.COMMON, id:  Optional[int] = None, calibrationId:  Optional[int] = None) -> Any:
+    def __new__(cls, seriesId, duration, periodicity, date, type=MeasureType.COMMON, id:  Optional[int] = None, calibrationId:  Optional[int] = None):
         if seriesId is None:
             return None
         instance = super().__new__(cls)
