@@ -2,21 +2,15 @@ from measurementmodule import MeasurementModule
 from driver import Driver
 import datetime as dt
 import time
-import csv
 import traceback
 from series import Series
 from threading import Thread, Event
-from callibration import CalibrationModule
+from calibration import CalibrationModule
 import glob, os
 from measurementfilesystem import MeasurementFileSystem
 from enums import MeasureType, Status
 
 EXEC_DIR = "/home/pi/Documents/Repos/poplavok-algorithm/MServer"
-
-def appendRowToCsv(filename, listOfElements):
-    with open(filename, 'a+', newline ='') as writeObj:
-        writer = csv.writer(writeObj)
-        writer.writerow(listOfElements)
 
 class Error(Exception):
     """Base class for other exceptions"""

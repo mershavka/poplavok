@@ -1,6 +1,7 @@
 from enums import MeasureType
 from datetime import datetime as dt
 from typing import Optional
+import json
 
 class Series:
 
@@ -36,6 +37,10 @@ class Series:
 
     def getMeasurementsIds(self):
         return [i for i in self.measurements.keys()]
+
+    def toJson(self):
+        data = {'id': self.id, 'date': self.date, 'type': self.type, 'description': self.description}
+        return json.dumps(data, indent=4)
 
     def __str__(self) -> str:
         pass
