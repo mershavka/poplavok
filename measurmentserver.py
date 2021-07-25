@@ -1,3 +1,4 @@
+from measurementmodule import MeasurementModule
 from driver import Driver
 import datetime as dt
 import time
@@ -29,13 +30,33 @@ class FilePathError(Error):
 
 class MeasurementServer:
 
+    def __new__(cls):
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(MeasurementServer, cls).__new__(cls)
+        return cls.instance
+
+    def __readFromDevice():
+        ms = MeasurementServer()
+        return ms.device.readData()
+
+    def __writeToMeasureFile(data):
+        ms = MeasurementServer()
+        ms.fs.writeToMeasurement(ms.currentMeasurement, data)
+
     def __init__(self):
-        self.fileSystem = MeasurementFileSystem(EXEC_DIR)
+        self.series = {}
+        self.device = Driver()
+        self.fs = MeasurementFileSystem(EXEC_DIR)
+        self.worker = MeasurementModule()
+        self.worker.setReadFunc(self.__readFromDevice)
+        self.worker.setWriteFunc(self.__writeToMeasureFile)
+
+        # Status variables
         self.status = Status.NO
         self.currentSeries = None
+        self.currentMeasurement = None
+        self.currentCalibration = None
 
-        self.lastData = {}
-        self.stopingEvent = Event()
         self.header = [	Driver.timeString, Driver.adcString,
                         Driver.voltageString, Driver.resistanceString, 
                         Driver.temperatureString, Driver.rHumidityString, 
@@ -141,17 +162,20 @@ class MeasurementServer:
         self.status = Status.NO
 
     def createSeries(self, description="", type=Series.SeriesType.COMMON):		
-        new_series = Series(path=EXEC_DIR, id=self.seriesNextId, description=description, type=type)
+        new_series = Series(description=description, type=type)
         self.fileSystem.addSeries(new_series)
+        self.series[new_series.id] = new_series
         self.seriesNextId += 1
         return new_series
 
     def chooseSeries(self, id):
-        self.currentSeries = self.fileSystem.getSeriesById(id)
-        if self.currentSeries is None:
+        if id in self.series.keys:
+            self.currentSeries = self.series[id]
+        else:	
             self.status = Status.ERROR
-            print("No series with id={}".format(id))		
+            print("No series with id={}".format(id))
 
     def getListSeries(self):
         # Какой интерфейс?? Кто будет читать это и как?
-        return self.fileSystem.getSeriesList()
+        return self.series    
+    
