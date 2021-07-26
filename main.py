@@ -1,12 +1,15 @@
 from measurmentserver import MeasurementServer, Status
+from enums import MeasureType
 
 ms = MeasurementServer()
 
-ms.createSeries("Test Series", "Series for test")
+MeasurementServer.testMode = True
 
-# ms.startMeasurements("1.csv", 10, 1)
+seriesInfoJson = ms.createSeries(description="Test Series", type=MeasureType.COMMON)
 
-# while (ms.status != Status.NO):
-# 	pass
+ms.runMeasurement(duration=120, periodicity=2, description="Test measurement", type=MeasureType.COMMON)
 
-# print('Experiment is over!')
+while (ms.getStatus() != Status.NO):
+	pass
+
+print('Experiment is over!')

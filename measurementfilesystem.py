@@ -6,6 +6,7 @@ import datetime
 from series import Series
 import json
 import csv
+from enums import MeasureType
 
 class MeasurementFileSystem:
     series_name_regex = "series(?P<id>\d+)_(?P<type>\d+)_(?P<date>\d+)"
@@ -17,23 +18,24 @@ class MeasurementFileSystem:
         self.header = None
         if not os.path.exists(self.path):
             os.mkdir(self.path)
-        else:
-            self.__loadSeries()
 
     def __pathToSeries(self, path):
-        pathStr = os.path.basename(os.path.normpath(path))
-        matched = re.match(self.series_name_regex, pathStr)
+        seriesDirName = os.path.basename(os.path.normpath(path))
+        matched = re.match(self.series_name_regex, seriesDirName)
         if bool(matched):
             s_id = int(matched.group('id'))
-            s_type = Series.SeriesType(int(matched.group('type')))
+            s_type = MeasureType(int(matched.group('type')))
             s_date = datetime.datetime.strptime(matched.group('date'), MeasurementFileSystem.timeformat)
-            with open(pathStr + '.json') as json_file:
+            jsonPath = path + '/description.json'
+            if not os.path.exists(jsonPath):
+                return None
+            with open(jsonPath) as json_file:
                 data = json.load(json_file)
                 s_desription = data['description']
 
             s_measurements = None
 
-            for filename in glob.glob(pathStr + "/*.csv"):
+            for filename in glob.glob(seriesDirName + "/*.csv"):
                 m = self.__pathToMeasure(filename)
                 if m:
                     s_measurements[m.id] = m
@@ -50,7 +52,7 @@ class MeasurementFileSystem:
         matched = re.match(self.measurement_name_regex, pathStr)
         if bool(matched):
             m_id = int(matched.group('id'))
-            m_type = Series.SeriesType(int(matched.group('type')))
+            m_type = MeasureType(int(matched.group('type')))
             m_date = datetime.datetime.strptime(
                 matched.group('date'), MeasurementFileSystem.timeformat)
             with open(descriptionStr) as json_file:
@@ -69,35 +71,38 @@ class MeasurementFileSystem:
         else:
             return None
 
+    def __getSeriesPathById(self, id):
+        seriesPath = glob.glob(self.path + "/series{}*".format(id))
+        return seriesPath[-1]
+        
+
     def __seriesToPath(self, s):
         return self.path + "/series{}_{}_{}".format(s.id, s.type.value, s.date.strftime(MeasurementFileSystem.timeformat))
 
-    def __measurementToPath(self, m):
-        return self.path + "/measure{}_{}_{}.csv".format(m.id, m.type.value, m.date.strftime(MeasurementFileSystem.timeformat))
+    def __measurementToPath(self, m : Measurement):
+        seriesPath = self.__getSeriesPathById(m.seriesId)
+        return seriesPath + "/measure{}_{}_{}.csv".format(m.id, m.type.value, m.date.strftime(MeasurementFileSystem.timeformat))
 
-    def __loadSeries(self):
+    def loadSeries(self):
         seriesPathes = glob.glob(self.path + "/series*")
+        seriesDict = {}
         for seriesPath in seriesPathes:
-            s = self.__pathToSeries(seriesPath)
-            if s is None:
+            if not os.path.isdir(seriesPath):
                 continue
-            self.series[s.id] = s
-            if (s.id > self.lastSeriesId):
-                self.lastSeriesId = s.id
+            s = self.__pathToSeries(seriesPath)
+            if not s is None:
+                seriesDict[s.id] = s
+        return seriesDict
 
     def setFileHeader(self, header):
         self.header = header
 
     def addSeries(self, s):
-        #Вынести формирование id
-        #s.setId(self.lastSeriesId)
-        #self.lastSeriesId += 1
-        #
         seriesPath = self.__seriesToPath(s)
         if not os.path.exists(seriesPath):
             os.mkdir(seriesPath)
         jsonString = s.toJson()
-        with open(seriesPath+'.json', 'w') as f:
+        with open(seriesPath+'/description.json', 'w') as f:
             f.write(jsonString)
         return
 
@@ -114,7 +119,8 @@ class MeasurementFileSystem:
         if not os.path.exists(measurementPath):
             open(measurementPath, 'w').close()
         jsonString = m.toJson()
-        descriptionStr = os.path.splitext(measurementPath[0] + ".json")
+        descriptionStr = os.path.splitext(measurementPath)
+        descriptionStr = descriptionStr[0] + ".json"
         with open(descriptionStr, 'w') as f:
             f.write(jsonString)
         return

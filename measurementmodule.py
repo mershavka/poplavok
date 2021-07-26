@@ -38,6 +38,9 @@ class MeasurementModule:
             return
         duration = m.duration
         period = m.periodicity
-        self.th = Thread(target=MeasurementModule.__measurementsThreadFunc, args=(duration, period))
+        self.th = Thread(target=MeasurementModule.__measurementsThreadFunc, args=(self, duration, period))
         self.stopEvent.clear()
         self.th.start()
+    
+    def isWorikng(self):
+        return self.th.is_alive()

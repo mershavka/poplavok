@@ -5,8 +5,8 @@ from typing import Optional
 import json
 
 class Measurement:
-
-    def __new__(cls, seriesId, duration, periodicity, date, description: str ="", type=MeasureType.COMMON, id:  Optional[int] = None, calibrationId:  Optional[int] = None):
+    timeformat = "%Y%m%d%H%M%S"
+    def __new__(cls, seriesId, duration, periodicity, date, description: str ="", type: MeasureType = MeasureType.COMMON, id:  Optional[int] = None, calibrationId:  Optional[int] = None):
         if seriesId is None:
             return None
         instance = super().__new__(cls)
@@ -28,7 +28,7 @@ class Measurement:
         self.id = id
 
     def toJson(self):
-        data = {'id': self.id, 'seriesId': self.seriesId, 'calibrationId': self.calibrationId,'date': self.date, 'type': self.type, 'duration': self.duration, 'periodicity': self.periodicity,'description': self.description}
+        data = {'id': self.id, 'seriesId': self.seriesId, 'calibrationId': self.calibrationId,'date': self.date.strftime(Measurement.timeformat), 'type': self.type.value, 'duration': self.duration, 'periodicity': self.periodicity,'description': self.description}
         return json.dumps(data, indent=4)
 
     def __str__(self) -> str:
