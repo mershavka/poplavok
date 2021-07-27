@@ -106,18 +106,12 @@ class MeasurementFileSystem:
             f.write(jsonString)
         return
 
-    # def getSeriesList(self):
-    #     return self.series.values
-
-    # def getSeriesById(self, id):
-    #     if id in self.series.keys():
-    #         return self.series[id]
-    #     return None
-
     def addMeasurement(self, m):
         measurementPath = self.__measurementToPath(m)
         if not os.path.exists(measurementPath):
             open(measurementPath, 'w').close()
+        if self.header:	
+            self.appendRowToCsv(measurementPath, self.header)
         jsonString = m.toJson()
         descriptionStr = os.path.splitext(measurementPath)
         descriptionStr = descriptionStr[0] + ".json"
@@ -125,7 +119,7 @@ class MeasurementFileSystem:
             f.write(jsonString)
         return
 
-    def appendRowToCsv(filename, listOfElements):
+    def appendRowToCsv(self, filename, listOfElements):
         with open(filename, 'a+', newline ='') as writeObj:
             writer = csv.writer(writeObj)
             writer.writerow(listOfElements)

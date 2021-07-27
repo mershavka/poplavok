@@ -17,7 +17,7 @@ class Driver:
     adcString = 'ADC value'
     voltageString = 'Voltage, V'
     resistanceString = 'Resistance, Om'
-    temperatureString = 'Temperature, °C'
+    temperatureString = 'Temperature, C'
     rHumidityString = 'Related Humidity, %'
     aHumidityString = 'Absolute Humidity, kg/m^3'
     pressureString = 'Pressure, hPa'
