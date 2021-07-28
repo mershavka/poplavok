@@ -119,6 +119,13 @@ class MeasurementFileSystem:
             f.write(jsonString)
         return
 
+    def deleteMeasurement(self, m):
+        measurementPath = self.__measurementToPath(m)
+        os.remove(measurementPath)
+        #удалить json?
+        descriptionStr = os.path.splitext(measurementPath) + ".json"
+        os.remove(descriptionStr)
+
     def appendRowToCsv(self, filename, listOfElements):
         with open(filename, 'a+', newline ='') as writeObj:
             writer = csv.writer(writeObj)

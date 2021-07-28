@@ -42,5 +42,5 @@ class MeasurementModule:
         self.stopEvent.clear()
         self.th.start()
     
-    def isWorikng(self):
+    def isWorking(self):
         return self.th.is_alive()

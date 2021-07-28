@@ -38,6 +38,11 @@ class Series:
     def getMeasurementsIds(self):
         return [i for i in self.measurements.keys()]
 
+    def getMesurementById(self, id):
+        if id in self.measurements.keys():
+            return self.measurements[id]
+        return None
+
     def toJson(self):
         data = {'id': self.id, 'date': self.date.strftime(Series.timeformat), 'type': self.type.value, 'description': self.description}
         return json.dumps(data, indent=4)

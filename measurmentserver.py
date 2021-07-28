@@ -103,7 +103,7 @@ class MeasurementServer:
     def runMeasurement(self, type, duration, periodicity, description):
         if not self.currentSeries:
             self.status = Status.ERROR
-            print('Choose series before measuring')
+            print('Choose a series before measuring')
             return
         if type != self.currentSeries.type:
             self.status = Status.ERROR
@@ -121,6 +121,28 @@ class MeasurementServer:
 
     def interruptMeasurement(self):
         self.worker.stopMeasurement()
+        self.status = Status.NO
+
+    def chooseMeasurement(self, id):
+        if self.currentSeries is None:
+            print("Select a Series before choosing a measurement")
+            return -1
+        self.currentMeasurement = self.currentSeries.getMesurementById(id)
+        if self.currentMeasurement is None:
+            print("No measurement with id {} in the Series with id {}".format(id, self.currentSeries.id))
+            return -1
+        return 0
+
+    def deleteCurrentMeasurement(self):
+        if self.status in [Status.COMMON_MEASUREMENT, Status.CALIBRATION, Status.FIELD_EXPERIMENT]:
+            print('Measurement is underway, stop it before deleting')
+            return -1
+        m = self.currentSeries.popMeasurement(self.currentMeasurement.id)
+        self.fs.deleteMeasurement(m)
+        return 0
+
+    def getServerStatus(self):
+        return self.status
 
     def getSeriesList(self):
         return [*self.series.values()]
@@ -129,9 +151,16 @@ class MeasurementServer:
         return self.series
     
     def getStatus(self):
-        if not self.worker.isWorikng():
+        if not self.worker.isWorking():
             self.status = Status.NO
         return self.status
+
+    def chooseCalibration(self, id):
+        #self.currentCalibration = 
+        pass
+
+    def startCalibration(self, seriesIdStep1, seriesIdStep2, referenceCH4):
+        pass
 
     def calculateCH4(self, data):
         return self.currentCalibration.calculateCH4(data)
