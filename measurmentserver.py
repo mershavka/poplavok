@@ -49,24 +49,27 @@ class MeasurementServer:
                          aHumidityString: 10,  pressureString: 10000,  ch4String: 0}
         return ms.device.readData()
 
-    def __writeToMeasureFile(sender, data):
+    def __writeToMeasureFile(sender, dataDict: dict):
         ms = MeasurementServer()
         # Расчет метана по калибровке
         if ms.currentCalibration:
-            ms.calculateCH4()
-        ms.fs.writeMeasurementToFile(ms.currentMeasurement, data)
+            CH4 = ms.currentCalibration.calculateCH4(dataDict)
+            dataDict[ch4String] = CH4
+            
+        ms.fs.writeMeasurementToFile(ms.currentMeasurement, dataDict)
 
     def __init__(self):
         if self.initialized:
             return
-        self.series = {}
         # self.device = Driver()
         self.fs = MeasurementFileSystem(EXEC_DIR)        
         self.series = self.fs.loadSeries()
+        self.calibrations = self.fs.loadCalibrations()
         if self.series:
             self.lastSeriesId = max(self.series.keys())
         else:
             self.lastSeriesId = 0
+        self.lastCalibrationId = 0 if not self.calibrations else max(self.calibrations.keys())
         self.worker = MeasurementModule()
         self.worker.setReadFunc(self.__readFromDevice)
         self.worker.setWriteFunc(self.__writeToMeasureFile)
@@ -156,11 +159,16 @@ class MeasurementServer:
         return self.status
 
     def chooseCalibration(self, id):
-        #self.currentCalibration = 
-        pass
+        if id in self.calibrations:
+            self.currentCalibration = self.calibrations[id]
+        else:	
+            self.status = Status.ERROR
+            print("No calibration with id={}".format(id))
 
     def startCalibration(self, seriesIdStep1, seriesIdStep2, referenceCH4):
         pass
 
-    def calculateCH4(self, data):
-        return self.currentCalibration.calculateCH4(data)
+    def selectCH4Model(self, id):
+        if not self.currentCalibration:
+            print("Choose Calibration before selecting model")
+        pass

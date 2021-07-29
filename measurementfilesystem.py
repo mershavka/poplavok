@@ -1,3 +1,4 @@
+from calibrationClass import Calibration
 from measurement import Measurement
 import os
 import re
@@ -11,6 +12,7 @@ from enums import MeasureType
 class MeasurementFileSystem:
     series_name_regex = "series(?P<id>\d+)_(?P<type>\d+)_(?P<date>\d+)"
     measurement_name_regex = "measure(?P<id>\d+)_(?P<type>\d+)_(?P<date>\d+)"
+    calibration_name_regex = "calibration(?P<id>\d+)_(?P<date>\d+)"
     timeformat = "%Y%m%d%H%M%S"
 
     def __init__(self, path):
@@ -40,8 +42,7 @@ class MeasurementFileSystem:
                 if m:
                     s_measurements[m.id] = m
 
-            s = Series(id=s_id, description=s_desription,
-                       type=s_type, date=s_date, measurements=s_measurements)
+            s = Series(id=s_id, description=s_desription, type=s_type, date=s_date, measurements=s_measurements)
             return s
         else:
             return None
@@ -71,6 +72,26 @@ class MeasurementFileSystem:
         else:
             return None
 
+    def __pathToCalibration(self, path):
+        pathStr = os.path.basename(os.path.normpath(path))
+        descriptionStr = os.path.splitext(pathStr[0] + ".json")
+        matched = re.match(self.calibration_name_regex, pathStr)
+        if bool(matched):
+            c_id = int(matched.group('id'))
+            c_date = datetime.datetime.strptime(matched.group('date'), MeasurementFileSystem.timeformat)
+            with open(descriptionStr) as json_file:
+                data = json.load(json_file)
+            if not data:
+                return None
+            c_desription = data['description']
+            c_series1StepId = int(data['series1StepId'])
+            c_series2StepId = int(data['series2StepId'])
+            c = Calibration( id = c_id, series1StepId = c_series1StepId, series2StepId = c_series2StepId, date = c_date, description = c_desription)
+            return c
+        else:
+            return None
+
+
     def __getSeriesPathById(self, id):
         seriesPath = glob.glob(self.path + "/series{}*".format(id))
         return seriesPath[-1]
@@ -93,6 +114,15 @@ class MeasurementFileSystem:
             if not s is None:
                 seriesDict[s.id] = s
         return seriesDict
+
+    def loadCalibrations(self):
+        calibrationsPathes = glob.glob(self.path + "/calibrations/calibration*")
+        calibrationsDict = {}
+        for calibrationPath in calibrationsPathes:
+            c = self.__pathToCalibration(calibrationPath)
+            if not c is None:
+                calibrationsDict[c.id] = c
+        return calibrationsDict
 
     def setFileHeader(self, header):
         self.header = header

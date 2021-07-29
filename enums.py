@@ -1,5 +1,6 @@
 from enum import Enum
 
+timeformat = "%Y%m%d%H%M%S"
 class Status(Enum):
     NO 					= (0, "Nothing is happening")
     ERROR 				= (1, "Error occured")

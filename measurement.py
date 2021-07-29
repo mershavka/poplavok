@@ -1,11 +1,10 @@
-from enums import MeasureType
+from enums import MeasureType, timeformat
 from datetime import datetime as dt
 from series import Series
 from typing import Optional
 import json
 
 class Measurement:
-    timeformat = "%Y%m%d%H%M%S"
     def __new__(cls, seriesId, duration, periodicity, date, description: str ="", type: MeasureType = MeasureType.COMMON, id:  Optional[int] = None, calibrationId:  Optional[int] = None):
         if seriesId is None:
             return None
@@ -28,7 +27,7 @@ class Measurement:
         self.id = id
 
     def toJson(self):
-        data = {'id': self.id, 'seriesId': self.seriesId, 'calibrationId': self.calibrationId,'date': self.date.strftime(Measurement.timeformat), 'type': self.type.value, 'duration': self.duration, 'periodicity': self.periodicity,'description': self.description}
+        data = {'id': self.id, 'seriesId': self.seriesId, 'calibrationId': self.calibrationId,'date': self.date.strftime(timeformat), 'type': self.type.value, 'duration': self.duration, 'periodicity': self.periodicity,'description': self.description}
         return json.dumps(data, indent=4)
 
     def __str__(self) -> str:
