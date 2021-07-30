@@ -1,3 +1,4 @@
+from referenceData import ReferenceData
 from measurement import Measurement
 from measurementmodule import MeasurementModule
 # from driver import Driver
@@ -48,7 +49,7 @@ class MeasurementServer:
                          temperatureString: 25,  rHumidityString: 35, 
                          aHumidityString: 10,  pressureString: 10000,  ch4String: 0}
         return ms.device.readData()
-
+ 
     def __writeToMeasureFile(sender, dataDict: dict):
         ms = MeasurementServer()
         # Расчет метана по калибровке
@@ -102,6 +103,16 @@ class MeasurementServer:
         else:	
             self.status = Status.ERROR
             print("No series with id={}".format(id))
+
+    def addReferenceDataToSeries(self, path):
+        if not self.currentSeries:
+            print("Choose a Series before loading reference data")
+            self.status = Status.ERROR
+            return
+        r = ReferenceData(seriesId=self.currentSeries.id, loadingDate=dt.datetime.now())
+        self.currentSeries.referenceData = r
+        self.fs.addReferenceDataToSeries(self.currentSeries, path)
+
 
     def runMeasurement(self, type, duration, periodicity, description):
         if not self.currentSeries:
@@ -165,10 +176,12 @@ class MeasurementServer:
             self.status = Status.ERROR
             print("No calibration with id={}".format(id))
 
-    def startCalibration(self, seriesIdStep1, seriesIdStep2, referenceCH4):
+    def startCalibration(self, seriesIdStep1, seriesIdStep2):
         pass
 
     def selectCH4Model(self, id):
         if not self.currentCalibration:
             print("Choose Calibration before selecting model")
-        pass
+    
+    def gotIt(self):
+        self.status = Status.NO

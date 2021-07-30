@@ -1,4 +1,4 @@
-from calibrationClass import Calibration
+from calibration import Calibration
 from measurement import Measurement
 import os
 import re
@@ -8,6 +8,7 @@ from series import Series
 import json
 import csv
 from enums import MeasureType
+from shutil import copy
 
 class MeasurementFileSystem:
     series_name_regex = "series(?P<id>\d+)_(?P<type>\d+)_(?P<date>\d+)"
@@ -36,13 +37,17 @@ class MeasurementFileSystem:
                 s_desription = data['description']
 
             s_measurements = None
+            s_referenceData = None
 
             for filename in glob.glob(seriesDirName + "/*.csv"):
+                # matched = re.match(self.series_name_regex, seriesDirName)
+                #     if bool(matched):
+
                 m = self.__pathToMeasure(filename)
                 if m:
                     s_measurements[m.id] = m
 
-            s = Series(id=s_id, description=s_desription, type=s_type, date=s_date, measurements=s_measurements)
+            s = Series(id=s_id, description=s_desription, type=s_type, date=s_date, measurements=s_measurements, referenceData=s_referenceData)
             return s
         else:
             return None
@@ -148,6 +153,13 @@ class MeasurementFileSystem:
         with open(descriptionStr, 'w') as f:
             f.write(jsonString)
         return
+
+    def addReferenceDataToSeries(self, s, path):
+        seriesPath = self.__seriesToPath(s)
+        if not os.path.exists(seriesPath):
+            return
+        newReferenceDataPath = seriesPath + "/referenceData_loaded{}.csv".format(r.loadingDate.strftime(MeasurementFileSystem.timeformat))
+        resultPath = copy(path, newReferenceDataPath)
 
     def deleteMeasurement(self, m):
         measurementPath = self.__measurementToPath(m)

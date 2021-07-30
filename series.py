@@ -4,12 +4,13 @@ from typing import Optional
 import json
 
 class Series:
-    def __init__(self, date=None, description: str ="", type: MeasureType = MeasureType.COMMON, id:  Optional[int] = None, measurements = None):
+    def __init__(self, date=None, description: str ="", type: MeasureType = MeasureType.COMMON, id:  Optional[int] = None, measurements = None, referenceData = None):
         self.id = -1 if id is None else id
         self.date = dt.now() if date is None else date
         self.description = description
         self.type = type
         self.measurements = {} if measurements is None else measurements
+        self.referenceData = referenceData
 
     def setId(self, id):
         self.id = id
