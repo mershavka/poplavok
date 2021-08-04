@@ -182,6 +182,7 @@ class MeasurementServer:
     def selectCH4Model(self, id):
         if not self.currentCalibration:
             print("Choose Calibration before selecting model")
+		#выбрать конкретную модель
     
     def gotIt(self):
         self.status = Status.NO

@@ -1,5 +1,5 @@
 from calibration import Calibration
-from measurement import Measurement
+from measurement import Measurement, timeformat
 import os
 import re
 import glob
@@ -14,7 +14,6 @@ class MeasurementFileSystem:
     series_name_regex = "series(?P<id>\d+)_(?P<type>\d+)_(?P<date>\d+)"
     measurement_name_regex = "measure(?P<id>\d+)_(?P<type>\d+)_(?P<date>\d+)"
     calibration_name_regex = "calibration(?P<id>\d+)_(?P<date>\d+)"
-    timeformat = "%Y%m%d%H%M%S"
 
     def __init__(self, path):
         self.path = path
@@ -28,7 +27,7 @@ class MeasurementFileSystem:
         if bool(matched):
             s_id = int(matched.group('id'))
             s_type = MeasureType(int(matched.group('type')))
-            s_date = datetime.datetime.strptime(matched.group('date'), MeasurementFileSystem.timeformat)
+            s_date = datetime.datetime.strptime(matched.group('date'), timeformat)
             jsonPath = path + '/description.json'
             if not os.path.exists(jsonPath):
                 return None
@@ -59,8 +58,7 @@ class MeasurementFileSystem:
         if bool(matched):
             m_id = int(matched.group('id'))
             m_type = MeasureType(int(matched.group('type')))
-            m_date = datetime.datetime.strptime(
-                matched.group('date'), MeasurementFileSystem.timeformat)
+            m_date = datetime.datetime.strptime(matched.group('date'), timeformat)
             with open(descriptionStr) as json_file:
                 data = json.load(json_file)
             if not data:
@@ -83,7 +81,7 @@ class MeasurementFileSystem:
         matched = re.match(self.calibration_name_regex, pathStr)
         if bool(matched):
             c_id = int(matched.group('id'))
-            c_date = datetime.datetime.strptime(matched.group('date'), MeasurementFileSystem.timeformat)
+            c_date = datetime.datetime.strptime(matched.group('date'), timeformat)
             with open(descriptionStr) as json_file:
                 data = json.load(json_file)
             if not data:
@@ -103,11 +101,11 @@ class MeasurementFileSystem:
         
 
     def __seriesToPath(self, s):
-        return self.path + "/series{}_{}_{}".format(s.id, s.type.value, s.date.strftime(MeasurementFileSystem.timeformat))
+        return self.path + "/series{}_{}_{}".format(s.id, s.type.value, s.date.strftime(timeformat))
 
     def __measurementToPath(self, m : Measurement):
         seriesPath = self.__getSeriesPathById(m.seriesId)
-        return seriesPath + "/measure{}_{}_{}.csv".format(m.id, m.type.value, m.date.strftime(MeasurementFileSystem.timeformat))
+        return seriesPath + "/measure{}_{}_{}.csv".format(m.id, m.type.value, m.date.strftime(timeformat))
 
     def loadSeries(self):
         seriesPathes = glob.glob(self.path + "/series*")
@@ -158,7 +156,7 @@ class MeasurementFileSystem:
         seriesPath = self.__seriesToPath(s)
         if not os.path.exists(seriesPath):
             return
-        newReferenceDataPath = seriesPath + "/referenceData_loaded{}.csv".format(r.loadingDate.strftime(MeasurementFileSystem.timeformat))
+        newReferenceDataPath = seriesPath + "/referenceData_loaded{}.csv".format(s.loadingDate.strftime(timeformat))
         resultPath = copy(path, newReferenceDataPath)
 
     def deleteMeasurement(self, m):

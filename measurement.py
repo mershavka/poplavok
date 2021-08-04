@@ -30,5 +30,15 @@ class Measurement:
         data = {'id': self.id, 'seriesId': self.seriesId, 'calibrationId': self.calibrationId,'date': self.date.strftime(timeformat), 'type': self.type.value, 'duration': self.duration, 'periodicity': self.periodicity,'description': self.description}
         return json.dumps(data, indent=4)
 
+    def fromJson(self, jsonString):
+        self.id = int(jsonString["id"])
+        self.seriesId = int(jsonString["seriesId"])
+        self.calibrationId = int(jsonString["calibrationId"])
+        self.date = dt.datetime.strptime(jsonString["date"], timeformat)
+        self.type = MeasureType(int(jsonString["type"]))
+        self.duration = float(jsonString["duration"])
+        self.periodicity = float(jsonString["periodicity"])
+        self.description = jsonString["description"]
+
     def __str__(self) -> str:
         pass
