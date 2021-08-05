@@ -11,11 +11,7 @@ class Calibration:
         self.series2StepId = series2StepId
         self.date = date
         self.description = description
-        # self.selectedModel1 = 
-        # self.selectedModel2 = 
-
-    def calculateCH4(self, dataDict):
-        
+        # self.selectedModel = 
 
     def toJson(self):
         data = {'id': self.id, 'series1StepId': self.series1StepId, 'series2StepId': self.series2StepId,'date': self.date.strftime(timeformat), 'description': self.description}

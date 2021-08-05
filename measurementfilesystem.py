@@ -14,6 +14,7 @@ class MeasurementFileSystem:
     series_name_regex = "series(?P<id>\d+)_(?P<type>\d+)_(?P<date>\d+)"
     measurement_name_regex = "measure(?P<id>\d+)_(?P<type>\d+)_(?P<date>\d+)"
     calibration_name_regex = "calibration(?P<id>\d+)_(?P<date>\d+)"
+    model_name_regex = "model_(?P<functionV>\w+_\w+)_(?P<functionCH4>\w+_\w+)"
 
     def __init__(self, path):
         self.path = path
@@ -151,6 +152,14 @@ class MeasurementFileSystem:
         with open(descriptionStr, 'w') as f:
             f.write(jsonString)
         return
+
+    def addCalibration(self, c):
+
+        pass
+
+    def addModel(self, model):
+        pass
+
 
     def addReferenceDataToSeries(self, s, path):
         seriesPath = self.__seriesToPath(s)

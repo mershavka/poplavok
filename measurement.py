@@ -5,15 +5,13 @@ from typing import Optional
 import json
 
 class Measurement:
-    def __new__(cls, seriesId, duration, periodicity, date, description: str ="", type: MeasureType = MeasureType.COMMON, id:  Optional[int] = None, calibrationId:  Optional[int] = None):
-        if seriesId is None:
+    def __new__(cls, *args, **kwargs):
+        if kwargs.get("seriesId", None) is None or not args:
             return None
         instance = super().__new__(cls)
         return instance
 
-    def __init__(self, seriesId, duration, periodicity, date, description: str ="", type=MeasureType.COMMON, id:  Optional[int] = None, calibrationId:  Optional[int] = None):
-        if seriesId is None:
-            pass
+    def __init__(self, seriesId=None, duration=None, periodicity=None, date=None, description: str ="", type=MeasureType.COMMON, id:  Optional[int] = None, calibrationId:  Optional[int] = None):
         self.seriesId = seriesId
         self.duration = duration
         self.periodicity = periodicity
