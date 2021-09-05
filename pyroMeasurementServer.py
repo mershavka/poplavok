@@ -1,9 +1,28 @@
+from measurmentserver import MeasurementServer
 import Pyro4
 
 @Pyro4.expose
 @Pyro4.behavior(instance_mode="single")
 class PyroMeasurementServer(object):
     
+    def __init__(self):
+        self.ms = MeasurementServer()
+    
+    def createSeries(self, description, type):
+        return self.ms.createSeries(description, type)
+    
+    def chooseSeries(self, id):
+        return self.ms.chooseSeries(id)
+
+    def runMeasurement(self, type, duration, periodicity, description):
+        return self.ms.runMeasurement(type, duration, periodicity, description)
+
+    def getServerStatus(self):
+        return self.ms.getServerStatus
+    
+    def getSeriesList(self):
+        return self.ms.getSeriesList()
+
     def helloString(self):
         return "Hello!"
 
