@@ -1,5 +1,5 @@
 from enums import MeasureType, timeformat
-from datetime import datetime as dt
+from datetime import datetime as dt, time
 from typing import Optional
 import json
 
@@ -8,7 +8,7 @@ class Series:
         self.id = -1 if id is None else id
         self.date = dt.now() if date is None else date
         self.description = description
-        self.type = type
+        self.type = MeasureType(type)
         self.measurements = {} if measurements is None else measurements
         self.referenceData = referenceData
 
@@ -44,8 +44,17 @@ class Series:
         return None
 
     def toJson(self):
-        data = {'id': self.id, 'date': self.date.strftime(timeformat), 'type': self.type.value, 'description': self.description}
-        return json.dumps(data, indent=4)
+        data = {'id': self.id, 'date': self.date.strftime(timeformat), 'type': self.type.value, 'description': self.description}        
+        return data
+    
+    def toJsonString(self):        
+        return json.dumps(self.toJson(), indent=4)
+    
+    def fromJson(self, jsonDict):
+        self.id = int(jsonDict['id'])
+        self.date = dt.strptime(jsonDict['date'], timeformat)
+        self.type = MeasureType(int(jsonDict['type']))
+        self.description = jsonDict['description']
 
     def __str__(self) -> str:
         pass

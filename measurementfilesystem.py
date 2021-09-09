@@ -29,21 +29,9 @@ class MeasurementFileSystem:
         descriptionStr = os.path.splitext(pathStr[0] + ".json")
         matched = re.match(self.measurement_name_regex, pathStr)
         if bool(matched):
-            m_id = int(matched.group('id'))
-            m_type = MeasureType(int(matched.group('type')))
-            m_date = datetime.datetime.strptime(matched.group('date'), timeformat)
+            m = Measurement()
             with open(descriptionStr) as json_file:
-                data = json.load(json_file)
-            if not data:
-                return None
-            m_desription = data['description']
-            m_seriesId = int(data['seriesId'])
-            m_duration = float(data['duration'])
-            m_periodicity = float(data['periodicity'])
-            m_calibrationId = int(data['calibrationId'])
-            m = Measurement(id=m_id, description=m_desription,
-                       type=m_type, date=m_date, seriesId=m_seriesId, duration=m_duration,
-                        periodicity=m_periodicity, calibrationId=m_calibrationId)
+                m = Measurement.fromJson(json.load(json_file))            
             return m
         else:
             return None
@@ -81,30 +69,26 @@ class MeasurementFileSystem:
         seriesDirName = os.path.basename(os.path.normpath(path))
         matched = re.match(self.series_name_regex, seriesDirName)
         if bool(matched):
-            s_id = int(matched.group('id'))
-            s_type = MeasureType(int(matched.group('type')))
-            s_date = datetime.datetime.strptime(matched.group('date'), timeformat)
+            s = Series()
             jsonPath = path + '/description.json'
             if not os.path.exists(jsonPath):
                 return None
             with open(jsonPath) as json_file:
-                data = json.load(json_file)
+                data = s.fromJson(json.load(json_file))
 
-            if not data or int(data['id']) != s_id or int(data['type']) != s_type or datetime.datetime.strptime((data['date']), timeformat) != s_date:
-                print("Invalid json description file for series")
-                return None
+            # if not data or int(data['id']) != s_id or int(data['type']) != s_type or datetime.datetime.strptime((data['date']), timeformat) != s_date:
+            #     print("Invalid json description file for series")
+            #     return None
 
-            s_desription = data['description']
+            # s_desription = data['description']
 
-            s_measurements = {}
-            s_referenceData = {} #Как заполнять?
+            # s_measurements = {}
+            # s_referenceData = {} #Как заполнять?
 
             for filename in glob.glob(seriesDirName + "/*.csv"):
                 m = self.__pathToMeasure(filename)
                 if m:
-                    s_measurements[m.id] = m
-
-            s = Series(id=s_id, description=s_desription, type=s_type, date=s_date, measurements=s_measurements, referenceData=s_referenceData)
+                    s.addMeasurement(m.id, m)
             return s
         else:
             return None
@@ -122,7 +106,8 @@ class MeasurementFileSystem:
         return seriesPath + "/measure{}_{}_{}.csv".format(m.id, m.type.value, m.date.strftime(timeformat))
 
     def __modelToPath(self, model: Model):
-        calibrationPath = 
+        #TODO  SOLVE CALIBRATION PATH
+        calibrationPath = ""
         return calibrationPath + "/model{}_{}_{}.csv".format(model.index, model.v_function, model.ch4function)
 
     def loadSeries(self):
@@ -154,7 +139,7 @@ class MeasurementFileSystem:
         seriesPath = self.__seriesToPath(s)
         if not os.path.exists(seriesPath):
             os.mkdir(seriesPath)
-        jsonString = s.toJson()
+        jsonString = s.toJsonString()
         with open(seriesPath+'/description.json', 'w') as f:
             f.write(jsonString)
         return
@@ -165,7 +150,7 @@ class MeasurementFileSystem:
             open(measurementPath, 'w').close()
         if self.header:	
             self.appendRowToCsv(measurementPath, self.header)
-        jsonString = m.toJson()
+        jsonString = m.toJsonString()
         descriptionStr = os.path.splitext(measurementPath)
         descriptionStr = descriptionStr[0] + ".json"
         with open(descriptionStr, 'w') as f:

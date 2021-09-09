@@ -6,7 +6,7 @@ import json
 
 class Measurement:
     def __new__(cls, *args, **kwargs):
-        if kwargs.get("seriesId", None) is None or not args:
+        if kwargs.get("seriesId", None) is None:
             return None
         instance = super().__new__(cls)
         return instance
@@ -26,17 +26,20 @@ class Measurement:
 
     def toJson(self):
         data = {'id': self.id, 'seriesId': self.seriesId, 'calibrationId': self.calibrationId,'date': self.date.strftime(timeformat), 'type': self.type.value, 'duration': self.duration, 'periodicity': self.periodicity,'description': self.description}
-        return json.dumps(data, indent=4)
+        return data
+    
+    def toJsonString(self):
+        return json.dumps(self.toJson(), indent=4)
 
-    def fromJson(self, jsonString):
-        self.id = int(jsonString["id"])
-        self.seriesId = int(jsonString["seriesId"])
-        self.calibrationId = int(jsonString["calibrationId"])
-        self.date = dt.datetime.strptime(jsonString["date"], timeformat)
-        self.type = MeasureType(int(jsonString["type"]))
-        self.duration = float(jsonString["duration"])
-        self.periodicity = float(jsonString["periodicity"])
-        self.description = jsonString["description"]
+    def fromJson(self, jsonDict):
+        self.id = int(jsonDict["id"])
+        self.seriesId = int(jsonDict["seriesId"])
+        self.calibrationId = int(jsonDict["calibrationId"])
+        self.date = dt.strptime(jsonDict["date"], timeformat)
+        self.type = MeasureType(int(jsonDict["type"]))
+        self.duration = float(jsonDict["duration"])
+        self.periodicity = float(jsonDict["periodicity"])
+        self.description = jsonDict["description"]
 
     def __str__(self) -> str:
         pass

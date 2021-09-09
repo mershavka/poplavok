@@ -1,5 +1,8 @@
 from measurmentserver import MeasurementServer
+from measurement import Measurement
+from series import Series
 import Pyro4
+import Pyro4.util
 
 @Pyro4.expose
 @Pyro4.behavior(instance_mode="single")
@@ -18,13 +21,18 @@ class PyroMeasurementServer(object):
         return self.ms.runMeasurement(type, duration, periodicity, description)
 
     def getServerStatus(self):
-        return self.ms.getServerStatus
+        return self.ms.getServerStatus()
     
     def getSeriesList(self):
         return self.ms.getSeriesList()
 
     def helloString(self):
         return "Hello!"
+
+Pyro4.util.SerializerBase.register_class_to_dict(Series, Series.toJson)
+Pyro4.util.SerializerBase.register_class_to_dict(Measurement, Measurement.toJson)
+Pyro4.util.SerializerBase.register_dict_to_class(Series, Series.fromJson)
+Pyro4.util.SerializerBase.register_dict_to_class(Measurement, Measurement.fromJson)
 
 Pyro4.Daemon.serveSimple(
             {

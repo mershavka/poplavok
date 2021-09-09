@@ -4,12 +4,12 @@ from measurementmodule import MeasurementModule
 # from driver import Driver
 import datetime as dt
 from series import Series
-from calibration import CalibrationModule
+# from calibration import CalibrationModule
 from measurementfilesystem import MeasurementFileSystem
 from enums import MeasureType, Status
 
-# EXEC_DIR = "/home/pi/Documents/Repos/poplavok-algorithm/MServer"
-EXEC_DIR = "C:/Users/mershavka/Repositories/poplavok-algorithm/sandbox"
+EXEC_DIR = "/home/pi/Documents/Repos/poplavok-algorithm/MServer"
+# EXEC_DIR = "C:/Users/mershavka/Repositories/poplavok-algorithm/sandbox"
 
 class Error(Exception):
     """Base class for other exceptions"""
@@ -160,7 +160,7 @@ class MeasurementServer:
 
     def getSeriesList(self):
         return [*self.series.values()]
-
+    
     def getSeriesDict(self):
         return self.series
     
