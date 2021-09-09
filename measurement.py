@@ -6,8 +6,8 @@ import json
 
 class Measurement:
     def __new__(cls, *args, **kwargs):
-        if kwargs.get("seriesId", None) is None:
-            return None
+        # if kwargs.get("seriesId", None) is None:
+        #     return None
         instance = super().__new__(cls)
         return instance
 

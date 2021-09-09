@@ -1,3 +1,4 @@
+from enums import MeasureType
 from measurmentserver import MeasurementServer
 from measurement import Measurement
 from series import Series
@@ -14,14 +15,20 @@ class PyroMeasurementServer(object):
     def createSeries(self, description, type):
         return self.ms.createSeries(description, type)
     
-    def chooseSeries(self, id):
-        return self.ms.chooseSeries(id)
+    def chooseSeries(self, seriesId):
+        return self.ms.chooseSeries(seriesId)
 
     def runMeasurement(self, type, duration, periodicity, description):
-        return self.ms.runMeasurement(type, duration, periodicity, description)
+        return self.ms.runMeasurement(MeasureType(type), duration, periodicity, description)
+
+    def interruptMeasurement(self):
+        return self.ms.interruptMeasurement()
 
     def getServerStatus(self):
         return self.ms.getServerStatus()
+
+    def getCurrentSeries(self):
+        return self.ms.getCurrentSeries()
     
     def getSeriesList(self):
         return self.ms.getSeriesList()

@@ -26,12 +26,13 @@ class MeasurementFileSystem:
     
     def __pathToMeasure(self, path):
         pathStr = os.path.basename(os.path.normpath(path))
-        descriptionStr = os.path.splitext(pathStr[0] + ".json")
+        descriptionStr = os.path.splitext(path)[0] + ".json"
         matched = re.match(self.measurement_name_regex, pathStr)
         if bool(matched):
             m = Measurement()
             with open(descriptionStr) as json_file:
-                m = Measurement.fromJson(json.load(json_file))            
+                jsonDict = json.load(json_file)
+                m.fromJson(jsonDict)         
             return m
         else:
             return None
@@ -65,12 +66,12 @@ class MeasurementFileSystem:
         
         return None
 
-    def __pathToSeries(self, path):
-        seriesDirName = os.path.basename(os.path.normpath(path))
+    def __pathToSeries(self, seriesPath):
+        seriesDirName = os.path.basename(os.path.normpath(seriesPath))
         matched = re.match(self.series_name_regex, seriesDirName)
         if bool(matched):
             s = Series()
-            jsonPath = path + '/description.json'
+            jsonPath = seriesPath + '/description.json'
             if not os.path.exists(jsonPath):
                 return None
             with open(jsonPath) as json_file:
@@ -85,7 +86,7 @@ class MeasurementFileSystem:
             # s_measurements = {}
             # s_referenceData = {} #Как заполнять?
 
-            for filename in glob.glob(seriesDirName + "/*.csv"):
+            for filename in glob.glob(seriesPath + "/*.csv"):
                 m = self.__pathToMeasure(filename)
                 if m:
                     s.addMeasurement(m.id, m)

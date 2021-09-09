@@ -8,8 +8,8 @@ from series import Series
 from measurementfilesystem import MeasurementFileSystem
 from enums import MeasureType, Status
 
-EXEC_DIR = "/home/pi/Documents/Repos/poplavok-algorithm/MServer"
-# EXEC_DIR = "C:/Users/mershavka/Repositories/poplavok-algorithm/sandbox"
+# EXEC_DIR = "/home/pi/Documents/Repos/poplavok-algorithm/MServer"
+EXEC_DIR = "C:/Users/mershavka/Repositories/poplavok-algorithm/sandbox"
 
 class Error(Exception):
     """Base class for other exceptions"""
@@ -33,7 +33,7 @@ ch4String = 'CH4, ppm'
 
 class MeasurementServer:
 
-    testMode = False
+    testMode = True
     initialized = False
 
     def __new__(cls):
@@ -97,12 +97,13 @@ class MeasurementServer:
             self.currentSeries = new_series
         return new_series.toJson()
 
-    def chooseSeries(self, id):
-        if id in self.series.keys:
-            self.currentSeries = self.series[id]
+    def chooseSeries(self, seriesId):
+        if seriesId in self.series.keys():
+            self.currentSeries = self.series[seriesId]
         else:	
             self.status = Status.ERROR
-            print("No series with id={}".format(id))
+            print("No series with id={}".format(seriesId))
+        return self.currentSeries
 
     def addReferenceDataToSeries(self, path):
         if not self.currentSeries:
@@ -125,17 +126,19 @@ class MeasurementServer:
             return
         m_id = 1
         if self.currentSeries.getMeasurementsIds():
-            m_id += max(self.currentSeries.getMeasurementsIds)
+            m_id += max(self.currentSeries.getMeasurementsIds())
         new_measurement = Measurement(seriesId=self.currentSeries.id, duration=duration, periodicity=periodicity, date=dt.datetime.now(), description=description, calibrationId=self.currentCalibration, id=m_id)
         self.fs.addMeasurement(new_measurement)
         self.currentSeries.addMeasurement(m_id, new_measurement)
         self.currentMeasurement = new_measurement
         self.worker.startMeasurement(new_measurement)
         self.status = MeasureType.toStatus(type)
+        return new_measurement
 
     def interruptMeasurement(self):
         self.worker.stopMeasurement()
         self.status = Status.NO
+        return "Interrupted"
 
     def chooseMeasurement(self, id):
         if self.currentSeries is None:
@@ -154,6 +157,9 @@ class MeasurementServer:
         m = self.currentSeries.popMeasurement(self.currentMeasurement.id)
         self.fs.deleteMeasurement(m)
         return 0
+
+    def getCurrentSeries(self):
+        return self.currentSeries
 
     def getServerStatus(self):
         return self.status
@@ -182,7 +188,7 @@ class MeasurementServer:
     def selectCH4Model(self, id):
         if not self.currentCalibration:
             print("Choose Calibration before selecting model")
-		#выбрать конкретную модель
+        #выбрать конкретную модель
     
     def gotIt(self):
         self.status = Status.NO
