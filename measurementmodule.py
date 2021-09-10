@@ -10,12 +10,16 @@ class MeasurementModule:
         self.th = None
         self.readFunc = None
         self.writeFunc = None
+        self.stopFunc = None
 
     def setReadFunc(self, f):
         self.readFunc = f
 
     def setWriteFunc(self, f):
         self.writeFunc = f
+
+    def setStopFunc(self, f):
+        self.stopFunc = f
 
     def __measurementsThreadFunc(self, duration, periodicity):
         expStart = time.time()
@@ -28,6 +32,7 @@ class MeasurementModule:
                 dataDictionary = self.readFunc()
                 print(dataDictionary)
                 self.writeFunc(dataDictionary)
+        self.stopFunc()
 
     def stopMeasurement(self):
         if self.th.is_alive():

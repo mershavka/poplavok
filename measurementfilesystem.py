@@ -30,6 +30,9 @@ class MeasurementFileSystem:
         matched = re.match(self.measurement_name_regex, pathStr)
         if bool(matched):
             m = Measurement()
+            if not os.path.exists(descriptionStr):
+                print("No description found for measurement")
+                return None
             with open(descriptionStr) as json_file:
                 jsonDict = json.load(json_file)
                 m.fromJson(jsonDict)         
@@ -181,7 +184,7 @@ class MeasurementFileSystem:
         measurementPath = self.__measurementToPath(m)
         os.remove(measurementPath)
         #удалить json?
-        descriptionStr = os.path.splitext(measurementPath) + ".json"
+        descriptionStr = os.path.splitext(measurementPath)[0] + ".json"
         os.remove(descriptionStr)
 
     def appendRowToCsv(self, filename, listOfElements):

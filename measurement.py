@@ -19,7 +19,7 @@ class Measurement:
         self.description = description
         self.type = type
         self.id = -1 if id is None else id
-        self.calibrationId = calibrationId
+        self.calibrationId = -1 if calibrationId is None else calibrationId
 
     def setId(self, id):
         self.id = id

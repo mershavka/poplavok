@@ -24,6 +24,15 @@ class PyroMeasurementServer(object):
     def interruptMeasurement(self):
         return self.ms.interruptMeasurement()
 
+    def chooseMeasurement(self, id):
+        return self.ms.chooseMeasurement(id)
+
+    def getCurrentMeasurement(self):
+        return self.ms.getCurrentMeasurement()
+
+    def deleteCurrentMeasurement(self):
+        return self.ms.deleteCurrentMeasurement()
+
     def getServerStatus(self):
         return self.ms.getServerStatus()
 

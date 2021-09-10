@@ -59,6 +59,10 @@ class MeasurementServer:
             
         ms.fs.writeMeasurementToFile(ms.currentMeasurement, dataDict)
 
+    def _measurementStopStatus(sender):
+        ms = MeasurementServer()
+        ms.status = Status.NO
+
     def __init__(self):
         if self.initialized:
             return
@@ -74,6 +78,7 @@ class MeasurementServer:
         self.worker = MeasurementModule()
         self.worker.setReadFunc(self.__readFromDevice)
         self.worker.setWriteFunc(self.__writeToMeasureFile)
+        self.worker.setStopFunc(self._measurementStopStatus)
 
         # Status variables
         self.status = Status.NO
@@ -143,23 +148,29 @@ class MeasurementServer:
     def chooseMeasurement(self, id):
         if self.currentSeries is None:
             print("Select a Series before choosing a measurement")
-            return -1
+            return None
         self.currentMeasurement = self.currentSeries.getMesurementById(id)
         if self.currentMeasurement is None:
             print("No measurement with id {} in the Series with id {}".format(id, self.currentSeries.id))
-            return -1
-        return 0
+            return None
+        return self.currentMeasurement
 
     def deleteCurrentMeasurement(self):
         if self.status in [Status.COMMON_MEASUREMENT, Status.CALIBRATION, Status.FIELD_EXPERIMENT]:
             print('Measurement is underway, stop it before deleting')
             return -1
-        m = self.currentSeries.popMeasurement(self.currentMeasurement.id)
-        self.fs.deleteMeasurement(m)
-        return 0
+        if self.currentMeasurement:
+            m = self.currentSeries.popMeasurement(self.currentMeasurement.id)
+            self.fs.deleteMeasurement(m)
+            return 0
+        print("Current measurement not found")
+        return -1
 
     def getCurrentSeries(self):
         return self.currentSeries
+
+    def getCurrentMeasurement(self):
+        return self.currentMeasurement
 
     def getServerStatus(self):
         return self.status
