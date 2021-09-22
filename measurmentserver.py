@@ -115,9 +115,8 @@ class MeasurementServer:
             print("Choose a Series before loading reference data")
             self.status = Status.ERROR
             return
-        r = ReferenceData(seriesId=self.currentSeries.id, loadingDate=dt.datetime.now())
-        self.currentSeries.referenceData = r
         self.fs.addReferenceDataToSeries(self.currentSeries, path)
+        return self.currentSeries.referenceData
 
 
     def runMeasurement(self, type, duration, periodicity, description):
@@ -189,9 +188,11 @@ class MeasurementServer:
     def chooseCalibration(self, id):
         if id in self.calibrations:
             self.currentCalibration = self.calibrations[id]
+            return self.currentCalibration
         else:	
             self.status = Status.ERROR
             print("No calibration with id={}".format(id))
+            return None
 
     def startCalibration(self, seriesIdStep1, seriesIdStep2):
         pass
@@ -199,6 +200,7 @@ class MeasurementServer:
     def selectCH4Model(self, id):
         if not self.currentCalibration:
             print("Choose Calibration before selecting model")
+            return None
         #выбрать конкретную модель
     
     def gotIt(self):

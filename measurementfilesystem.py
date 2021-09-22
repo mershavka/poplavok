@@ -175,7 +175,7 @@ class MeasurementFileSystem:
         if not os.path.exists(seriesPath):
             return
         loadingDate = datetime.datetime.now()
-        newReferenceDataPath = seriesPath + "/referenceData_loaded{}.csv".format(s.loadingDate.strftime(timeformat))
+        newReferenceDataPath = seriesPath + "/referenceData_loaded{}.csv".format(loadingDate.strftime(timeformat))
         resultPath = copy(path, newReferenceDataPath)
         s.referenceData = ReferenceData(seriesId = s.id, loadingDate=loadingDate)
         return s.referenceData

@@ -2,6 +2,7 @@ from enums import MeasureType
 from measurmentserver import MeasurementServer
 from measurement import Measurement
 from series import Series
+from referenceData import ReferenceData
 import Pyro4
 import Pyro4.util
 
@@ -17,6 +18,9 @@ class PyroMeasurementServer(object):
     
     def chooseSeries(self, seriesId):
         return self.ms.chooseSeries(seriesId)
+
+    def addReferenceDataToSeries(self, path):
+        return self.ms.addReferenceDataToSeries(path)
 
     def runMeasurement(self, type, duration, periodicity, description):
         return self.ms.runMeasurement(MeasureType(type), duration, periodicity, description)
@@ -42,13 +46,22 @@ class PyroMeasurementServer(object):
     def getSeriesList(self):
         return self.ms.getSeriesList()
 
+    def startCalibration(self, seriesIdStep1, seriesIdStep2):
+        return self.ms.startCalibration(seriesIdStep1, seriesIdStep2)
+
+    def selectCH4Model(self, id):
+        return self.ms.selectCH4Model(id)
+
     def helloString(self):
         return "Hello!"
 
 Pyro4.util.SerializerBase.register_class_to_dict(Series, Series.toJson)
 Pyro4.util.SerializerBase.register_class_to_dict(Measurement, Measurement.toJson)
+Pyro4.util.SerializerBase.register_class_to_dict(ReferenceData, ReferenceData.toJson)
+
 Pyro4.util.SerializerBase.register_dict_to_class(Series, Series.fromJson)
 Pyro4.util.SerializerBase.register_dict_to_class(Measurement, Measurement.fromJson)
+Pyro4.util.SerializerBase.register_dict_to_class(ReferenceData, ReferenceData.fromJson)
 
 Pyro4.Daemon.serveSimple(
             {
