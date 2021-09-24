@@ -4,7 +4,6 @@ from series import Series
 from typing import Optional
 import json
 
-
 class Calibration:
     def __init__(self, id, series1StepId, series2StepId, date, description, models, selectedModel):
         self.id = id
@@ -15,7 +14,7 @@ class Calibration:
         self.models = models
         self.selectedModel = selectedModel
 
-    def toJson(self):
+    def toDict(self):
         data = {
             'id': self.id,
             'series1StepId': self.series1StepId,
@@ -23,7 +22,14 @@ class Calibration:
             'date': self.date.strftime(timeformat),
             'description': self.description
         }
-        return json.dumps(data, indent=4)
+        return data
 
-        def fromJson(self, jsonString):
-            pass
+    def toJsonString(self):
+        return json.dumps(self.toDict(), indent=4)
+
+    
+    def fromJson(self, jsonDict):
+        self.id = int(jsonDict['id'])
+        self.date = dt.strptime(jsonDict['date'], timeformat)
+        self.type = MeasureType(int(jsonDict['type']))
+        self.description = jsonDict['description']

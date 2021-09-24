@@ -55,9 +55,9 @@ class PyroMeasurementServer(object):
     def helloString(self):
         return "Hello!"
 
-Pyro4.util.SerializerBase.register_class_to_dict(Series, Series.toJson)
-Pyro4.util.SerializerBase.register_class_to_dict(Measurement, Measurement.toJson)
-Pyro4.util.SerializerBase.register_class_to_dict(ReferenceData, ReferenceData.toJson)
+Pyro4.util.SerializerBase.register_class_to_dict(Series, Series.toJsonString)
+Pyro4.util.SerializerBase.register_class_to_dict(Measurement, Measurement.toJsonString)
+Pyro4.util.SerializerBase.register_class_to_dict(ReferenceData, ReferenceData.toJsonString)
 
 Pyro4.util.SerializerBase.register_dict_to_class(Series, Series.fromJson)
 Pyro4.util.SerializerBase.register_dict_to_class(Measurement, Measurement.fromJson)
