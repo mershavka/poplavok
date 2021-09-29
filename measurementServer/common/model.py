@@ -1,7 +1,8 @@
+# from enums import MeasureType, timeformat
+# from series import Series
+
 from operator import index
-from enums import MeasureType, timeformat
 from datetime import datetime as dt
-from series import Series
 from typing import Optional
 import json
 

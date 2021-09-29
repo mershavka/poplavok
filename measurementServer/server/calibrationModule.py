@@ -1,7 +1,8 @@
 # from typing import final
+from .models import ModelFirst, ModelSecond
+
 import pandas
 import numpy as np
-from models import ModelFirst, ModelSecond
 import matplotlib.pyplot as plt
 import datetime as dt
 import csv

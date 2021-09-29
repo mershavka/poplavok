@@ -1,4 +1,5 @@
-from enums import MeasureType, timeformat
+from .enums import timeformat
+
 from datetime import datetime as dt
 from typing import Optional
 

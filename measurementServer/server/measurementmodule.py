@@ -1,6 +1,7 @@
+from ..common import Measurement
+
 from threading import Thread, Event
 import time
-from measurement import Measurement
 
 
 class MeasurementModule:

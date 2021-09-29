@@ -1,5 +1,7 @@
 from enum import Enum
 
+__all__ = ['timeformat', 'Status', 'MeasureType']
+
 timeformat = "%Y%m%d%H%M%S"
 class Status(Enum):
     NO 					= (0, "Nothing is happening")

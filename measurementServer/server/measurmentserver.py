@@ -1,15 +1,11 @@
-from referenceData import ReferenceData
-from measurement import Measurement
-from measurementmodule import MeasurementModule
+from ..common import *
 # from driver import Driver
-import datetime as dt
-from series import Series
 # from calibration import CalibrationModule
-from measurementfilesystem import MeasurementFileSystem
-from enums import MeasureType, Status
+from .measurementfilesystem import MeasurementFileSystem
+import datetime as dt
 
-# EXEC_DIR = "/home/pi/Documents/Repos/poplavok-algorithm/MServer"
-EXEC_DIR = "C:/Users/mershavka/Repositories/poplavok-algorithm/sandbox"
+EXEC_DIR = "/home/pi/Documents/Repos/poplavok-algorithm/MServer"
+# EXEC_DIR = "C:/Users/mershavka/Repositories/poplavok-algorithm/sandbox"
 
 class Error(Exception):
     """Base class for other exceptions"""

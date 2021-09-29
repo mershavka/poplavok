@@ -5,6 +5,7 @@ from series import Series
 from referenceData import ReferenceData
 import Pyro4
 import Pyro4.util
+import Pyro4.naming
 
 @Pyro4.expose
 @Pyro4.behavior(instance_mode="single")
