@@ -1,0 +1,64 @@
+{% load static %}<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>{% block title %}POPLAVOK{% endblock %}</title>
+    <!-- <link rel="stylesheet" type="text/css" href="{% static 'css/app.css' %}"> -->
+    {% block stylesheet %}{% endblock %}
+  </head>
+  <body>
+    <header>
+    </header>
+    <main>
+        <table>
+        <tr>
+            <th>Date Time</th>
+            <td id="server_time">{{server_time}}</td>
+            </tr>
+            <tr>
+            <th>Status</th>
+            <td id="device_status">{{device_status}}</td>
+            </tr>
+            <tr>
+            <th>Temperature</th>
+            <td id="temperature">{{temperature}}</td>
+            </tr>
+            <tr>
+            <th>Pressure</th>
+            <td id="pressure">{{pressure}}</td>
+            </tr>
+            <tr>
+            <th>Humidity</th>
+            <td id="humidity">{{humidity}}</td>
+
+        </tr>
+        </table>
+
+        {% block content %}
+        {% endblock %}
+
+    </main>
+    <footer>
+    </footer>
+    <script src={% static 'jquery-3.6.0.min.js' %}></script>
+    <script>
+        function refresh() {
+            $.ajax({
+                url: "{% url 'index_data' %}",
+                success: function(data) {
+                    $('#server_time').html(data['server_time']);
+                    $('#temperature').html(data['temperature']);
+                    $('#pressure').html(data['pressure']);
+                    $('#humidity').html(data['humidity']);
+                    $('#device_status').html(data['device_status']);
+                }
+            });
+        };
+        $(document).ready(function ($) {
+            refresh();
+            setInterval(refresh, 1000);
+        });
+    </script>
+    {% block javascript %}{% endblock %}
+  </body>
+</html>
