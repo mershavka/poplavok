@@ -44,12 +44,12 @@ class Series:
             return self.measurements[id]
         return None
 
-    def toJson(self):
+    def toDict(self):
         data = {'id': self.id, 'date': self.date.strftime(timeformat), 'type': self.type.value, 'description': self.description}        
         return data
     
     def toJsonString(self):        
-        return json.dumps(self.toJson(), indent=4)
+        return json.dumps(self.toDict(), indent=4)
     
     def fromJson(self, jsonDict):
         self.id = int(jsonDict['id'])

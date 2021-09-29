@@ -25,12 +25,12 @@ class Measurement:
     def setId(self, id):
         self.id = id
 
-    def toJson(self):
+    def toDict(self):
         data = {'id': self.id, 'seriesId': self.seriesId, 'calibrationId': self.calibrationId,'date': self.date.strftime(timeformat), 'type': self.type.value, 'duration': self.duration, 'periodicity': self.periodicity,'description': self.description}
         return data
     
     def toJsonString(self):
-        return json.dumps(self.toJson(), indent=4)
+        return json.dumps(self.toDict(), indent=4)
 
     def fromJson(self, jsonDict):
         self.id = int(jsonDict["id"])
