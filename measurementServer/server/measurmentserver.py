@@ -2,6 +2,7 @@ from ..common import *
 # from driver import Driver
 # from calibration import CalibrationModule
 from .measurementfilesystem import MeasurementFileSystem
+from .measurementmodule import MeasurementModule
 import datetime as dt
 
 EXEC_DIR = "/home/pi/Documents/Repos/poplavok-algorithm/MServer"

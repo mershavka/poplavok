@@ -1,0 +1,41 @@
+# from measurementServer.common import *
+import Pyro4
+import Pyro4.util
+
+import sys
+from .pyroMeasurementInterface import PyroMeasurementInterface
+
+Pyro4.config.REQUIRE_EXPOSE = False
+
+class PyroMeasurementClient(PyroMeasurementInterface):
+
+    __proxy_name = "PYRONAME:PyroMeasurementServer"
+
+    def __init__(self) -> None:
+        sys.excepthook = Pyro4.util.excepthook
+        self.ms = Pyro4.Proxy(self.__proxy_name)    # use name server object lookup uri shortcut
+        super().__init__(self.ms)
+
+
+
+
+
+
+
+
+
+
+
+
+
+# print(pyro_measurement_server.getSeriesList())
+# print(pyro_measurement_server.createSeries("Pyro test", MeasureType.COMMON))
+# print(pyro_measurement_server.chooseSeries(1))
+# print(pyro_measurement_server.addReferenceDataToSeries("C:/Users/mershavka/Repositories/poplavok-algorithm/sandbox/exp_2021_06_23_185934.csv"))
+# print(pyro_measurement_server.getCurrentSeries())
+# print(pyro_measurement_server.chooseMeasurement(2))
+# print(pyro_measurement_server.getCurrentMeasurement())
+# print(pyro_measurement_server.runMeasurement(MeasureType.COMMON, 5, 1, "Pyro test"))
+# time.sleep(7)
+# print(pyro_measurement_server.getServerStatus())
+# print(pyro_measurement_server.deleteCurrentMeasurement())
