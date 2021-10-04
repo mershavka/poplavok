@@ -1,4 +1,5 @@
 from ..common import *
+from ..common.enums import *
 
 import os
 import re
@@ -18,7 +19,12 @@ class MeasurementFileSystem:
         self.path = path
         self.header = None
         if not os.path.exists(self.path):
-            os.mkdir(self.path)
+            try:
+                os.mkdir(self.path)
+            except FileNotFoundError:
+                self.path = os.getenv('HOME') + '/Poplavok'
+                if not os.path.exists(self.path):
+                    os.mkdir(self.path)
     
     def __pathToMeasure(self, path):
         pathStr = os.path.basename(os.path.normpath(path))

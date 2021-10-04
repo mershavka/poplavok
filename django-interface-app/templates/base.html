@@ -1,9 +1,25 @@
 {% load static %}<!doctype html>
 <html>
   <head>
-    <meta charset="utf-8">
+    <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}POPLAVOK{% endblock %}</title>
     <!-- <link rel="stylesheet" type="text/css" href="{% static 'css/app.css' %}"> -->
+    <style>
+    table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    width: 100%;
+    border: 1px solid #ddd;
+    }
+
+    th, td {
+    text-align: left;
+    padding: 10px;
+    }
+    tr:nth-child(even) {
+    background-color: #f2f2f2;
+    }
+    </style>
     {% block stylesheet %}{% endblock %}
   </head>
   <body>
@@ -18,6 +34,9 @@
             <tr>
             <th>Status</th>
             <td id="device_status">{{device_status}}</td>
+            </tr>
+            <th>Current Series</th>
+            <td id="current_series"></td>
             </tr>
             <tr>
             <th>Temperature</th>
@@ -36,6 +55,8 @@
 
         {% block content %}
         {% endblock %}
+        
+    </table>
 
     </main>
     <footer>
@@ -47,6 +68,7 @@
                 url: "{% url 'index_data' %}",
                 success: function(data) {
                     $('#server_time').html(data['server_time']);
+                    $('#current_series').html(data['current_series']['id']);
                     $('#temperature').html(data['temperature']);
                     $('#pressure').html(data['pressure']);
                     $('#humidity').html(data['humidity']);

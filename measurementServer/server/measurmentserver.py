@@ -97,7 +97,7 @@ class MeasurementServer:
             self.fs.addSeries(new_series)
             self.series[new_series.id] = new_series
             self.currentSeries = new_series
-        return new_series.toJson()
+        return new_series.toJsonString()
 
     def chooseSeries(self, seriesId):
         if seriesId in self.series.keys():
@@ -116,7 +116,8 @@ class MeasurementServer:
         return self.currentSeries.referenceData
 
 
-    def runMeasurement(self, type, duration, periodicity, description):
+    def runMeasurement(self, duration, periodicity, description):
+        type = self.currentSeries.type
         if not self.currentSeries:
             self.status = Status.ERROR
             print('Choose a series before measuring')

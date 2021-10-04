@@ -14,8 +14,8 @@ class PyroMeasurementInterface(object):
     def addReferenceDataToSeries(self, path):
         return self.ms.addReferenceDataToSeries(path)
 
-    def runMeasurement(self, type, duration, periodicity, description):
-        return self.ms.runMeasurement(MeasureType(type), duration, periodicity, description)
+    def runMeasurement(self, duration, periodicity, description):
+        return self.ms.runMeasurement(duration, periodicity, description)
 
     def interruptMeasurement(self):
         return self.ms.interruptMeasurement()

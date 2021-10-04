@@ -1,4 +1,4 @@
-# from measurementServer.common import *
+from measurementServer.common import *
 import Pyro4
 import Pyro4.util
 
@@ -6,6 +6,14 @@ import sys
 from .pyroMeasurementInterface import PyroMeasurementInterface
 
 Pyro4.config.REQUIRE_EXPOSE = False
+
+Pyro4.util.SerializerBase.register_class_to_dict(Series, Series.toDict)
+Pyro4.util.SerializerBase.register_class_to_dict(Measurement, Measurement.toDict)
+Pyro4.util.SerializerBase.register_class_to_dict(ReferenceData, ReferenceData.toDict)
+
+Pyro4.util.SerializerBase.register_dict_to_class(Series, Series.fromJson)
+Pyro4.util.SerializerBase.register_dict_to_class(Measurement, Measurement.fromJson)
+Pyro4.util.SerializerBase.register_dict_to_class(ReferenceData, ReferenceData.fromJson)
 
 class PyroMeasurementClient(PyroMeasurementInterface):
 

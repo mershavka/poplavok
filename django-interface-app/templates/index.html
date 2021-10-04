@@ -1,16 +1,25 @@
 {% extends 'base.html' %}
 
 {% block content %}
-
+<p>
 <form action='startExperiment' method='GET'>
     <button type="submit">Start Experiment</button>
 </form>
+</p>
 
+<p>
 <form action='stopExperiment' method='GET'>
     <button type="submit">Stop Experiment</button>
 </form>
-
+</p>
+<p>
 <form action='createSeries' method='GET'>
     <button type="submit">Create Series</button>
 </form>
+</p>
+<p>
+<form action='chooseSeries' method='GET'>
+    <button type="submit">Chooes Series</button>
+</form>
+</p>
 {% endblock %}

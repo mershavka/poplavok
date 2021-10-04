@@ -22,6 +22,14 @@ class MeasureType(Enum):
     EXPERIMENT = 1
     CALIBRATION_1 = 2
     CALIBRATION_2 = 3
+
+    LIST = (
+        (COMMON, 'Common'),
+        (EXPERIMENT, 'Experiment'),
+        (CALIBRATION_1, 'Calibration 1'),
+        (CALIBRATION_2, 'Calibration 2')
+    )
+
     def toStatus(type):
         if type.value not in [item.value for item in MeasureType]:
             return None
