@@ -1,11 +1,22 @@
-{% extends 'base.html' %}
+{% extends 'base_pretty.html' %}
 
 {% block content %}
-<form action="" method="post">
+<div class="w3-container">
+    <hr>
+    <div class="w3-center">
+    <h2>Создать новую серию измерений</h2>
+<form class="w3-center" action="" method="post">
     {% csrf_token %}
-    <table>
+    <table class="w3-table w3-center">
+    <div class="w3-section"> 
     {{ form.as_table }}
+    </div>
     </table>
-    <input type="submit" value="Submit" />
+    <br>
+    <input class="w3-btn w3-theme w3-padding" type="submit" value="Создать" />
+ 
 </form>
+</div>
+</div>   
+<br>
 {% endblock %}

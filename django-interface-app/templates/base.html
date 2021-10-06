@@ -27,30 +27,29 @@
     </header>
     <main>
         <table>
-        <tr>
-            <th>Date Time</th>
-            <td id="server_time">{{server_time}}</td>
+            <tr>
+                <th>Date Time</th>
+                <td id="server_time">{{server_time}}</td>
             </tr>
             <tr>
-            <th>Status</th>
-            <td id="device_status">{{device_status}}</td>
+                <th>Status</th>
+                <td id="device_status">{{device_status}}</td>
             </tr>
-            <th>Current Series</th>
-            <td id="current_series"></td>
-            </tr>
-            <tr>
-            <th>Temperature</th>
-            <td id="temperature">{{temperature}}</td>
+                <th>Current Series</th>
+                <td id="current_series"></td>
             </tr>
             <tr>
-            <th>Pressure</th>
-            <td id="pressure">{{pressure}}</td>
+                <th>Temperature</th>
+                <td id="temperature">{{temperature}}</td>
             </tr>
             <tr>
-            <th>Humidity</th>
-            <td id="humidity">{{humidity}}</td>
-
-        </tr>
+                <th>Pressure</th>
+                <td id="pressure">{{pressure}}</td>
+            </tr>
+            <tr>
+                <th>Humidity</th>
+                <td id="humidity">{{humidity}}</td>
+            </tr>
         </table>
 
         {% block content %}
@@ -68,11 +67,12 @@
                 url: "{% url 'index_data' %}",
                 success: function(data) {
                     $('#server_time').html(data['server_time']);
-                    $('#current_series').html(data['current_series']['id']);
+                    $('#current_series').html(data['current_series']);
                     $('#temperature').html(data['temperature']);
                     $('#pressure').html(data['pressure']);
                     $('#humidity').html(data['humidity']);
                     $('#device_status').html(data['device_status']);
+                    $('#server_time').html()
                 }
             });
         };

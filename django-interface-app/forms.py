@@ -5,8 +5,8 @@ from .models import MeasurmentSeries, Measurement
 from measurementServer.common import MeasureType
 
 class CreateSeriesForm(forms.Form):
-    name=CharField(max_length=50)
-    type=ChoiceField(choices=((0, 'Common'), (1, 'Experiment')))
+    name=CharField(max_length=50, label="Описание")
+    type=ChoiceField(label="Тип серии", choices=MeasureType.getList())
 
 
 class CreateMeasurementSeriesForm(forms.ModelForm):

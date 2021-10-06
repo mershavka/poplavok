@@ -38,6 +38,9 @@ class PyroMeasurementInterface(object):
     def getSeriesList(self):
         return self.ms.getSeriesList()
 
+    def getMeasurementsList(self, seriesId):
+        return self.ms.getMeasurementsList(seriesId)
+
     def startCalibration(self, seriesIdStep1, seriesIdStep2):
         return self.ms.startCalibration(seriesIdStep1, seriesIdStep2)
 

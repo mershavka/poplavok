@@ -7,6 +7,7 @@ urlpatterns = [
     path('startExperiment', views.startExperiment),
     path('stopExperiment', views.stopExperiment),
     path('createSeries', views.createSeries),
-    path('seriesList', views.seriesList),
-    path('index_data', views.index_data, name='index_data'),
+    path('series', views.series),
+    path('getStatus', views.getStatus, name='getStatus'),
+    path('chooseSeries/<int:series_id>', views.chooseSeries)
 ]

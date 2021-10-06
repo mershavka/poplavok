@@ -177,6 +177,11 @@ class MeasurementServer:
     
     def getSeriesDict(self):
         return self.series
+
+    def getMeasurementsList(self, seriesId):
+        s = self.series[seriesId]
+        m = s.getMeasurementsDict()
+        return [*m.values()]
     
     def getStatus(self):
         if not self.worker.isWorking():

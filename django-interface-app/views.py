@@ -2,8 +2,10 @@ from Pyro4.util import reset_exposed_members
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, JsonResponse
 from django.views.generic import TemplateView
+from measurementServer.common.enums import Status
 from .forms import CreateSeriesForm, StartExperimentForm
 from django.urls import reverse
+from django.shortcuts import redirect
 from datetime import datetime
 from measurementServer.pyro4iface import PyroMeasurementClient
 
@@ -13,30 +15,31 @@ pmc = PyroMeasurementClient()
 # Create your views here.
 
 def index(request):
-    seriesListString = pmc.getSeriesList()
-    return render(request, 'index.html', {'seriesList' : seriesListString})
+    currentSeries = pmc.getCurrentSeries()
+    measurements = []
+    if not currentSeries is None:
+        measurements = pmc.getMeasurementsList(currentSeries['id'])
+    return render(request, 'index.html', {'measurements' : measurements})
 
-def index_data(request):
+def getStatus(request):
     # here you return whatever data you need updated in your template
     now = datetime.now()
     server_time = dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
 
     # device_status = 'init'
-    device_status = pmc.getServerStatus()
-    current_series = pmc.getCurrentSeries()
-    pressure = 0
-    temperature = 20
-    humidity = 40
-    methane = 0
+    deviceStatus = pmc.getServerStatus()  
+    deviceStatusString = deviceStatus[1]
+    
+    currentSeriesString = pmc.getCurrentSeries()    
+    if (currentSeriesString is None):
+        currentSeriesString = "Серия не выбрана"
+    else:
+        currentSeriesString = str(currentSeriesString['id'])
 
     return JsonResponse({
         'server_time'   : server_time,
-        'device_status' : device_status,
-        'current_series': current_series,
-        'pressure'      : pressure,
-        'temperature'   : temperature,
-        'humidity'      : humidity,
-        'methane'       : methane,
+        'device_status' : deviceStatusString,
+        'current_series': currentSeriesString
     })
 
 def stopExperiment(request):
@@ -56,12 +59,19 @@ def createSeries(request):
         form  = CreateSeriesForm()
     return render(request, 'createSeries.html', {'form': form})
 
-def seriesList(request):
-    seriesListString = pmc.getSeriesList()
-    
-    return render(request, 'seriesList.html', {'seriesList' : seriesListString})
+def series(request):
+    seriesList = pmc.getSeriesList()    
+    return render(request, 'series.html', {'series' : seriesList})
+
+def chooseSeries(request, series_id=0):
+    if series_id != 0:
+        pmc.chooseSeries(series_id) 
+    return redirect('/series')
 
 def startExperiment(request):
+    currentSeries = pmc.getCurrentSeries()
+    if currentSeries is None:
+        return HttpResponseRedirect(reverse('index'))
     if request.method == 'POST':
         form = StartExperimentForm(request.POST)
 

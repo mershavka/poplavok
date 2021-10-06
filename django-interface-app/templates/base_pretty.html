@@ -1,0 +1,124 @@
+{% load static %}<!DOCTYPE html>
+<html>
+<title>{% block title %}Поплавок{% endblock %}</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-black.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css">
+<body>
+
+<!-- Side Navigation -->
+<nav class="w3-sidebar w3-bar-block w3-card w3-animate-left w3-center" style="display:none" id="mySidebar">
+  <h1 class="w3-xxxlarge w3-text-theme">Меню</h1>
+  <button class="w3-bar-item w3-button" onclick="w3_close()">Закрыть <i class="fa fa-remove"></i></button>
+  <a href="./" class="w3-bar-item w3-button">Статус</a>
+  <a href="./series" class="w3-bar-item w3-button">Управление сериями</a>
+  <!-- <a href="#" class="w3-bar-item w3-button">Link 3</a> -->
+  <!-- <a href="#" class="w3-bar-item w3-button">Link 4</a> -->
+</nav>
+
+<!-- Header -->
+<header class="w3-container w3-theme w3-padding" id="myHeader">
+  <i onclick="w3_open()" class="fa fa-bars w3-xlarge w3-button w3-theme"></i>
+  <br> 
+  <div class="w3-left w3-half">
+    <table class="w3-table">
+      <tr>
+        <th>Температура :</th>
+        <td id="temperature">32</td>
+      </tr>
+      
+      <tr>
+        <th>Давление :</th>
+        <td id="pressure">100</td>
+      </tr>
+  
+      </tr>
+        <th>Влажность :</th>
+        <td id="humidity">10</td>
+      </tr>
+      </table> 
+      </div> 
+  <div class="w3-right w3-half">
+  <table class="w3-table">
+    <tr>
+      <th style="white-space: nowrap;">Время на сервере :</th>
+      <td id="server_time">12:05:03</td>
+    </tr>
+    
+    <tr>
+      <th style="white-space: nowrap;">Текущее состояние :</th>
+      <td id="device_status">Ожидание</td>
+    </tr>
+
+    </tr>
+      <th>Текущая серия :</th>
+      <td id="current_series">Серия 12</td>
+    </tr>
+    </table>  
+  </div>
+  <!-- <div class="w3-center">
+  <h4>Система измерений Поплавок</h4>
+  <h1 class="w3-xxxlarge w3-animate-bottom">BUILT WITH W3.CSS</h1>
+    <div class="w3-padding-32">
+      <button class="w3-btn w3-xlarge w3-dark-grey w3-hover-light-grey" onclick="document.getElementById('id01').style.display='block'" style="font-weight:900;">LEARN W3.CSS</button>
+    </div>
+  </div> -->
+</header>
+
+<!-- Modal -->
+<div id="id01" class="w3-modal">
+    <div class="w3-modal-content w3-card-4 w3-animate-top">
+      <header class="w3-container w3-theme-l1"> 
+        <span onclick="document.getElementById('id01').style.display='none'"
+        class="w3-button w3-display-topright">×</span>
+        <h4>Oh snap! We just showed you a modal..</h4>
+        <h5>Because we can <i class="fa fa-smile-o"></i></h5>
+      </header>
+      <div class="w3-padding">
+        <p>Cool huh? Ok, enough teasing around..</p>
+        <p>Go to our <a class="w3-btn" href="/w3css/default.asp">W3.CSS Tutorial</a> to learn more!</p>
+      </div>
+      <footer class="w3-container w3-theme-l1">
+        <p>Modal footer</p>
+      </footer>
+    </div>
+</div>
+{% block content %}
+{% endblock %}
+<!-- Footer -->
+<!-- <footer class="w3-container w3-theme-dark w3-padding-16">
+  <h3>Footer</h3>
+  <p>Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank">w3.css</a></p>
+  <div style="position:relative;bottom:55px;" class="w3-tooltip w3-right">
+    <span class="w3-text w3-theme-light w3-padding">Go To Top</span>    
+    <a class="w3-text-white" href="#myHeader"><span class="w3-xlarge">
+    <i class="fa fa-chevron-circle-up"></i></span></a>
+  </div>
+  <p>Remember to check out our  <a href="w3css_references.asp" class="w3-btn w3-theme-light" target="_blank">W3.CSS Reference</a></p>
+</footer> -->
+
+<!-- Script for Sidebar, Tabs, Accordions, Progress bars and slideshows -->
+<script src={% static 'w3_functions.js' %}></script>
+<script src={% static 'jquery-3.6.0.min.js' %}></script>
+
+<script>
+  function refresh() {
+      $.ajax({
+          url: "{% url 'getStatus' %}",
+          success: function(data) {
+              $('#server_time').html(data['server_time']);
+              $('#current_series').html(data['current_series']);
+              $('#device_status').html(data['device_status']);
+          }
+      });
+  };
+  $(document).ready(function ($) {
+      refresh();
+      setInterval(refresh, 1000);
+  });
+</script>
+{% block javascript %}{% endblock %}
+</body>
+</html>

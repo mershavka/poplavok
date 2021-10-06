@@ -1,13 +1,48 @@
-{% extends 'base.html' %}
+{% extends 'base_pretty.html' %}
 
 {% block content %}
-<p>
+<!-- <p>
 <form action='startExperiment' method='GET'>
     <button type="submit">Start Experiment</button>
 </form>
-</p>
+</p> -->
+<br><br>
+<div class="w3-center w3-row-padding">
+    <a class="w3-button w3-border w3-third w3-theme" href="./startExperiment">Запустить эксперимент</a>
+    <a class="w3-button w3-border w3-third w3-theme" href="./stopExperiment">Остановить эксперимент</a>
+    <a class="w3-button w3-border w3-third w3-theme" href="./createSeries">Создать серию</a>
+</div>
+{% if measurements|length > 0 %}
+<div class="w3-container">
+    <hr>
+    <div class="w3-center">
+      <h2>Измерения в текущей серии</h2>
+      <!-- <p w3-class="w3-large">Don't worry. W3.CSS takes care of your tables.</p> -->
+    </div>
+  <div class="w3-responsive w3-card-4">
+  <table class="w3-table w3-striped w3-bordered">
+  <thead>
+  <tr class="w3-theme">
+    <th>ИД</th>
+    <th>Описание</th>
+    <th>Дата</th>
+  </tr>
+  </thead>
+  <tbody>
+  {% for m in measurements %}
+  <tr>
+    <td>{{m.id}}</td>
+    <td>{{m.description}}</td>
+    <td>{{m.date}}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+  </table>
+  </div>
+{% endif %}
+<br><br>
 
-<p>
+<!-- <p>
 <form action='stopExperiment' method='GET'>
     <button type="submit">Stop Experiment</button>
 </form>
@@ -21,5 +56,5 @@
 <form action='chooseSeries' method='GET'>
     <button type="submit">Chooes Series</button>
 </form>
-</p>
+</p> -->
 {% endblock %}

@@ -171,7 +171,12 @@ class MeasurementFileSystem:
         modelPath = self.__modelToPath(model)
         pass
 
+    def saveServerState(self, ms):
+        pass
 
+    def loadServerState(self, ms):
+        pass
+    
     def addReferenceDataToSeries(self, s, path):
         seriesPath = self.__seriesToPath(s)
         if not os.path.exists(seriesPath):

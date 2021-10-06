@@ -1,0 +1,39 @@
+{% extends 'base_pretty.html' %}
+
+{% block content %}
+    <!-- {% csrf_token %} -->
+
+<div class="w3-container">
+    <hr>
+    <div class="w3-center">
+      <h2>Список серий измерений</h2>
+      <!-- <p w3-class="w3-large">Don't worry. W3.CSS takes care of your tables.</p> -->
+      <div class="w3-left">
+        <a class="w3-button w3-theme" onclick="seriesChooseStart()">Выбрать серию для измерений</a>
+      </div>
+      <br><br>
+    </div>
+  <div class="w3-responsive w3-card-4">
+  <table id="seriesTable" class="w3-table w3-striped w3-bordered">
+  <thead>
+  <tr class="w3-theme">
+    <th>ИД</th>
+    <th>Описание</th>
+    <th>Кол-во измерений</th>
+    <th>Дата</th>
+  </tr>
+  </thead>
+  <tbody>
+  {% for s in series %}
+  <tr id="{{s.id}}">
+    <td><a href="./series{{s.id}}">{{s.id}}</a></td>
+    <td>{{s.description}}</td>
+    <th>{{s.date}}</th>
+    <td>{{s.date}}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+  </table>
+  </div>
+<br><br>
+{% endblock %}
