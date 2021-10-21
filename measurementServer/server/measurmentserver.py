@@ -200,11 +200,22 @@ class MeasurementServer:
     def startCalibration(self, seriesIdStep1, seriesIdStep2):
         pass
 
+    def getCurrentCalibrationModels(self):
+        if self.currentCalibration:
+            return self.currentCalibration.models
+        print("Choose Calibration before getting models")
+        return None
+
     def selectCH4Model(self, id):
         if not self.currentCalibration:
             print("Choose Calibration before selecting model")
             return None
-        #выбрать конкретную модель
-    
+        if id in self.currentCalibration.models:
+            self.currentCalibration.selectedModel = self.currentCalibration.models[id]
+            return self.currentCalibration.selectedModel
+        self.status = Status.ERROR
+        print("No model with id={} in current calibration with id={}".format(id, self.currentCalibration.id))
+        return None
+
     def gotIt(self):
         self.status = Status.NO
