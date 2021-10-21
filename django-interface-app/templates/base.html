@@ -64,15 +64,14 @@
     <script>
         function refresh() {
             $.ajax({
-                url: "{% url 'index_data' %}",
+                url: "{% url 'getStatus' %}",
                 success: function(data) {
                     $('#server_time').html(data['server_time']);
                     $('#current_series').html(data['current_series']);
-                    $('#temperature').html(data['temperature']);
-                    $('#pressure').html(data['pressure']);
-                    $('#humidity').html(data['humidity']);
+                    $('#temperature').html(data['lastTemp']);
+                    $('#pressure').html(data['lastPres']);
+                    $('#humidity').html(data['lastHum']);
                     $('#device_status').html(data['device_status']);
-                    $('#server_time').html()
                 }
             });
         };

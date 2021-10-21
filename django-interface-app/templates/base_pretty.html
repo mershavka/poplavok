@@ -25,6 +25,11 @@
   <div class="w3-left w3-half">
     <table class="w3-table">
       <tr>
+        <th>Vremya poslednego izmereniya:</th>
+        <td id="lastTime">32</td>
+      </tr>
+
+      <tr>
         <th>Температура :</th>
         <td id="temperature">32</td>
       </tr>
@@ -111,6 +116,10 @@
               $('#server_time').html(data['server_time']);
               $('#current_series').html(data['current_series']);
               $('#device_status').html(data['device_status']);
+              $('#temperature').html(data['lastTemp']);
+              $('#pressure').html(data['lastPres']);
+              $('#humidity').html(data['lastHum']);
+              $('#lastTime').html(data['lastTime']);
           }
       });
   };

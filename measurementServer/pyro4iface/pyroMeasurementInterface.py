@@ -46,6 +46,9 @@ class PyroMeasurementInterface(object):
 
     def selectCH4Model(self, id):
         return self.ms.selectCH4Model(id)
+    
+    def getLastData(self):
+        return self.ms.getLastData()
 
     # def helloString(self):
     #     return "Hello!"

@@ -1,8 +1,8 @@
-import spidev
 import smbus2
 import bme280
 from math import exp
 import datetime as dt
+from ..common import ValuesNames
 
 class Driver:
     #0x76 - BME280 address (pressure)
@@ -43,6 +43,7 @@ class Driver:
     # 		return super().__new__(cls)
             
     def __init__(self):
+        import spidev
         #bme280
         self.i2c_bus = smbus2.SMBus(Driver.i2c_port)
         #spi
@@ -60,18 +61,14 @@ class Driver:
         return adcValue
 
     def open(self):
-        try:
-            self.bme280_calibration_params = bme280.load_calibration_params(self.i2c_bus, Driver.bme280_address)
+        self.bme280_calibration_params = bme280.load_calibration_params(self.i2c_bus, Driver.bme280_address)
 
-            self.spi.open(0,0) #модуль и сигнал Chip Select, SPI0 и SPI0_CE0_N
-            self.spi.lsbfirst = False
-            self.spi.cshigh = True #в активном режиме сигнал на выходе Chip Select высокий
-            self.spi.mode = 0b00 #исходный уровень сигнала синхронизации – низкий, по переднему фронту происходит выборка данных, по заднему – установка.
-            self.spi.bits_per_word = 8
-            self.spi.max_speed_hz = 1000
-        except Exception:
-            return -1
-        return 0
+        self.spi.open(0,0) #модуль и сигнал Chip Select, SPI0 и SPI0_CE0_N
+        self.spi.lsbfirst = False
+        self.spi.cshigh = True #в активном режиме сигнал на выходе Chip Select высокий
+        self.spi.mode = 0b00 #исходный уровень сигнала синхронизации – низкий, по переднему фронту происходит выборка данных, по заднему – установка.
+        self.spi.bits_per_word = 8
+        self.spi.max_speed_hz = 1000
 
     def absoluteHumidity(RH, P, t):	
         Rv = 461.5 # J/(kg*K)
