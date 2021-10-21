@@ -1,2 +1,3 @@
-from .pyroMeasurementServer import PyroMeasurementServer
-from .pyroMeasurementClient import PyroMeasurementClient
+from .pyroMeasurementInterface import PyroMeasurementInterface
+
+__all__ = ['PyroMeasurementInterface']

@@ -1,8 +1,9 @@
-from measurementServer.server import MeasurementServer
-from measurementServer.common import *
-from .pyroMeasurementInterface import PyroMeasurementInterface
 import Pyro4
 import Pyro4.util
+
+from . import MeasurementServer
+from ..common import *
+from ..pyro4iface import PyroMeasurementInterface
 
 Pyro4.config.REQUIRE_EXPOSE = False
 

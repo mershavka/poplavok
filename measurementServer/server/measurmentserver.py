@@ -1,5 +1,5 @@
 from ..common import *
-# from driver import Driver
+from ..drivers import *
 # from calibration import CalibrationModule
 from .measurementfilesystem import MeasurementFileSystem
 from .measurementmodule import MeasurementModule
@@ -30,7 +30,7 @@ ch4String = 'CH4, ppm'
 
 class MeasurementServer:
 
-    testMode = True
+    testMode = False
     initialized = False
 
     def __new__(cls):
@@ -45,16 +45,15 @@ class MeasurementServer:
                          voltageString: 1.2,  resistanceString: 3000, 
                          temperatureString: 25,  rHumidityString: 35, 
                          aHumidityString: 10,  pressureString: 10000,  ch4String: 0}
+        
         return ms.device.readData()
  
     def __writeToMeasureFile(sender, dataDict: dict):
         ms = MeasurementServer()
         # Расчет метана по калибровке
-        if ms.currentCalibration:
-            CH4 = ms.currentCalibration.calculateCH4(dataDict)
-            dataDict[ch4String] = CH4
-            
-        ms.fs.writeMeasurementToFile(ms.currentMeasurement, dataDict)
+        newDataDict = ms.addCH4toDict(dataDict)
+        ms.lastData = newDataDict   
+        ms.fs.writeMeasurementToFile(ms.currentMeasurement, newDataDict)
 
     def _measurementStopStatus(sender):
         ms = MeasurementServer()
@@ -63,7 +62,9 @@ class MeasurementServer:
     def __init__(self):
         if self.initialized:
             return
-        # self.device = Driver()
+        if not MeasurementServer.testMode:
+            self.device = Driver()
+            self.device.open()
         self.fs = MeasurementFileSystem(EXEC_DIR)        
         self.series = self.fs.loadSeries()
         self.calibrations = self.fs.loadCalibrations()
@@ -76,6 +77,7 @@ class MeasurementServer:
         self.worker.setReadFunc(self.__readFromDevice)
         self.worker.setWriteFunc(self.__writeToMeasureFile)
         self.worker.setStopFunc(self._measurementStopStatus)
+        self.lastData = {}
 
         # Status variables
         self.status = Status.NO
@@ -188,6 +190,13 @@ class MeasurementServer:
             self.status = Status.NO
         return self.status
 
+    def getLastData(self):
+        if self.worker.isWorking():
+            return self.lastData
+        else:
+            dataDict = self.device.readData()
+            return self.addCH4toDict(dataDict)
+
     def chooseCalibration(self, id):
         if id in self.calibrations:
             self.currentCalibration = self.calibrations[id]
@@ -219,3 +228,14 @@ class MeasurementServer:
 
     def gotIt(self):
         self.status = Status.NO
+
+    def calculateCH4(self):
+        pass
+
+    def addCH4toDict(self, dataDict):
+        if self.currentCalibration:
+            CH4 = self.currentCalibration.calculateCH4(dataDict)
+            dataDict[ch4String] = CH4
+        else:
+            dataDict[ch4String] = -1
+        return dataDict

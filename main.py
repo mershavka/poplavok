@@ -1,7 +1,9 @@
-from measurementServer.pyro4iface import PyroMeasurementClient
+from measurementServer.client import PyroMeasurementClient
 from measurementServer.common import *
 
 pmc = PyroMeasurementClient()
 print(pmc.getServerStatus())
-pmc.createSeries('1',MeasureType.COMMON)
-print(pmc.getSeriesList())
+print(pmc.getLastData())
+# pmc.runMeasurement(10, 1, 'TTTT')
+# pmc.createSeries('With sensor',MeasureType.COMMON)
+# print(pmc.getSeriesList())

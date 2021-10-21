@@ -7,7 +7,8 @@ from .forms import CreateSeriesForm, StartExperimentForm
 from django.urls import reverse
 from django.shortcuts import redirect
 from datetime import datetime
-from measurementServer.pyro4iface import PyroMeasurementClient
+from measurementServer.client import PyroMeasurementClient
+from measurementServer.common import ValuesNames
 
 
 pmc = PyroMeasurementClient()
@@ -29,6 +30,13 @@ def getStatus(request):
     # device_status = 'init'
     deviceStatus = pmc.getServerStatus()  
     deviceStatusString = deviceStatus[1]
+
+    lastDataDict = pmc.getLastData()
+    lastTime = lastDataDict[ValuesNames.timeString]
+    lastTemp = "{:2.2f}".format(lastDataDict[ValuesNames.temperatureString])
+    lastPres = "{:4.2f}".format(lastDataDict[ValuesNames.pressureString])
+    lastHum =  "{:2.2f}".format(lastDataDict[ValuesNames.rHumidityString])
+
     
     currentSeriesString = pmc.getCurrentSeries()    
     if (currentSeriesString is None):
@@ -39,7 +47,11 @@ def getStatus(request):
     return JsonResponse({
         'server_time'   : server_time,
         'device_status' : deviceStatusString,
-        'current_series': currentSeriesString
+        'current_series': currentSeriesString,
+        'lastTime': lastTime,
+        'lastTemp' : lastTemp,
+        'lastPres' : lastPres,
+        'lastHum':  lastHum
     })
 
 def stopExperiment(request):

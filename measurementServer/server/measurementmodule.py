@@ -36,8 +36,9 @@ class MeasurementModule:
         self.stopFunc()
 
     def stopMeasurement(self):
-        if self.th.is_alive():
-            self.stopEvent.set()
+        if not self.th is None:
+            if self.th.is_alive():
+                self.stopEvent.set()
         
     def startMeasurement(self, m : Measurement):
         if self.readFunc is None or self.writeFunc is None:
@@ -49,4 +50,6 @@ class MeasurementModule:
         self.th.start()
     
     def isWorking(self):
+        if self.th is None:
+            return False
         return self.th.is_alive()
