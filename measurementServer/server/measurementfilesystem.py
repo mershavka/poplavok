@@ -99,8 +99,10 @@ class MeasurementFileSystem:
         else:
             return None
 
-    def __getSeriesPathById(self, id):
+    def getSeriesPathById(self, id):
         seriesPath = glob.glob(self.path + "/series{}*".format(id))
+        if not seriesPath:
+            return None
         return seriesPath[-1]
         
 
@@ -108,7 +110,7 @@ class MeasurementFileSystem:
         return self.path + "/series{}_{}_{}".format(s.id, s.type.value, s.date.strftime(timeformat))
 
     def __measurementToPath(self, m : Measurement):
-        seriesPath = self.__getSeriesPathById(m.seriesId)
+        seriesPath = self.getSeriesPathById(m.seriesId)
         return seriesPath + "/measure{}_{}_{}.csv".format(m.id, m.type.value, m.date.strftime(timeformat))
 
     def __modelToPath(self, model: Model):
@@ -164,7 +166,6 @@ class MeasurementFileSystem:
         return
 
     def addCalibration(self, c):
-
         pass
 
     def addModel(self, model):

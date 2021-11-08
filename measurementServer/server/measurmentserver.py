@@ -206,8 +206,15 @@ class MeasurementServer:
             print("No calibration with id={}".format(id))
             return None
 
-    def startCalibration(self, seriesIdStep1, seriesIdStep2):
-        pass
+    def startCalibration(self, description, seriesIdStep1, seriesIdStep2):        
+        series1Path = self.fs.getSeriesPathById(seriesIdStep1) # Путь к серии для калибровки V0
+        series2Path = self.fs.getSeriesPathById(seriesIdStep2) # Путь к серии для калибровки CH4
+        if not (series1Path and series2Path):
+            print("Series not found!")
+            return None
+        c = Calibration(self.lastCalibrationId, seriesIdStep1, seriesIdStep2, dt.datetime.now(), description)
+        self.currentCalibration = c
+
 
     def getCurrentCalibrationModels(self):
         if self.currentCalibration:

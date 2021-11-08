@@ -1,11 +1,11 @@
-from .enums import timeformat
+from .enums import timeformat, MeasureType
 # from series import Series
 from datetime import datetime as dt
 from typing import Optional
 import json
 
 class Calibration:
-    def __init__(self, id, series1StepId, series2StepId, date, description, models, selectedModel):
+    def __init__(self, id, series1StepId, series2StepId, date, description, models = None, selectedModel = None):
         self.id = id
         self.series1StepId = series1StepId
         self.series2StepId = series2StepId

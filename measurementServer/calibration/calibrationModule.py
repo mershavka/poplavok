@@ -1,5 +1,7 @@
 # from typing import final
+from measurementServer.calibration.calibrationModel import CalibrationModel
 from .models import ModelFirst, ModelSecond
+from .calibrationFunctions import calib1Functions, calib2Functions
 
 import pandas
 import numpy as np
@@ -8,39 +10,6 @@ import datetime as dt
 import csv
 import glob
 
-def pow_func(X, g, m, S, h, n):
-    H,T = X
-    return g * np.array(H)^h +m * np.array(T)^n + S
-
-def lin_func(x, a, b):
-    return a * np.array(x) + b
-
-def V2_func(X, g, m, S):
-    H,T = X
-    return g*np.array(H) + m*np.array(T) + S
-
-def V5_func(x, g, S):
-    return g* np.array(x)/(S +  np.array(x))
-
-def ch4Func1(X, a, b, c, K):
-    R, rH, T = X
-    return a*np.array(R) + b*np.array(rH) + c*np.array(T) + K
-
-def ch4Func2(X, a, b, c, d, e, f, K):
-    R, rH, T = X
-    return a*np.array(R)^b + c*np.array(rH)^d + e*np.array(T)^f + K
-
-def ch4Func3(X, a, b, c, d, K):
-    R, rH, T = X
-    return a*np.array(R)^b * (1 + c*np.array(rH) + d*np.array(T)) + K
-
-def ch4Func4(X, a, b, c, d, K):
-    R, aH, T = X
-    return a*np.array(R)^b * (1 + c*np.array(aH) + d*np.array(T)) + K
-
-def ch4Func8(X, a, b, c, K):
-    R, aH = X
-    return a*np.array(R)^b * (1 + c*np.array(aH)) + K
 
 def stringToFloatList(s):
     s = s.strip('][').split(' ')
@@ -65,29 +34,12 @@ class CalibrationModule:
         self.modelV0Header = ['CalibrationDataDirectory','FunctionName','PredictorNames', 'R2Adjusted', 'RMSE','OptimalModelParametres']
         self.modelCH4Header = ['CalibrationDataDirectory', 'FirstStepCalibrationPath','FunctionName','PredictorNames', 'R2Adjusted', 'RMSE','OptimalModelParametres', 'Slope k' , 'Intercept M']
 
-    calib1Models = {
-        'powFunc_aHT'   : (pow_func,  ["aH","T"]),
-        'linFunc_aH'	: (lin_func,  ["aH"]),
-        'linFunc_T'	    : (lin_func,  ["T"]),
-        'V2Func_aHT'	: (V2_func,   ["aH","T"]),
-        'V5Func_aH'	    : (V5_func,   ["aH"]),
-        'V5Func_T'	    : (V5_func,   ["T"]),
-    }
-
-    calib2Models = {
-        'ch4Func1_rHT' : (ch4Func1, ["Rs/R0","rH","T"]),
-        'ch4Func2_rHT' : (ch4Func2, ["Rs/R0","rH","T"]),
-        'ch4Func3_rHT' : (ch4Func3, ["Rs/R0","rH","T"]),
-        'ch4Func4_aHT' : (ch4Func4, ["Rs/R0","aH","T"]),
-        'ch4Func8_aH'  : (ch4Func8, ["Rs/R0","aH"])
-    }
-
     def loadModelV0FromFile(self, cal1Path):
         df = pandas.read_csv(cal1Path, delimiter=',')
         df.set_axis(self.modelV0Header, axis = 'columns', inplace = True)
         funcName = df['FunctionName'][0]
         popt = stringToFloatList(df['OptimalModelParametres'][0])
-        model = ModelFirst(*CalibrationModule.calib1Models[funcName])
+        model = ModelFirst(*calib1Functions[funcName])
         model.popt = popt
         return model
 
@@ -100,7 +52,7 @@ class CalibrationModule:
         cal1Path = df['FirstStepCalibrationPath'][0]
         funcName = df['FunctionName'][0]
         popt = stringToFloatList(df['OptimalModelParametres'][0])
-        model = ModelSecond(*CalibrationModule.calib2Models[funcName])
+        model = ModelSecond(*calib2Functions[funcName])
         model.popt = popt
         model.k = k
         model.M = M
@@ -130,9 +82,10 @@ class CalibrationModule:
         df = CalibrationModule.concatCsv(dirPath)
         df.set_axis(self.csvHeader, axis = 'columns', inplace = True)
         appendRowToCsv(resultPath, self.modelV0Header)
-        for modelName, modelParams in CalibrationModule.calib1Models.items():
+
+        for modelName, modelParams in calib1Functions.items():
             X = []
-            model = ModelFirst(*modelParams)
+            model = CalibrationModel(*modelParams)
             for predictor in model.predictor_names:
                 X.append(df[predictor].tolist())
             model.fit(tuple(X),  df['V'].tolist())           
