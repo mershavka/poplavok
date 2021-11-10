@@ -18,16 +18,6 @@ class BoardConnectionError(Error):
 class FilePathError(Error):
     pass
 
-timeString = 'Time'
-adcString = 'ADC value'
-voltageString = 'Voltage, V'
-resistanceString = 'Resistance, Om'
-temperatureString = 'Temperature, C'
-rHumidityString = 'Related Humidity, %'
-aHumidityString = 'Absolute Humidity, kg/m^3'
-pressureString = 'Pressure, hPa'
-ch4String = 'CH4, ppm'
-
 class MeasurementServer:
 
     testMode = False
@@ -41,17 +31,23 @@ class MeasurementServer:
     def __readFromDevice(sender):
         ms = MeasurementServer()
         if MeasurementServer.testMode:
-            return { timeString: dt.datetime.now(),  adcString: 2044,
-                         voltageString: 1.2,  resistanceString: 3000, 
-                         temperatureString: 25,  rHumidityString: 35, 
-                         aHumidityString: 10,  pressureString: 10000,  ch4String: 0}
+            return { 	
+						ValuesNames.timestamp.getString()	: dt.datetime.now(),  
+						ValuesNames.adc.getString()			: 2044,
+                        ValuesNames.voltage.getString()		: 1.2,
+                        ValuesNames.temperature.getString()	: 25,
+						ValuesNames.rHumidity.getString()	: 35, 
+                        ValuesNames.aHumidity.getString()	: 10,
+						ValuesNames.pressure.getString()	: 10000,
+						ValuesNames.ch4.getString()			: 0
+					}
         
         return ms.device.readData()
  
     def __writeToMeasureFile(sender, dataDict: dict):
         ms = MeasurementServer()
         # Расчет метана по калибровке
-        newDataDict = ms.addCH4toDict(dataDict)
+        newDataDict = ms.dataAnalyzer.prepareData(dataDict)
         ms.lastData = newDataDict   
         ms.fs.writeMeasurementToFile(ms.currentMeasurement, newDataDict)
 
@@ -62,9 +58,11 @@ class MeasurementServer:
     def __init__(self):
         if self.initialized:
             return
+
         if not MeasurementServer.testMode:
             self.device = Driver()
             self.device.open()
+
         self.fs = MeasurementFileSystem(EXEC_DIR)        
         self.series = self.fs.loadSeries()
         self.calibrations = self.fs.loadCalibrations()
@@ -73,23 +71,19 @@ class MeasurementServer:
         else:
             self.lastSeriesId = 0
         self.lastCalibrationId = 0 if not self.calibrations else max(self.calibrations.keys())
+
         self.worker = MeasurementModule()
         self.worker.setReadFunc(self.__readFromDevice)
         self.worker.setWriteFunc(self.__writeToMeasureFile)
         self.worker.setStopFunc(self._measurementStopStatus)
-        self.lastData = {}
 
         # Status variables
+        self.lastData = {}
         self.status = Status.NO
         self.currentSeries = None
         self.currentMeasurement = None
         self.currentCalibration = None
 
-        self.header = [	 timeString,  adcString,
-                         voltageString,  resistanceString, 
-                         temperatureString,  rHumidityString, 
-                         aHumidityString,  pressureString,  ch4String]
-        self.fs.setFileHeader(self.header)
         self.initialized = True
 
     def createSeries(self, description="", type=MeasureType.COMMON):		
@@ -239,10 +233,10 @@ class MeasurementServer:
     def calculateCH4(self):
         pass
 
-    def addCH4toDict(self, dataDict):
-        if self.currentCalibration:
-            CH4 = self.currentCalibration.calculateCH4(dataDict)
-            dataDict[ch4String] = CH4
-        else:
-            dataDict[ch4String] = -1
-        return dataDict
+    # def addCH4toDict(self, dataDict):
+    #     if self.currentCalibration:
+    #         CH4 = self.currentCalibration.calculateCH4(dataDict)
+    #         dataDict[ch4String] = CH4
+    #     else:
+    #         dataDict[ch4String] = ""
+    #     return dataDict

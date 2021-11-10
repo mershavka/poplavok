@@ -1,3 +1,4 @@
+import spidev
 import smbus2
 import bme280
 from math import exp
@@ -13,15 +14,13 @@ class Driver:
     RL = 3*10**3
     const2 = 1.024
 
-    timeString = 'Time'
-    adcString = 'ADC value'
-    voltageString = 'Voltage, V'
-    resistanceString = 'Resistance, Om'
-    temperatureString = 'Temperature, C'
-    rHumidityString = 'Related Humidity, %'
-    aHumidityString = 'Absolute Humidity, kg/m^3'
-    pressureString = 'Pressure, hPa'
-    ch4String = 'CH4, ppm'
+    timeString 			= ValuesNames.timestamp.name
+    adcString 			= ValuesNames.adc.name
+    voltageString 		= ValuesNames.voltage.name
+    temperatureString 	= ValuesNames.temperature.name
+    rHumidityString		= ValuesNames.rHumidity.name
+    aHumidityString 	= ValuesNames.aHumidity.name
+    pressureString 		= ValuesNames.pressure.name
 
     #0x2a - AmbiMate Sensor Module address (CO2)
     ambimate_addres = 0x2a
@@ -32,23 +31,13 @@ class Driver:
     VOCHighByte = 0x0D
     optionalSensorByte = 0x82
     scanStartByte = 0xC0
-
-    #конструктор, метод __new__ срабатывает до __init__
-
-    # def __new__(cls, data=None):
-    # 	if data is None:
-    # 		print('Error')
-    # 		return None
-    # 	else:
-    # 		return super().__new__(cls)
             
     def __init__(self):
-        import spidev
         #bme280
         self.i2c_bus = smbus2.SMBus(Driver.i2c_port)
         #spi
         self.spi = spidev.SpiDev()
-        self.__lastReceivedData = dict.fromkeys([Driver.timeString, Driver.adcString, Driver.voltageString, Driver.resistanceString, Driver.temperatureString, Driver.rHumidityString, Driver.aHumidityString, Driver.pressureString])
+        self.__lastData = dict.fromkeys([Driver.timeString, Driver.adcString, Driver.voltageString, Driver.temperatureString, Driver.rHumidityString, Driver.aHumidityString, Driver.pressureString])
 
 
     def adcGetData(self):
@@ -80,22 +69,11 @@ class Driver:
     def readData(self):
             bme280_data = bme280.sample(self.i2c_bus, Driver.bme280_address, self.bme280_calibration_params)
             value = self.adcGetData()
-            self.__lastReceivedData[Driver.timeString] = dt.datetime.now()
-            self.__lastReceivedData[Driver.adcString] = value
-            self.__lastReceivedData[Driver.voltageString] = value * Driver.adcRange / Driver.adcQuantizationLevels
-            self.__lastReceivedData[Driver.resistanceString] = Driver.RL * Driver.const2 / (self.__lastReceivedData[Driver.voltageString] - Driver.const2)
-            self.__lastReceivedData[Driver.temperatureString] = bme280_data.temperature
-            self.__lastReceivedData[Driver.rHumidityString] = bme280_data.humidity
-            self.__lastReceivedData[Driver.aHumidityString] = Driver.absoluteHumidity(bme280_data.humidity, bme280_data.pressure, bme280_data.temperature)
-            self.__lastReceivedData[Driver.pressureString] = bme280_data.pressure
-            return self.__lastReceivedData
-
-    def getDataList(self):
-        dataList = []
-        return dataList
-
-    def fanOn(self):
-        pass
-
-    def fanOff(self):
-        pass
+            self.__lastData[Driver.timeString] = dt.datetime.now()
+            self.__lastData[Driver.adcString] = value
+            self.__lastData[Driver.voltageString] = value * Driver.adcRange / Driver.adcQuantizationLevels
+            self.__lastData[Driver.temperatureString] = bme280_data.temperature
+            self.__lastData[Driver.rHumidityString] = bme280_data.humidity
+            self.__lastData[Driver.aHumidityString] = Driver.absoluteHumidity(bme280_data.humidity, bme280_data.pressure, bme280_data.temperature)
+            self.__lastData[Driver.pressureString] = bme280_data.pressure
+            return self.__lastData

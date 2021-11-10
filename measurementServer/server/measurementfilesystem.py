@@ -9,6 +9,7 @@ import json
 import csv
 from shutil import copy
 
+
 class MeasurementFileSystem:
     series_name_regex = "series(?P<id>\d+)_(?P<type>\d+)_(?P<date>\d+)"
     measurement_name_regex = "measure(?P<id>\d+)_(?P<type>\d+)_(?P<date>\d+)"
@@ -25,7 +26,7 @@ class MeasurementFileSystem:
                 self.path = os.getenv('HOME') + '/Poplavok'
                 if not os.path.exists(self.path):
                     os.mkdir(self.path)
-    
+
     def __pathToMeasure(self, path):
         pathStr = os.path.basename(os.path.normpath(path))
         descriptionStr = os.path.splitext(path)[0] + ".json"
@@ -37,7 +38,7 @@ class MeasurementFileSystem:
                 return None
             with open(descriptionStr) as json_file:
                 jsonDict = json.load(json_file)
-                m.fromJson(jsonDict)         
+                m.fromJson(jsonDict)
             return m
         else:
             return None
@@ -47,7 +48,8 @@ class MeasurementFileSystem:
         matched = re.match(self.calibration_name_regex, calibrationDirName)
         if bool(matched):
             c_id = int(matched.group('id'))
-            c_date = datetime.datetime.strptime(matched.group('date'), timeformat)
+            c_date = datetime.datetime.strptime(
+                matched.group('date'), timeformat)
             jsonPath = path + '/description.json'
             if not os.path.exists(jsonPath):
                 return None
@@ -66,9 +68,10 @@ class MeasurementFileSystem:
                 if model:
                     c_models[model.id] = model
 
-            c = Calibration( id = c_id, series1StepId = c_series1StepId, series2StepId = c_series2StepId, date = c_date, description = c_desription, models=c_models)
+            c = Calibration(id=c_id, series1StepId=c_series1StepId, series2StepId=c_series2StepId,
+                            date=c_date, description=c_desription, models=c_models)
             return c
-        
+
         return None
 
     def __pathToSeries(self, seriesPath):
@@ -104,17 +107,16 @@ class MeasurementFileSystem:
         if not seriesPath:
             return None
         return seriesPath[-1]
-        
 
     def __seriesToPath(self, s: Series):
         return self.path + "/series{}_{}_{}".format(s.id, s.type.value, s.date.strftime(timeformat))
 
-    def __measurementToPath(self, m : Measurement):
+    def __measurementToPath(self, m: Measurement):
         seriesPath = self.getSeriesPathById(m.seriesId)
         return seriesPath + "/measure{}_{}_{}.csv".format(m.id, m.type.value, m.date.strftime(timeformat))
 
     def __modelToPath(self, model: Model):
-        #TODO  SOLVE CALIBRATION PATH
+        # TODO  SOLVE CALIBRATION PATH
         calibrationPath = ""
         return calibrationPath + "/model{}_{}_{}.csv".format(model.index, model.v_function, model.ch4function)
 
@@ -130,7 +132,8 @@ class MeasurementFileSystem:
         return seriesDict
 
     def loadCalibrations(self):
-        calibrationsPathes = glob.glob(self.path + "/calibrations/calibration*")
+        calibrationsPathes = glob.glob(
+            self.path + "/calibrations/calibration*")
         calibrationsDict = {}
         for calibrationPath in calibrationsPathes:
             if not os.path.isdir(calibrationPath):
@@ -139,9 +142,6 @@ class MeasurementFileSystem:
             if not c is None:
                 calibrationsDict[c.id] = c
         return calibrationsDict
-
-    def setFileHeader(self, header):
-        self.header = header
 
     def addSeries(self, s):
         seriesPath = self.__seriesToPath(s)
@@ -154,10 +154,6 @@ class MeasurementFileSystem:
 
     def addMeasurement(self, m):
         measurementPath = self.__measurementToPath(m)
-        if not os.path.exists(measurementPath):
-            open(measurementPath, 'w').close()
-        if self.header:	
-            self.appendRowToCsv(measurementPath, self.header)
         jsonString = m.toJsonString()
         descriptionStr = os.path.splitext(measurementPath)
         descriptionStr = descriptionStr[0] + ".json"
@@ -177,34 +173,38 @@ class MeasurementFileSystem:
 
     def loadServerState(self, ms):
         pass
-    
+
     def addReferenceDataToSeries(self, s, path):
         seriesPath = self.__seriesToPath(s)
         if not os.path.exists(seriesPath):
             return
         loadingDate = datetime.datetime.now()
-        newReferenceDataPath = seriesPath + "/referenceData_loaded{}.csv".format(loadingDate.strftime(timeformat))
+        newReferenceDataPath = seriesPath + \
+            "/referenceData_loaded{}.csv".format(
+                loadingDate.strftime(timeformat))
         resultPath = copy(path, newReferenceDataPath)
-        s.referenceData = ReferenceData(seriesId = s.id, loadingDate=loadingDate)
+        s.referenceData = ReferenceData(seriesId=s.id, loadingDate=loadingDate)
         return s.referenceData
 
     def deleteMeasurement(self, m):
         measurementPath = self.__measurementToPath(m)
         os.remove(measurementPath)
-        #удалить json?
+        # удалить json?
         descriptionStr = os.path.splitext(measurementPath)[0] + ".json"
         os.remove(descriptionStr)
 
     def appendRowToCsv(self, filename, listOfElements):
-        with open(filename, 'a+', newline ='') as writeObj:
+        with open(filename, 'a+', newline='') as writeObj:
             writer = csv.writer(writeObj)
             writer.writerow(listOfElements)
 
     def writeMeasurementToFile(self, m, dataDict):
         m_path = self.__measurementToPath(m)
-        if not self.header:
-            print("No header for writing measurement data in file")
-            return -1
+        if not os.path.exists(m_path):
+            open(m_path, 'w').close()
+            self.header = list(dataDict.keys()) 
+            self.appendRowToCsv(m_path, self.header)
+        
         dataList = [dataDict[valueName] for valueName in self.header]
         self.appendRowToCsv(m_path, dataList)
         return 0
