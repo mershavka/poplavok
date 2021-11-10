@@ -1,4 +1,5 @@
 import numpy as np
+from ..common import ValuesNames
 
 def pow_func(X, g, m, S, h, n):
     H,T = X
@@ -35,18 +36,22 @@ def ch4Func8(X, a, b, c, K):
     return a*np.array(R)^b * (1 + c*np.array(aH)) + K
 
 calib1Functions = {
-    'powFunc_aHT'   : (pow_func,  ["aH","T"]),
-    'linFunc_aH'	: (lin_func,  ["aH"]),
-    'linFunc_T'	    : (lin_func,  ["T"]),
-    'V2Func_aHT'	: (V2_func,   ["aH","T"]),
-    'V5Func_aH'	    : (V5_func,   ["aH"]),
-    'V5Func_T'	    : (V5_func,   ["T"]),
+    'powFunc_aHT'   : (pow_func,  [ValuesNames.aHumidity.name, ValuesNames.temperature.name]),
+    'linFunc_aH'	: (lin_func,  [ValuesNames.aHumidity.name]),
+    'linFunc_T'	    : (lin_func,  [ValuesNames.temperature.name]),
+    'V2Func_aHT'	: (V2_func,   [ValuesNames.aHumidity.name,ValuesNames.temperature.name]),
+    'V5Func_aH'	    : (V5_func,   [ValuesNames.aHumidity.name]),
+    'V5Func_T'	    : (V5_func,   [ValuesNames.temperature.name]),
 }
 
 calib2Functions = {
-    'ch4Func1_rHT' : (ch4Func1, ["Rs/R0","rH","T"]),
-    'ch4Func2_rHT' : (ch4Func2, ["Rs/R0","rH","T"]),
-    'ch4Func3_rHT' : (ch4Func3, ["Rs/R0","rH","T"]),
-    'ch4Func4_aHT' : (ch4Func4, ["Rs/R0","aH","T"]),
-    'ch4Func8_aH'  : (ch4Func8, ["Rs/R0","aH"])
+    'ch4Func1_rHT' : (ch4Func1, [ValuesNames.rsr0.name, ValuesNames.rHumidity.name, ValuesNames.temperature.name]),
+    'ch4Func2_rHT' : (ch4Func2, [ValuesNames.rsr0.name, ValuesNames.rHumidity.name, ValuesNames.temperature.name]),
+    'ch4Func3_rHT' : (ch4Func3, [ValuesNames.rsr0.name, ValuesNames.rHumidity.name, ValuesNames.temperature.name]),
+    'ch4Func4_aHT' : (ch4Func4, [ValuesNames.rsr0.name, ValuesNames.aHumidity.name, ValuesNames.temperature.name]),
+    'ch4Func8_aH'  : (ch4Func8, [ValuesNames.rsr0.name, ValuesNames.aHumidity.name])
+}
+
+calib3Functions = {
+    'lin_func_CH4pred' : (lin_func, [ValuesNames.ch4.name])
 }
