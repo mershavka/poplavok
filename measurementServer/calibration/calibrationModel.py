@@ -3,11 +3,19 @@ from numpy.core.fromnumeric import nonzero
 from scipy.optimize import curve_fit
 import numpy as np
 
-class CalibrationModel:
-
-    def __init__(self, dependence_function, predictor_names):
+class CalibrationModelTemplate:
+    def __init__(self, dependence_function, predictor_names, dependent_name):
         self.function = dependence_function
         self.predictor_names = predictor_names
+        self.dependent_name = dependent_name
+
+
+class CalibrationModel:
+
+    def __init__(self, dependence_function, predictor_names, dependent_name):
+        self.function = dependence_function
+        self.predictor_names = predictor_names
+        self.dependent_name = dependent_name
         self.coefs = None
     
     def fit(self, predictors, dependent_variable):

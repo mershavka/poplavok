@@ -4,7 +4,27 @@
 from operator import index
 from datetime import datetime as dt
 from typing import Optional
+
+from scipy.sparse import data
+from values import ValuesNames
+from calibration.calibrationFunctions import RsR0_calc
 import json
+
+class ResultModel:
+	
+	def __init__(self) -> None:
+		self.series1Id = series1Id
+		self.series2Id = series2Id
+		self.refDataId = refDataId
+
+		self.V0Model = V0Model
+		self.CH4Model = CH4Model
+		self.CH4LRModel = CH4LRModel
+
+	def calculateCH4(self, dataDict):
+		dataDict[ValuesNames.voltage0.name] = self.V0Model.calculate(dataDict)
+		dataDict[ValuesNames.rsr0.name] = RsR0_calc(dataDict)
+		dataDict[ValuesNames.ch4.name] = self.CH4Model.calculate(dataDict)
 
 class Model:
 

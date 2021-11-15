@@ -20,6 +20,7 @@ class ValuesNames:
 	timestamp 		: PhysicalValue = PhysicalValue('timestamp',	'Timestamp'							, ''		)
 	adc  			: PhysicalValue = PhysicalValue('ADC',			'ADC value'							, ''		)
 	voltage 		: PhysicalValue = PhysicalValue('V', 			'Voltage'							, 'volt'	)
+	voltage0 		: PhysicalValue = PhysicalValue('V0', 			'Background Voltage'				, 'volt'	)
 	resistance 		: PhysicalValue = PhysicalValue('R', 			'Resistance'						, 'Ohm'		) 
 	temperature 	: PhysicalValue = PhysicalValue('T', 			'Temperature'						, 'Celsius'	)
 	rHumidity		: PhysicalValue = PhysicalValue('rH', 			'Relative Humidity'					, '%'		)
