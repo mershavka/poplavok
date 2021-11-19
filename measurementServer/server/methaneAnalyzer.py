@@ -65,6 +65,8 @@ class methaneAnalyzer:
         df1 = self.concatCsvIntoFrame(seriespath1)
         step1models = self.getCalibratedModels(df1, self.model1Templates)
 
+        # Создать массив готовых калибровок ResultModel и заполнить его
+
         df2 = self.concatCsvIntoFrame(seriespath2)
         df_Ch4_Ref = self.concatCsvIntoFrame(referencePath)
         df2 = self.interpolateCH4Data(df2, df_Ch4_Ref)
@@ -74,7 +76,13 @@ class methaneAnalyzer:
             df_calc = self.addRsR0(df_calc)
             step2models = self.getCalibratedModels(df_calc, self.model2Templates)
 
-        # Получить лучшую модель?
+        # Получить модели для третьего шага
+        # Заполнить массив калибровок
+
+        # Получить лучшую модель
+        # Сохранить лучшую модель в файл
+        # Сохранить все расчитанные модели в файл??
+
 
         pass
 
