@@ -1,3 +1,5 @@
+from pandas.core.frame import DataFrame
+from measurementServer.common import referenceData
 from ..common import *
 from ..common.enums import *
 
@@ -14,10 +16,12 @@ class MeasurementFileSystem:
     series_name_regex = "series(?P<id>\d+)_(?P<type>\d+)_(?P<date>\d+)"
     measurement_name_regex = "measure(?P<id>\d+)_(?P<type>\d+)_(?P<date>\d+)"
     calibration_name_regex = "calibration(?P<id>\d+)_(?P<date>\d+)"
+    refData_name_regex = "referenceData_series(?P<seriesId>\d+)_(?P<date>\d+)"
     model_name_regex = "model(?P<index>\d+)_(?P<functionV>\w+_\w+)_(?P<functionCH4>\w+_\w+)"
 
     def __init__(self, path):
         self.path = path
+        self.refDir = 'ReferenceData'
         self.header = None
         if not os.path.exists(self.path):
             try:
@@ -26,6 +30,39 @@ class MeasurementFileSystem:
                 self.path = os.getenv('HOME') + '/Poplavok'
                 if not os.path.exists(self.path):
                     os.mkdir(self.path)
+        
+        refPath = self.path + '/' + self.refDir
+        if not os.path.exists(refPath):
+            os.mkdir(refPath)
+
+    def __pathToReferenceData(self, path):
+        pathStr = os.path.basename(os.path.normpath(path))
+        descriptionStr = os.path.splitext(path)[0] + ".csv"
+        matched = re.match(self.refData_name_regex, pathStr)
+        if bool(matched):
+            seriesId = int(matched.group('seriesId'))
+            date = datetime.datetime.strptime(matched.group('date'), timeformat)
+            return ReferenceData(seriesId, date)
+        else:
+            return None
+    
+    def getReferenceDataDict(self, refData):
+        if refData.valuesDict:
+            return refData.valuesDict
+
+        refDataPath = self.refDataToPath(refData)
+        valuesDict = {}
+        with open(refDataPath) as f:
+            reader = csv.DictReader(f) # read rows into a dictionary format
+            for row in reader: # read a row as {column1: value1, column2: value2,...}
+                for (k,v) in row.items(): # go over each column name and value
+                    if k == ValuesNames.timestamp.name:
+                        v = datetime.datetime.strptime(v, timeformat)
+                    else:
+                        v = int(v)
+                    valuesDict[k].append(v)
+        refData.valuesDict = valuesDict
+        return valuesDict        
 
     def __pathToMeasure(self, path):
         pathStr = os.path.basename(os.path.normpath(path))
@@ -85,22 +122,13 @@ class MeasurementFileSystem:
             with open(jsonPath) as json_file:
                 data = s.fromJson(json.load(json_file))
 
-            # if not data or int(data['id']) != s_id or int(data['type']) != s_type or datetime.datetime.strptime((data['date']), timeformat) != s_date:
-            #     print("Invalid json description file for series")
-            #     return None
-
-            # s_desription = data['description']
-
-            # s_measurements = {}
-            # s_referenceData = {} #Как заполнять?
-
             for filename in glob.glob(seriesPath + "/*.csv"):
                 m = self.__pathToMeasure(filename)
                 if m:
                     s.addMeasurement(m.id, m)
             return s
         else:
-            return None
+            return None    
 
     def getSeriesPathById(self, id):
         seriesPath = glob.glob(self.path + "/series{}*".format(id))
@@ -114,6 +142,11 @@ class MeasurementFileSystem:
     def __measurementToPath(self, m: Measurement):
         seriesPath = self.getSeriesPathById(m.seriesId)
         return seriesPath + "/measure{}_{}_{}.csv".format(m.id, m.type.value, m.date.strftime(timeformat))
+
+    def refDataToPath(self, refData: ReferenceData):
+        refDataFileName = "/referenceData_series{}_{}.csv".format(refData.seriesId, refData.loadingDate.strftime(timeformat))
+        refDataPath = self.path + '/' + self.refDir + refDataFileName
+        return refDataPath
 
     def __modelToPath(self, model: Model):
         # TODO  SOLVE CALIBRATION PATH
@@ -143,6 +176,16 @@ class MeasurementFileSystem:
                 calibrationsDict[c.id] = c
         return calibrationsDict
 
+    def loadReferencesData(self):
+        refDataPathes = glob.glob(self.path + '/' + self.refDir + '/referenceData*.csv')
+        refDataDict = {}
+        for refDataPath in refDataPathes:
+            refData = self.__pathToReferenceData(refDataPath)
+            if refData in None:
+                continue
+            refDataDict[refData.seriesId] = refData
+        return refDataDict
+
     def addSeries(self, s):
         seriesPath = self.__seriesToPath(s)
         if not os.path.exists(seriesPath):
@@ -160,6 +203,14 @@ class MeasurementFileSystem:
         with open(descriptionStr, 'w') as f:
             f.write(jsonString)
         return
+
+    def addReferenceData(self, refData):
+        referenceDataPath = self.refDataToPath(refData) 
+        header = list(refData.valuesDict.keys())
+        self.appendRowToCsv(referenceDataPath, header)        
+        for item in zip(*list(refData.valuesDict.values())):
+            self.appendRowToCsv(referenceDataPath, item)
+        return 
 
     def addCalibration(self, c):
         pass

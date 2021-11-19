@@ -44,3 +44,9 @@ class ValuesNames:
 		rsr0.getString() 			: rsr0.name,
 		ch4Ref.getString() 			: ch4Ref.name,
 	}
+
+@dataclass
+class ModelNames:
+	model1: str = "V0Model"
+	model2: str = "CH4Model"
+	model3: str = "CH4LRModel"

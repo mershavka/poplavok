@@ -6,12 +6,13 @@ from measurementServer.common import values
 from ..common import *
 from ..calibration import *
 import csv
+import os
 import glob
 import pandas as pd
 import numpy as np
 import datetime as dt
 
-class methaneAnalyzer:
+class MethaneAnalyzer:
     
     def __init__(self):        
         self.Vref = 1.024
@@ -20,7 +21,11 @@ class methaneAnalyzer:
         self.model3Templates = [CalibrationModelTemplate(dependence_function=func[0], predictor_names=func[1], dependent_name=func[2]) for func in calib3Functions.values()]
 
     def concatCsvIntoFrame(self, dirPath):
-        all_files = glob.glob(dirPath + "/*.csv")
+        all_files = []
+        if os.path.isdir(dirPath):
+            all_files = glob.glob(dirPath + "/*.csv")
+        else:
+            all_files = dirPath
         li = []
         for filename in all_files:
             df = pd.read_csv(filename, delimiter=',')
@@ -65,28 +70,32 @@ class methaneAnalyzer:
         df1 = self.concatCsvIntoFrame(seriespath1)
         step1models = self.getCalibratedModels(df1, self.model1Templates)
 
-        # Создать массив готовых калибровок ResultModel и заполнить его
-
+        # Подготовить данные
         df2 = self.concatCsvIntoFrame(seriespath2)
         df_Ch4_Ref = self.concatCsvIntoFrame(referencePath)
         df2 = self.interpolateCH4Data(df2, df_Ch4_Ref)
 
-        for model in step1models:
-            df_calc = self.calculateWithModel(df2, model)
+        # Создать массив готовых калибровок ResultModel и заполнить его
+        resultModels = []
+
+        # Рассчитать модели и сохранить их в массив
+        for model1 in step1models:
+            df_calc = self.calculateWithModel(df2, model1)
             df_calc = self.addRsR0(df_calc)
             step2models = self.getCalibratedModels(df_calc, self.model2Templates)
+            for model2 in step2models:
+                df_calc2 = self.calculateWithModel(df_calc2, model2)
+                step3models = self.getCalibratedModels(df_calc2, self.model3Templates)
+                for model3 in step3models:
+                    resultModels.append(
+                        {
+                         ModelNames.model1   : model1,
+                         ModelNames.model2   : model2,
+                         ModelNames.model3   : model3
+                        }
+                    )
 
-        # Получить модели для третьего шага
-        # Заполнить массив калибровок
-
-        # Получить лучшую модель
-        # Сохранить лучшую модель в файл
-        # Сохранить все расчитанные модели в файл??
-
-
-        pass
-
-
+        return resultModels
 
     def passDataToCalibrationModule(self, series1Path, series2Path):
         models = self.calibrationModelsPreparing()

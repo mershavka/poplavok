@@ -6,9 +6,10 @@ import json
 
 class ReferenceData:
 
-    def __init__(self, seriesId, loadingDate):
+    def __init__(self, seriesId, loadingDate, valuesDict = None):
         self.seriesId = seriesId
         self.loadingDate = loadingDate
+        self.valuesDict = valuesDict
 
     def fromJson(self, jsonDict):
         self.seriesId = int(jsonDict['seriesId'])

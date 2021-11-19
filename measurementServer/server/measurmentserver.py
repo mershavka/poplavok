@@ -1,3 +1,5 @@
+from measurementServer.common import values
+from measurementServer.server.methaneAnalyzer import MethaneAnalyzer
 from ..common import *
 from ..drivers import *
 # from calibration import CalibrationModule
@@ -23,6 +25,9 @@ class MeasurementServer:
     testMode = False
     initialized = False
 
+    def now():
+        return dt.datetime.now()
+
     def __new__(cls):
         if not hasattr(cls, 'instance'):
             cls.instance = super(MeasurementServer, cls).__new__(cls)
@@ -32,15 +37,15 @@ class MeasurementServer:
         ms = MeasurementServer()
         if MeasurementServer.testMode:
             return { 	
-						ValuesNames.timestamp.getString()	: dt.datetime.now(),  
-						ValuesNames.adc.getString()			: 2044,
+                        ValuesNames.timestamp.getString()	: dt.datetime.now(),  
+                        ValuesNames.adc.getString()			: 2044,
                         ValuesNames.voltage.getString()		: 1.2,
                         ValuesNames.temperature.getString()	: 25,
-						ValuesNames.rHumidity.getString()	: 35, 
+                        ValuesNames.rHumidity.getString()	: 35, 
                         ValuesNames.aHumidity.getString()	: 10,
-						ValuesNames.pressure.getString()	: 10000,
-						ValuesNames.ch4.getString()			: 0
-					}
+                        ValuesNames.pressure.getString()	: 10000,
+                        ValuesNames.ch4.getString()			: 0
+                    }
         
         return ms.device.readData()
  
@@ -63,9 +68,13 @@ class MeasurementServer:
             self.device = Driver()
             self.device.open()
 
-        self.fs = MeasurementFileSystem(EXEC_DIR)        
+        self.fs = MeasurementFileSystem(EXEC_DIR)
+        self.ma = MethaneAnalyzer()        
+
         self.series = self.fs.loadSeries()
         self.calibrations = self.fs.loadCalibrations()
+        self.refDatas = self.fs.loadReferencesData()
+
         if self.series:
             self.lastSeriesId = max(self.series.keys())
         else:
@@ -103,14 +112,12 @@ class MeasurementServer:
             print("No series with id={}".format(seriesId))
         return self.currentSeries
 
-    def addReferenceDataToSeries(self, path):
-        if not self.currentSeries:
-            print("Choose a Series before loading reference data")
-            self.status = Status.ERROR
-            return
-        self.fs.addReferenceDataToSeries(self.currentSeries, path)
-        return self.currentSeries.referenceData
-
+    def uploadReferenceData(self, seriesId, timestampsList, ch4RefList):
+        valuesDict = {ValuesNames.timestamp.name : timestampsList, ValuesNames.ch4Ref.name : ch4RefList}        
+        refData = ReferenceData(seriesId, self.now(), valuesDict)
+        self.fs.addReferenceData(refData)
+        self.refDatas[refData.seriesId] = refData
+        return
 
     def runMeasurement(self, duration, periodicity, description):
         type = self.currentSeries.type
@@ -203,12 +210,20 @@ class MeasurementServer:
     def startCalibration(self, description, seriesIdStep1, seriesIdStep2):        
         series1Path = self.fs.getSeriesPathById(seriesIdStep1) # Путь к серии для калибровки V0
         series2Path = self.fs.getSeriesPathById(seriesIdStep2) # Путь к серии для калибровки CH4
+
         if not (series1Path and series2Path):
             print("Series not found!")
             return None
-        c = Calibration(self.lastCalibrationId, seriesIdStep1, seriesIdStep2, dt.datetime.now(), description)
-        self.currentCalibration = c
 
+        if not (seriesIdStep2 in self.refDatas.keys()):
+            print("Reference data not found!")
+            return None
+
+        refDataPath = self.fs.refDataToPath(self.refDatas[seriesIdStep2])
+        methaneModels = self.ma.calibration(series1Path, series2Path, refDataPath)
+        # Получить лучшую модель
+        # Сохранить лучшую модель в файл
+        # Сохранить все расчитанные модели в файл??
 
     def getCurrentCalibrationModels(self):
         if self.currentCalibration:
@@ -227,16 +242,4 @@ class MeasurementServer:
         print("No model with id={} in current calibration with id={}".format(id, self.currentCalibration.id))
         return None
 
-    def gotIt(self):
-        self.status = Status.NO
 
-    def calculateCH4(self):
-        pass
-
-    # def addCH4toDict(self, dataDict):
-    #     if self.currentCalibration:
-    #         CH4 = self.currentCalibration.calculateCH4(dataDict)
-    #         dataDict[ch4String] = CH4
-    #     else:
-    #         dataDict[ch4String] = ""
-    #     return dataDict
