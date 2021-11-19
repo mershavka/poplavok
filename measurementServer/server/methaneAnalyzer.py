@@ -26,8 +26,8 @@ class methaneAnalyzer:
             df = pd.read_csv(filename, delimiter=',')
             li.append(df)
         frame = pd.concat(li, axis=0, ignore_index=True)
-        #Изменить названия колонок
-        return frame
+        frame_renamed = frame.rename(columns = ValuesNames.stringToName, inplace = False)
+        return frame_renamed
 
     def appendRowToCsv(self, filename, listOfElements):
         with open(filename, 'a+', newline ='') as writeObj:
@@ -108,7 +108,7 @@ class methaneAnalyzer:
         interploated_ch4_reference = self.interpolation(t=ref_unix_times, t_new=unix_times, ch4=ch4_reference)
 
         if interploated_ch4_reference:
-            df_calculated[values.ValuesNames.ch4Ref.name] = interploated_ch4_reference
+            df_calculated[ValuesNames.ch4Ref.name] = interploated_ch4_reference
 
         return df_calculated
 

@@ -29,3 +29,18 @@ class ValuesNames:
 	ch4 			: PhysicalValue = PhysicalValue('CH4', 			'Methane concentration'				, 'ppm'		)
 	rsr0			: PhysicalValue = PhysicalValue('Rs/R0', 		'Relative sensor response'			, ''		)
 	ch4Ref			: PhysicalValue = PhysicalValue('CH4Ref', 		'Reference Methane Concentration'	, 'ppm' 	)
+
+	stringToName = {
+		timestamp.getString() 		: timestamp.name,
+		adc.getString() 			: adc.name,
+		voltage.getString() 		: voltage.name,
+		voltage0.getString() 		: voltage0.name,
+		resistance.getString() 		: resistance.name,	
+		temperature.getString() 	: temperature.name, 
+		rHumidity.getString() 		: rHumidity.name,
+		aHumidity.getString() 		: aHumidity.name,
+		pressure.getString() 		: pressure.name, 
+		ch4.getString() 			: ch4.name,
+		rsr0.getString() 			: rsr0.name,
+		ch4Ref.getString() 			: ch4Ref.name,
+	}
