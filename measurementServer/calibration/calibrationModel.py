@@ -14,7 +14,8 @@ class CalibrationModel:
 
     def __init__(self, dependence_function, predictor_names, dependent_name):
         self.function = dependence_function
-        self.predictor_names = predictor_names
+        self.predictor_names = predictor_names        
+        self.predictors_count = len(self.predictor_names)
         self.dependent_name = dependent_name
         self.coefs = None
     
@@ -24,14 +25,12 @@ class CalibrationModel:
         self.__fit()
 
     def calculate(self, X):
-        if self.coefs == None:
+        if self.coefs is None:
             return None
         return self.function(X, *self.coefs)
 
     def __fit(self):
         self.coefs, self.pcov = curve_fit(self.function, self.X, self.y)
-        #Количество предикторов (независимых переменных)
-        self.predictors_count = np.ndim(self.X)
         self.y_hat = self.function(self.X, *self.coefs)
         #Residual sum of squares (сумма квадратов остатков)
         self.ss_residual = sum((self.y-self.y_hat)**2)

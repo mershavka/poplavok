@@ -1,7 +1,6 @@
 from measurementServer.common import values
 from measurementServer.server.methaneAnalyzer import MethaneAnalyzer
 from ..common import *
-from ..drivers import *
 # from calibration import CalibrationModule
 from .measurementfilesystem import MeasurementFileSystem
 from .measurementmodule import MeasurementModule
@@ -22,10 +21,10 @@ class FilePathError(Error):
 
 class MeasurementServer:
 
-    testMode = False
+    testMode = True
     initialized = False
 
-    def now():
+    def now(self):
         return dt.datetime.now()
 
     def __new__(cls):
@@ -52,7 +51,8 @@ class MeasurementServer:
     def __writeToMeasureFile(sender, dataDict: dict):
         ms = MeasurementServer()
         # Расчет метана по калибровке
-        newDataDict = ms.dataAnalyzer.prepareData(dataDict)
+        # newDataDict = ms.dataAnalyzer.prepareData(dataDict)
+        newDataDict = dataDict
         ms.lastData = newDataDict   
         ms.fs.writeMeasurementToFile(ms.currentMeasurement, newDataDict)
 
@@ -64,7 +64,8 @@ class MeasurementServer:
         if self.initialized:
             return
 
-        if not MeasurementServer.testMode:
+        if not MeasurementServer.testMode:            
+            from ..drivers import Driver
             self.device = Driver()
             self.device.open()
 

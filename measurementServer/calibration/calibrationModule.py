@@ -1,6 +1,6 @@
 # from typing import final
 from measurementServer.calibration.calibrationModel import CalibrationModel
-from .models import ModelFirst, ModelSecond
+from models import ModelFirst, ModelSecond
 from .calibrationFunctions import calib1Functions, calib2Functions
 
 import pandas

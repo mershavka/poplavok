@@ -27,6 +27,7 @@ class ValuesNames:
 	aHumidity		: PhysicalValue = PhysicalValue('aH', 			'Absolute Humidity'					, 'kg*m^-3'	)
 	pressure      	: PhysicalValue = PhysicalValue('P', 			'Pressure'							, 'Pascal'	)
 	ch4 			: PhysicalValue = PhysicalValue('CH4', 			'Methane concentration'				, 'ppm'		)
+	ch4LR 			: PhysicalValue = PhysicalValue('CH4LR',		'Methane concentration LR'			, 'ppm'		)
 	rsr0			: PhysicalValue = PhysicalValue('Rs/R0', 		'Relative sensor response'			, ''		)
 	ch4Ref			: PhysicalValue = PhysicalValue('CH4Ref', 		'Reference Methane Concentration'	, 'ppm' 	)
 

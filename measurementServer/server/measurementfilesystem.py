@@ -37,8 +37,8 @@ class MeasurementFileSystem:
 
     def __pathToReferenceData(self, path):
         pathStr = os.path.basename(os.path.normpath(path))
-        descriptionStr = os.path.splitext(path)[0] + ".csv"
-        matched = re.match(self.refData_name_regex, pathStr)
+        descriptionStr = os.path.splitext(pathStr)[0]
+        matched = re.match(self.refData_name_regex, descriptionStr)
         if bool(matched):
             seriesId = int(matched.group('seriesId'))
             date = datetime.datetime.strptime(matched.group('date'), timeformat)
@@ -181,7 +181,7 @@ class MeasurementFileSystem:
         refDataDict = {}
         for refDataPath in refDataPathes:
             refData = self.__pathToReferenceData(refDataPath)
-            if refData in None:
+            if refData is None:
                 continue
             refDataDict[refData.seriesId] = refData
         return refDataDict

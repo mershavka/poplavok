@@ -25,7 +25,7 @@ class MethaneAnalyzer:
         if os.path.isdir(dirPath):
             all_files = glob.glob(dirPath + "/*.csv")
         else:
-            all_files = dirPath
+            all_files = [dirPath]
         li = []
         for filename in all_files:
             df = pd.read_csv(filename, delimiter=',')
@@ -50,24 +50,27 @@ class MethaneAnalyzer:
                 continue
 
             X = {name: list(df[name]) for name in m.predictor_names}
-            m.fit(X, list(df[m.dependent_name]))
+            Y = (df[m.dependent_name[0]]).to_numpy()
+            m.fit(X, Y)
             modelsList.append(m)
 
         return modelsList
 
     def calculateWithModel(self, df, model):
 
-        hasAllColumns = all([name in list(df.keys()) for name in (model.predictor_names + model.dependent_name)])
+        hasAllColumns = all([name in list(df.keys()) for name in (model.predictor_names)])
         if not hasAllColumns:
             return None
 
         df_calc = df[model.predictor_names]
-        df[model.dependent_name] = model.calculate(df_calc)
+        df_result = model.calculate(df_calc)
+        df[model.dependent_name[0]] = df_result
         return df
 
     def calibration(self, seriespath1, seriespath2, referencePath):
         # Загрузить данные
         df1 = self.concatCsvIntoFrame(seriespath1)
+        df1[ValuesNames.voltage0.name] = df1[ValuesNames.voltage.name]
         step1models = self.getCalibratedModels(df1, self.model1Templates)
 
         # Подготовить данные
@@ -84,7 +87,8 @@ class MethaneAnalyzer:
             df_calc = self.addRsR0(df_calc)
             step2models = self.getCalibratedModels(df_calc, self.model2Templates)
             for model2 in step2models:
-                df_calc2 = self.calculateWithModel(df_calc2, model2)
+                df_calc2 = self.calculateWithModel(df_calc, model2)
+                df_calc2[ValuesNames.ch4LR.name] = df_calc2[ValuesNames.ch4Ref.name]
                 step3models = self.getCalibratedModels(df_calc2, self.model3Templates)
                 for model3 in step3models:
                     resultModels.append(
@@ -116,15 +120,18 @@ class MethaneAnalyzer:
 
     def interpolateCH4Data(self, df_calculated, df_reference) -> np.ndarray:
         
-        timestamps = df_calculated[ValuesNames.timestamp.name].to_numpy()
-        ref_timestamps = df_reference[ValuesNames.timestamp.name].to_numpy()
+        timestrings = df_calculated[ValuesNames.timestamp.name].to_numpy()
+        timestamps = [dt.datetime.fromisoformat(s) for s in timestrings]
+        ref_timestrings = df_reference[ValuesNames.timestamp.name].to_numpy()
+        ref_timestamps = [dt.datetime.fromisoformat(s) for s in ref_timestrings]
+
         unix_times = self.convertTimestampsToFloats(timestamps)
         ref_unix_times = self.convertTimestampsToFloats(ref_timestamps)
 
         ch4_reference = df_reference[ValuesNames.ch4Ref.name].to_numpy()
         interploated_ch4_reference = self.interpolation(t=ref_unix_times, t_new=unix_times, ch4=ch4_reference)
 
-        if interploated_ch4_reference:
+        if not interploated_ch4_reference is None:
             df_calculated[ValuesNames.ch4Ref.name] = interploated_ch4_reference
 
         return df_calculated

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from matplotlib.pyplot import phase_spectrum
+# from matplotlib.pyplot import phase_spectrum
 from .values import ValuesNames, ModelNames
 from .enums import *
 from .series import Series

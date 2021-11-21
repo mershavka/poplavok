@@ -11,6 +11,9 @@ class Series:
         self.description = description
         self.type = MeasureType(type)
         self.measurements = {} if measurements is None else measurements
+        
+    def __str__(self) -> str:
+        return "series{} {}".format(self.id, self.description)
 
     def setId(self, id):
         self.id = id

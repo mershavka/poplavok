@@ -5,9 +5,9 @@ from operator import index
 from datetime import datetime as dt
 from typing import Optional
 
-from scipy.sparse import data
-from values import ValuesNames
-from calibration.calibrationFunctions import RsR0_calc
+# from scipy.sparse import data
+from .values import ValuesNames
+from ..calibration.calibrationFunctions import RsR0_calc
 import json
 
 class ResultModel:
