@@ -1,4 +1,5 @@
 from operator import mod
+from pandas.core.frame import DataFrame
 from scipy.interpolate.interpolate import interp1d
 from measurementServer.calibration import CalibrationModel, CalibrationModelTemplate
 from measurementServer.calibration.calibrationFunctions import *
@@ -16,9 +17,9 @@ class MethaneAnalyzer:
     
     def __init__(self):        
         self.Vref = 1.024
-        self.model1Templates = [CalibrationModelTemplate(dependence_function=func[0], predictor_names=func[1], dependent_name=func[2]) for func in calib1Functions.values()]
-        self.model2Templates = [CalibrationModelTemplate(dependence_function=func[0], predictor_names=func[1], dependent_name=func[2]) for func in calib2Functions.values()]
-        self.model3Templates = [CalibrationModelTemplate(dependence_function=func[0], predictor_names=func[1], dependent_name=func[2]) for func in calib3Functions.values()]
+        self.model1Templates = [CalibrationModelTemplate(function_name=key, dependence_function=values[0], predictor_names=values[1], dependent_name=values[2]) for key, values in calib1Functions.items()]
+        self.model2Templates = [CalibrationModelTemplate(function_name=key, dependence_function=values[0], predictor_names=values[1], dependent_name=values[2]) for key, values in calib2Functions.items()]
+        self.model3Templates = [CalibrationModelTemplate(function_name=key, dependence_function=values[0], predictor_names=values[1], dependent_name=values[2]) for key, values in calib3Functions.items()]
 
     def concatCsvIntoFrame(self, dirPath):
         all_files = []
@@ -43,7 +44,12 @@ class MethaneAnalyzer:
 
         modelsList = []
         for modelTemplate in modelTemplates:
-            m = CalibrationModel(modelTemplate.function, modelTemplate.predictor_names, modelTemplate.dependent_name)
+            m = CalibrationModel(
+                function_name=modelTemplate.function_name, 
+                dependence_function=modelTemplate.function, 
+                predictor_names=modelTemplate.predictor_names,
+                dependent_name=modelTemplate.dependent_name
+            )
 
             hasAllColumns = all([name in list(df.keys()) for name in (m.predictor_names + m.dependent_name)])
             if not hasAllColumns:
@@ -79,8 +85,8 @@ class MethaneAnalyzer:
         df2 = self.interpolateCH4Data(df2, df_Ch4_Ref)
 
         # Создать массив готовых калибровок ResultModel и заполнить его
-        resultModels = []
-
+        dict_resultModels = []
+        df_resultModels = DataFrame()
         # Рассчитать модели и сохранить их в массив
         for model1 in step1models:
             df_calc = self.calculateWithModel(df2, model1)
@@ -91,15 +97,36 @@ class MethaneAnalyzer:
                 df_calc2[ValuesNames.ch4LR.name] = df_calc2[ValuesNames.ch4Ref.name]
                 step3models = self.getCalibratedModels(df_calc2, self.model3Templates)
                 for model3 in step3models:
-                    resultModels.append(
+                    df_models = pd.concat([
+                        self.modelToDataFrame(ModelNames.model1, model1),
+                        self.modelToDataFrame(ModelNames.model2, model2),
+                        self.modelToDataFrame(ModelNames.model3, model3)
+                    ], axis=1)
+                    df_resultModels = pd.concat([df_resultModels, df_models], axis=0, ignore_index=True)
+                    dict_resultModels.append(
                         {
                          ModelNames.model1   : model1,
                          ModelNames.model2   : model2,
                          ModelNames.model3   : model3
                         }
-                    )
 
-        return resultModels
+                    )
+        best_resultModel = self.findBestModel()
+        return df_resultModels, dict_resultModels, best_resultModel
+
+    def findBestModel(self, dict_resultModels):
+        pass
+    
+    def modelToDataFrame(self, prefix, model : CalibrationModel):
+        df = DataFrame(columns=[prefix+'name',prefix+'predictors',prefix+'dependent',prefix+'coefs',prefix+'rmse',prefix+'adjr^2'])
+        df.astype({prefix+'name': str, prefix+'predictors' : object, prefix+'dependent': object, prefix+'coefs': object})
+        df.at[0,prefix+'name'] = model.function_name
+        df.at[0,prefix+'predictors'] = model.predictor_names
+        df.at[0,prefix+'dependent'] = model.dependent_name
+        df.at[0,prefix+'coefs'] = model.coefs
+        df.at[0,prefix+'rmse'] = model.rmse
+        df.at[0,prefix+'adjr^2'] = model.adjusted_r_squared
+        return df
 
     def passDataToCalibrationModule(self, series1Path, series2Path):
         models = self.calibrationModelsPreparing()

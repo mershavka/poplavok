@@ -77,3 +77,12 @@ calib2Functions = {
 calib3Functions = {
     'lin_func_CH4pred' : (lin_X, [ValuesNames.ch4.name], [ValuesNames.ch4LR.name])
 }
+
+def functionByName(function_name):
+	if function_name in calib1Functions:
+		return calib1Functions[function_name][0]
+	elif function_name in calib2Functions:
+		return calib2Functions[function_name][0]
+	elif function_name in calib3Functions:
+		return calib3Functions[function_name][0]
+	return None

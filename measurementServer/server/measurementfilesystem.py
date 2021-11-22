@@ -15,13 +15,13 @@ from shutil import copy
 class MeasurementFileSystem:
     series_name_regex = "series(?P<id>\d+)_(?P<type>\d+)_(?P<date>\d+)"
     measurement_name_regex = "measure(?P<id>\d+)_(?P<type>\d+)_(?P<date>\d+)"
-    calibration_name_regex = "calibration(?P<id>\d+)_(?P<date>\d+)"
     refData_name_regex = "referenceData_series(?P<seriesId>\d+)_(?P<date>\d+)"
-    model_name_regex = "model(?P<index>\d+)_(?P<functionV>\w+_\w+)_(?P<functionCH4>\w+_\w+)"
+    result_model_name_regex = "resultModel(?P<id>\d+)_(?P<date>\d+)_(?P<functionV>\w+_\w+)_(?P<functionCH4>\w+_\w+)"
 
     def __init__(self, path):
         self.path = path
         self.refDir = 'ReferenceData'
+        self.resultModelsDir = 'ResultModels'
         self.header = None
         if not os.path.exists(self.path):
             try:
@@ -31,21 +31,16 @@ class MeasurementFileSystem:
                 if not os.path.exists(self.path):
                     os.mkdir(self.path)
         
-        refPath = self.path + '/' + self.refDir
-        if not os.path.exists(refPath):
-            os.mkdir(refPath)
+        self.refPath = self.path + '/' + self.refDir
+        self.resultModelsPath = self.path + '/' + self.resultModelsDir
 
-    def __pathToReferenceData(self, path):
-        pathStr = os.path.basename(os.path.normpath(path))
-        descriptionStr = os.path.splitext(pathStr)[0]
-        matched = re.match(self.refData_name_regex, descriptionStr)
-        if bool(matched):
-            seriesId = int(matched.group('seriesId'))
-            date = datetime.datetime.strptime(matched.group('date'), timeformat)
-            return ReferenceData(seriesId, date)
-        else:
-            return None
-    
+        if not os.path.exists(self.refPath):
+            os.mkdir(self.refPath)
+
+        if not os.path.exists(self.resultModelsPath):
+            os.mkdir(self.resultModelsPath)
+        
+
     def getReferenceDataDict(self, refData):
         if refData.valuesDict:
             return refData.valuesDict
@@ -62,7 +57,30 @@ class MeasurementFileSystem:
                         v = int(v)
                     valuesDict[k].append(v)
         refData.valuesDict = valuesDict
-        return valuesDict        
+        return valuesDict
+
+    def __pathToReferenceData(self, path):
+        pathStr = os.path.basename(os.path.normpath(path))
+        descriptionStr = os.path.splitext(pathStr)[0]
+        matched = re.match(self.refData_name_regex, descriptionStr)
+        if bool(matched):
+            seriesId = int(matched.group('seriesId'))
+            date = datetime.datetime.strptime(matched.group('date'), timeformat)
+            return ReferenceData(seriesId, date)
+        else:
+            return None
+
+    def __pathToResultModel(self, path):
+        pathStr = os.path.basename(os.path.normpath(path))
+        matched = re.match(self.result_model_name_regex, pathStr)
+        if bool(matched):
+            rm = ResultModel()
+            with open(pathStr) as json_file:
+                jsonDict = json.load(json_file)
+                rm.fromJson(jsonDict)
+            return rm
+        else:
+            return None
 
     def __pathToMeasure(self, path):
         pathStr = os.path.basename(os.path.normpath(path))
@@ -79,37 +97,6 @@ class MeasurementFileSystem:
             return m
         else:
             return None
-
-    def __pathToCalibration(self, path):
-        calibrationDirName = os.path.basename(os.path.normpath(path))
-        matched = re.match(self.calibration_name_regex, calibrationDirName)
-        if bool(matched):
-            c_id = int(matched.group('id'))
-            c_date = datetime.datetime.strptime(
-                matched.group('date'), timeformat)
-            jsonPath = path + '/description.json'
-            if not os.path.exists(jsonPath):
-                return None
-            with open(jsonPath) as json_file:
-                data = json.load(json_file)
-            if not data:
-                return None
-            c_desription = data['description']
-            c_series1StepId = int(data['series1StepId'])
-            c_series2StepId = int(data['series2StepId'])
-
-            c_models = {}
-
-            for filename in glob.glob(calibrationDirName + "/*.csv"):
-                model = self.__pathToModel(filename)
-                if model:
-                    c_models[model.id] = model
-
-            c = Calibration(id=c_id, series1StepId=c_series1StepId, series2StepId=c_series2StepId,
-                            date=c_date, description=c_desription, models=c_models)
-            return c
-
-        return None
 
     def __pathToSeries(self, seriesPath):
         seriesDirName = os.path.basename(os.path.normpath(seriesPath))
@@ -145,13 +132,12 @@ class MeasurementFileSystem:
 
     def refDataToPath(self, refData: ReferenceData):
         refDataFileName = "/referenceData_series{}_{}.csv".format(refData.seriesId, refData.loadingDate.strftime(timeformat))
-        refDataPath = self.path + '/' + self.refDir + refDataFileName
+        refDataPath = self.refPath + refDataFileName
         return refDataPath
 
-    def __modelToPath(self, model: Model):
-        # TODO  SOLVE CALIBRATION PATH
-        calibrationPath = ""
-        return calibrationPath + "/model{}_{}_{}.csv".format(model.index, model.v_function, model.ch4function)
+    def __resultModelToPath(self, bestModel : ResultModel):
+        resultModelPath = self.resultModelsPath + "/resultModel{}_{}_{}_{}".format(bestModel.id, bestModel.date.strftime(timeformat), bestModel.V0Model.function_name, bestModel.CH4Model.function_name)
+        return resultModelPath
 
     def loadSeries(self):
         seriesPathes = glob.glob(self.path + "/series*")
@@ -164,20 +150,8 @@ class MeasurementFileSystem:
                 seriesDict[s.id] = s
         return seriesDict
 
-    def loadCalibrations(self):
-        calibrationsPathes = glob.glob(
-            self.path + "/calibrations/calibration*")
-        calibrationsDict = {}
-        for calibrationPath in calibrationsPathes:
-            if not os.path.isdir(calibrationPath):
-                continue
-            c = self.__pathToCalibration(calibrationPath)
-            if not c is None:
-                calibrationsDict[c.id] = c
-        return calibrationsDict
-
     def loadReferencesData(self):
-        refDataPathes = glob.glob(self.path + '/' + self.refDir + '/referenceData*.csv')
+        refDataPathes = glob.glob(self.refPath + '/referenceData*.csv')
         refDataDict = {}
         for refDataPath in refDataPathes:
             refData = self.__pathToReferenceData(refDataPath)
@@ -186,7 +160,17 @@ class MeasurementFileSystem:
             refDataDict[refData.seriesId] = refData
         return refDataDict
 
-    def addSeries(self, s):
+    def loadResultModels(self):
+        modelsPathes = glob.glob(self.resultModelsPath + '/resultModel*.json')
+        resultModelsDict = {}
+        for modelPath in modelsPathes:
+            resultModel = self.__pathToResultModel(modelPath)
+            if resultModel is None:
+                continue
+            resultModelsDict[resultModel.id] = resultModel
+        return resultModelsDict
+
+    def addSeries(self, s: Series):
         seriesPath = self.__seriesToPath(s)
         if not os.path.exists(seriesPath):
             os.mkdir(seriesPath)
@@ -195,7 +179,7 @@ class MeasurementFileSystem:
             f.write(jsonString)
         return
 
-    def addMeasurement(self, m):
+    def addMeasurement(self, m : Measurement):
         measurementPath = self.__measurementToPath(m)
         jsonString = m.toJsonString()
         descriptionStr = os.path.splitext(measurementPath)
@@ -204,38 +188,20 @@ class MeasurementFileSystem:
             f.write(jsonString)
         return
 
-    def addReferenceData(self, refData):
+    def addReferenceData(self, refData: ReferenceData):
         referenceDataPath = self.refDataToPath(refData) 
         header = list(refData.valuesDict.keys())
         self.appendRowToCsv(referenceDataPath, header)        
         for item in zip(*list(refData.valuesDict.values())):
             self.appendRowToCsv(referenceDataPath, item)
-        return 
+        return
 
-    def addCalibration(self, c):
-        pass
-
-    def addModel(self, model):
-        modelPath = self.__modelToPath(model)
-        pass
-
-    def saveServerState(self, ms):
-        pass
-
-    def loadServerState(self, ms):
-        pass
-
-    def addReferenceDataToSeries(self, s, path):
-        seriesPath = self.__seriesToPath(s)
-        if not os.path.exists(seriesPath):
-            return
-        loadingDate = datetime.datetime.now()
-        newReferenceDataPath = seriesPath + \
-            "/referenceData_loaded{}.csv".format(
-                loadingDate.strftime(timeformat))
-        resultPath = copy(path, newReferenceDataPath)
-        s.referenceData = ReferenceData(seriesId=s.id, loadingDate=loadingDate)
-        return s.referenceData
+    def addResultModel(self, bestModel : ResultModel):
+        bestModelPath = self.__resultModelToPath(bestModel)
+        jsonString = bestModel.toJsonString()
+        with open(bestModelPath, 'w') as f:
+            f.write(jsonString)
+        return
 
     def deleteMeasurement(self, m):
         measurementPath = self.__measurementToPath(m)

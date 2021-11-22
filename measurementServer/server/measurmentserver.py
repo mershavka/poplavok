@@ -6,8 +6,8 @@ from .measurementfilesystem import MeasurementFileSystem
 from .measurementmodule import MeasurementModule
 import datetime as dt
 
-EXEC_DIR = "/home/pi/Documents/Repos/poplavok-algorithm/MServer"
-# EXEC_DIR = "C:/Users/mershavka/Repositories/poplavok-algorithm/sandbox"
+# EXEC_DIR = "/home/pi/Documents/Repos/poplavok-algorithm/MServer"
+EXEC_DIR = "C:/Users/mershavka/Repositories/poplavok-algorithm/sandbox"
 
 class Error(Exception):
     """Base class for other exceptions"""
@@ -73,14 +73,11 @@ class MeasurementServer:
         self.ma = MethaneAnalyzer()        
 
         self.series = self.fs.loadSeries()
-        self.calibrations = self.fs.loadCalibrations()
         self.refDatas = self.fs.loadReferencesData()
+        self.resultModels = self.fs.loadResultModels()
 
-        if self.series:
-            self.lastSeriesId = max(self.series.keys())
-        else:
-            self.lastSeriesId = 0
-        self.lastCalibrationId = 0 if not self.calibrations else max(self.calibrations.keys())
+        self.lastSeriesId = 0 if not self.series else max(self.series.keys())
+        self.lastResultModelId = 0 if not self.resultModels else max(self.resultModels.keys())
 
         self.worker = MeasurementModule()
         self.worker.setReadFunc(self.__readFromDevice)
@@ -221,10 +218,17 @@ class MeasurementServer:
             return None
 
         refDataPath = self.fs.refDataToPath(self.refDatas[seriesIdStep2])
-        methaneModels = self.ma.calibration(series1Path, series2Path, refDataPath)
-        # Получить лучшую модель
-        # Сохранить лучшую модель в файл
-        # Сохранить все расчитанные модели в файл??
+        methaneModels_df, methaneModels_dict, bestMethaneModelDict = self.ma.calibration(series1Path, series2Path, refDataPath)
+        id = self.lastResultModelId + 1
+        date = dt.datetime.now()
+        bestMethaneModel = ResultModel(id=id, date=date, series1Id=seriesIdStep1, series2Id=seriesIdStep2, V0Model=bestMethaneModelDict[ModelNames.model1], CH4Model=bestMethaneModelDict[ModelNames.model2], CH4LRModel=bestMethaneModelDict[ModelNames.model3])
+        self.fs.addResultModel(bestMethaneModel)
+        self.lastResultModelId = id
+        self.resultModels[id] = bestMethaneModel
+        self.currentCalibration = bestMethaneModel
+        # Сохранить все расчитанные модели в файл
+        return bestMethaneModel
+
 
     def getCurrentCalibrationModels(self):
         if self.currentCalibration:
@@ -232,15 +236,5 @@ class MeasurementServer:
         print("Choose Calibration before getting models")
         return None
 
-    def selectCH4Model(self, id):
-        if not self.currentCalibration:
-            print("Choose Calibration before selecting model")
-            return None
-        if id in self.currentCalibration.models:
-            self.currentCalibration.selectedModel = self.currentCalibration.models[id]
-            return self.currentCalibration.selectedModel
-        self.status = Status.ERROR
-        print("No model with id={} in current calibration with id={}".format(id, self.currentCalibration.id))
-        return None
 
 

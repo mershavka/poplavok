@@ -6,8 +6,7 @@ from .enums import *
 from .series import Series
 from .measurement import Measurement
 from .referenceData import ReferenceData
-from .model import Model, ResultModel
-from .calibration import Calibration
+from .model import ResultModel
 
 
-__all__ = ['Series', 'Measurement', 'Model', 'ResultModel', 'Calibration', 'ReferenceData', 'MeasureType', 'Status', 'timeformat', 'ValuesNames', 'ModelNames']
+__all__ = ['Series', 'Measurement', 'ResultModel', 'ReferenceData', 'MeasureType', 'Status', 'timeformat', 'ValuesNames', 'ModelNames']

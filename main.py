@@ -6,34 +6,34 @@ from datetime import datetime
 # datetime.fromisoformat()
 
 timestrings = [
-    '2021-11-21 19:02:23.036310',
-    '2021-11-21 19:02:24.036316',
-    '2021-11-21 19:02:25.036319',
-    '2021-11-21 19:02:27.036331',
-    '2021-11-21 19:02:28.036329',
-    '2021-11-21 19:02:29.036347',
-    '2021-11-21 19:02:30.036349',
-    '2021-11-21 19:02:32.036372'
+    '2021-11-22 13:30:03.258601',
+	'2021-11-22 13:30:05.259419',
+	'2021-11-22 13:30:06.259882',
+	'2021-11-22 13:30:07.259971',
+	'2021-11-22 13:30:08.260496',
+	'2021-11-22 13:30:09.260864',
+	'2021-11-22 13:30:10.260983',
+	'2021-11-22 13:30:12.261718'
 ]
 timestamps = [datetime.fromisoformat(s) for s in timestrings]
 
 ch4Ref = [
+    5.1,
+    5.2,
+    4.9,
+    5.2,
     5,
     5,
-    5,
-    5,
-    5,
-    5,
-    5,
+    5.1,
     5
 ]
 
 ms = MeasurementServer()
-# ms.createSeries("Test with new names")
-# ms.runMeasurement(10, 1, 'With new names 2')
+# ms.createSeries("Test with dataframe")
+# ms.runMeasurement(10, 1, 'With df')
 # print(ms.getSeriesList())
-# ms.uploadReferenceData(6, timestamps, ch4Ref)
-ms.startCalibration("Test",6,6)
+# ms.uploadReferenceData(2, timestamps, ch4Ref)
+ms.startCalibration("Test",2,2)
 
 # pmc = PyroMeasurementClient()
 # print(pmc.getServerStatus())
