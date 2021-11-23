@@ -51,3 +51,13 @@ class ModelNames:
 	model1: str = "V0Model"
 	model2: str = "CH4Model"
 	model3: str = "CH4LRModel"
+
+@dataclass
+class ModelParameters:
+	function_name 		:str = 'function_name'     
+	predictor_names 	:str = 'predictor_names'
+	predictors_count    :str = 'predictors_count'
+	dependent_name		:str = 'dependent_name'    
+	coefficients 		:str = 'coefficients'             
+	adjusted_r_squared 	:str = 'adjusted_r_squared'
+	rmse 				:str = 'rmse'              

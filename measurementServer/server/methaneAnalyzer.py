@@ -111,21 +111,27 @@ class MethaneAnalyzer:
                         }
 
                     )
-        best_resultModel = self.findBestModel()
+        best_resultModel = self.findBestModel(df_resultModels)
         return df_resultModels, dict_resultModels, best_resultModel
 
-    def findBestModel(self, dict_resultModels):
-        pass
+    def findBestModel(self, df_resultModels):
+        df_sorted = df_resultModels.sort_values(by=[ModelParameters.predictors_count, ModelParameters.rmse, ModelParameters.adjusted_r_squared], ascending=[True, True, False], inplace=True)
+        bestModelDict = {
+            ModelNames.model1   : df_sorted.loc[0, ModelNames.model1],
+            ModelNames.model2   : df_sorted.loc[0, ModelNames.model2],
+            ModelNames.model3   : df_sorted.loc[0, ModelNames.model3]
+        }
+        return bestModelDict
     
     def modelToDataFrame(self, prefix, model : CalibrationModel):
         df = DataFrame(columns=[prefix+'name',prefix+'predictors',prefix+'dependent',prefix+'coefs',prefix+'rmse',prefix+'adjr^2'])
-        df.astype({prefix+'name': str, prefix+'predictors' : object, prefix+'dependent': object, prefix+'coefs': object})
-        df.at[0,prefix+'name'] = model.function_name
-        df.at[0,prefix+'predictors'] = model.predictor_names
-        df.at[0,prefix+'dependent'] = model.dependent_name
-        df.at[0,prefix+'coefs'] = model.coefs
-        df.at[0,prefix+'rmse'] = model.rmse
-        df.at[0,prefix+'adjr^2'] = model.adjusted_r_squared
+        df.astype({prefix + 'name': str, prefix+'predictors' : object, prefix+'dependent': object, prefix+'coefs': object})
+        df.at[0, prefix + ' ' + ModelParameters.function_name] = model.function_name
+        df.at[0, prefix + ' ' + ModelParameters.predictor_names] = model.predictor_names
+        df.at[0, prefix + ' ' + ModelParameters.dependent_name] = model.dependent_name
+        df.at[0, prefix + ' ' + ModelParameters.coefficients] = model.coefficients
+        df.at[0, prefix + ' ' + ModelParameters.rmse] = model.rmse
+        df.at[0, prefix + ' ' + ModelParameters.adjusted_r_squared] = model.adjusted_r_squared
         return df
 
     def passDataToCalibrationModule(self, series1Path, series2Path):

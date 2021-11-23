@@ -3,7 +3,7 @@ from numpy.core.fromnumeric import nonzero
 from scipy.optimize import curve_fit
 from calibrationFunctions import functionByName
 import numpy as np
-
+from ..common import ModelParameters
 from sandbox.test import func
 
 class CalibrationModelTemplate:
@@ -23,7 +23,7 @@ class CalibrationModel:
         self.predictors_count = 0 if not self.predictor_names else len(self.predictor_names)
         self.dependent_name = dependent_name
 
-        self.coefs = None
+        self.coefficients = None
         self.r_squared = None
         self.adjusted_r_squared = None
         self.rmse = None
@@ -35,13 +35,13 @@ class CalibrationModel:
         self.__fit()
 
     def calculate(self, X):
-        if self.coefs is None:
+        if self.coefficients is None:
             return None
-        return self.function(X, *self.coefs)
+        return self.function(X, *self.coefficients)
 
     def __fit(self):
-        self.coefs, self.pcov = curve_fit(self.function, self.X, self.y)
-        self.y_hat = self.function(self.X, *self.coefs)
+        self.coefficients, self.pcov = curve_fit(self.function, self.X, self.y)
+        self.y_hat = self.function(self.X, *self.coefficients)
         #Residual sum of squares (сумма квадратов остатков)
         self.ss_residual = sum((self.y-self.y_hat)**2)
          #Total sum of squares (общая сумма квадратов)
@@ -55,21 +55,23 @@ class CalibrationModel:
 
     def toDict(self):        
         data = {
-            'function_name'         : self.function_name,
-            'predictor_names'       : self.predictor_names,
-            'dependent_name'        : self.dependent_name,
-            'coefs'                 : self.coefs,
-            'adjusted_r_squared'    : self.adjusted_r_squared,
-            'rmse'                  : self.rmse
+            ModelParameters.function_name         	: self.function_name,
+            ModelParameters.predictor_names       	: self.predictor_names,
+            ModelParameters.predictors_count     	: self.predictors_count,
+            ModelParameters.dependent_name			: self.dependent_name,
+            ModelParameters.coefficients          	: self.coefficients,
+            ModelParameters.adjusted_r_squared    	: self.adjusted_r_squared,
+            ModelParameters.rmse      				: self.rmse
             }        
         return data
 
     def fromDict(self, dict):
-        self.function_name = dict['function_name']
-        self.predictor_names = dict['predictor_names']
-        self.predictors_count = int(dict['predictors_count'])
+        self.function_name = dict[ModelParameters.function_name]
         self.function = functionByName(self.function_name)
-        self.dependent_name = dict['dependent_name']
-        self.coefs = dict['coefs']
-        
-        
+        self.predictor_names = dict[ModelParameters.predictor_names]
+        self.predictors_count = int(dict[ModelParameters.predictors_count])
+        self.dependent_name = dict[ModelParameters.dependent_name]
+        self.coefficients = dict[ModelParameters.coefficients]
+        self.adjusted_r_squared = dict[ModelParameters.adjusted_r_squared]
+        self.rmse = dict[ModelParameters.rmse]
+    

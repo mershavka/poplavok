@@ -130,7 +130,7 @@ class MeasurementServer:
         m_id = 1
         if self.currentSeries.getMeasurementsIds():
             m_id += max(self.currentSeries.getMeasurementsIds())
-        new_measurement = Measurement(seriesId=self.currentSeries.id, duration=duration, periodicity=periodicity, date=dt.datetime.now(), description=description, calibrationId=self.currentCalibration, id=m_id)
+        new_measurement = Measurement(seriesId=self.currentSeries.id, duration=duration, periodicity=periodicity, date=dt.datetime.now(), description=description, calibrationId=self.currentCalibration.id, id=m_id)
         self.fs.addMeasurement(new_measurement)
         self.currentSeries.addMeasurement(m_id, new_measurement)
         self.currentMeasurement = new_measurement
@@ -220,21 +220,14 @@ class MeasurementServer:
         refDataPath = self.fs.refDataToPath(self.refDatas[seriesIdStep2])
         methaneModels_df, methaneModels_dict, bestMethaneModelDict = self.ma.calibration(series1Path, series2Path, refDataPath)
         id = self.lastResultModelId + 1
+        self.lastResultModelId = id
         date = dt.datetime.now()
         bestMethaneModel = ResultModel(id=id, date=date, series1Id=seriesIdStep1, series2Id=seriesIdStep2, V0Model=bestMethaneModelDict[ModelNames.model1], CH4Model=bestMethaneModelDict[ModelNames.model2], CH4LRModel=bestMethaneModelDict[ModelNames.model3])
         self.fs.addResultModel(bestMethaneModel)
-        self.lastResultModelId = id
         self.resultModels[id] = bestMethaneModel
         self.currentCalibration = bestMethaneModel
         # Сохранить все расчитанные модели в файл
         return bestMethaneModel
-
-
-    def getCurrentCalibrationModels(self):
-        if self.currentCalibration:
-            return self.currentCalibration.models
-        print("Choose Calibration before getting models")
-        return None
 
 
 
