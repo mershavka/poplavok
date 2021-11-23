@@ -1,3 +1,4 @@
+from math import nan
 from operator import mod
 from pandas.core.frame import DataFrame
 from scipy.interpolate.interpolate import interp1d
@@ -58,6 +59,8 @@ class MethaneAnalyzer:
             X = {name: list(df[name]) for name in m.predictor_names}
             Y = (df[m.dependent_name[0]]).to_numpy()
             m.fit(X, Y)
+            if np.isnan(m.coefficients).any():
+                continue
             modelsList.append(m)
 
         return modelsList
@@ -83,6 +86,7 @@ class MethaneAnalyzer:
         df2 = self.concatCsvIntoFrame(seriespath2)
         df_Ch4_Ref = self.concatCsvIntoFrame(referencePath)
         df2 = self.interpolateCH4Data(df2, df_Ch4_Ref)
+        df2[ValuesNames.ch4.name] = df2[ValuesNames.ch4Ref.name]
 
         # Создать массив готовых калибровок ResultModel и заполнить его
         dict_resultModels = []
@@ -115,7 +119,7 @@ class MethaneAnalyzer:
         return df_resultModels, dict_resultModels, best_resultModel
 
     def findBestModel(self, df_resultModels):
-        df_sorted = df_resultModels.sort_values(by=[ModelParameters.predictors_count, ModelParameters.rmse, ModelParameters.adjusted_r_squared], ascending=[True, True, False], inplace=True)
+        df_sorted = df_resultModels.sort_values(by=[ModelNames.model1+ModelParameters.rmse, ModelNames.model1+ModelParameters.adjusted_r_squared], ascending=[True, False], inplace=True)
         bestModelDict = {
             ModelNames.model1   : df_sorted.loc[0, ModelNames.model1],
             ModelNames.model2   : df_sorted.loc[0, ModelNames.model2],
@@ -124,14 +128,28 @@ class MethaneAnalyzer:
         return bestModelDict
     
     def modelToDataFrame(self, prefix, model : CalibrationModel):
-        df = DataFrame(columns=[prefix+'name',prefix+'predictors',prefix+'dependent',prefix+'coefs',prefix+'rmse',prefix+'adjr^2'])
-        df.astype({prefix + 'name': str, prefix+'predictors' : object, prefix+'dependent': object, prefix+'coefs': object})
-        df.at[0, prefix + ' ' + ModelParameters.function_name] = model.function_name
-        df.at[0, prefix + ' ' + ModelParameters.predictor_names] = model.predictor_names
-        df.at[0, prefix + ' ' + ModelParameters.dependent_name] = model.dependent_name
-        df.at[0, prefix + ' ' + ModelParameters.coefficients] = model.coefficients
-        df.at[0, prefix + ' ' + ModelParameters.rmse] = model.rmse
-        df.at[0, prefix + ' ' + ModelParameters.adjusted_r_squared] = model.adjusted_r_squared
+        df = DataFrame(columns=
+        [
+         prefix + ModelParameters.function_name,
+         prefix + ModelParameters.predictor_names,
+         prefix + ModelParameters.dependent_name,
+         prefix + ModelParameters.coefficients,
+         prefix + ModelParameters.rmse,
+         prefix + ModelParameters.adjusted_r_squared ])
+        df.astype(
+            {   
+                prefix + ModelParameters.function_name      : str, 
+                prefix + ModelParameters.predictor_names    : object,
+                prefix + ModelParameters.dependent_name     : object,
+                prefix + ModelParameters.coefficients       : object
+            }
+        )
+        df.at[0, prefix + ModelParameters.function_name] = model.function_name
+        df.at[0, prefix + ModelParameters.predictor_names] = model.predictor_names
+        df.at[0, prefix + ModelParameters.dependent_name] = model.dependent_name
+        df.at[0, prefix + ModelParameters.coefficients] = model.coefficients
+        df.at[0, prefix + ModelParameters.rmse] = model.rmse
+        df.at[0, prefix + ModelParameters.adjusted_r_squared] = model.adjusted_r_squared
         return df
 
     def passDataToCalibrationModule(self, series1Path, series2Path):

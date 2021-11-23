@@ -1,10 +1,9 @@
 from math import sqrt
 from numpy.core.fromnumeric import nonzero
 from scipy.optimize import curve_fit
-from calibrationFunctions import functionByName
+from .calibrationFunctions import functionByName
 import numpy as np
 from ..common import ModelParameters
-from sandbox.test import func
 
 class CalibrationModelTemplate:
     def __init__(self, function_name, dependence_function, predictor_names, dependent_name):
@@ -40,7 +39,7 @@ class CalibrationModel:
         return self.function(X, *self.coefficients)
 
     def __fit(self):
-        self.coefficients, self.pcov = curve_fit(self.function, self.X, self.y)
+        self.coefficients, self.pcov = curve_fit(self.function, self.X, self.y, maxfev=5000)
         self.y_hat = self.function(self.X, *self.coefficients)
         #Residual sum of squares (сумма квадратов остатков)
         self.ss_residual = sum((self.y-self.y_hat)**2)

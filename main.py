@@ -33,7 +33,7 @@ ms = MeasurementServer()
 # ms.runMeasurement(10, 1, 'With df')
 # print(ms.getSeriesList())
 # ms.uploadReferenceData(2, timestamps, ch4Ref)
-ms.startCalibration("Test",2,2)
+ms.startCalibration("Test",6,6)
 
 # pmc = PyroMeasurementClient()
 # print(pmc.getServerStatus())
