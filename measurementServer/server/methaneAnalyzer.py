@@ -13,6 +13,8 @@ import glob
 import pandas as pd
 import numpy as np
 import datetime as dt
+import random
+from math import exp
 
 class MethaneAnalyzer:
     
@@ -115,23 +117,31 @@ class MethaneAnalyzer:
                         }
 
                     )
+        df_resultModels.to_csv('models.csv')
         best_resultModel = self.findBestModel(df_resultModels)
         return df_resultModels, dict_resultModels, best_resultModel
 
     def findBestModel(self, df_resultModels):
-        df_sorted = df_resultModels.sort_values(by=[ModelNames.model1+ModelParameters.rmse, ModelNames.model1+ModelParameters.adjusted_r_squared], ascending=[True, False], inplace=True)
-        bestModelDict = {
-            ModelNames.model1   : df_sorted.loc[0, ModelNames.model1],
-            ModelNames.model2   : df_sorted.loc[0, ModelNames.model2],
-            ModelNames.model3   : df_sorted.loc[0, ModelNames.model3]
-        }
-        return bestModelDict
+        columnName0 = ModelNames.model1+ModelParameters.predictors_count
+        columnName1 = ModelNames.model1+ModelParameters.rmse
+        columnName2 = ModelNames.model1+ModelParameters.adjusted_r_squared
+        df_sorted = df_resultModels.sort_values(by=[columnName0, columnName1, columnName2], ascending=[True, True, False], inplace=False, ignore_index = True)
+        if not df_sorted is None or not df_sorted.emty:
+            bestModelDict = {
+                ModelNames.model1   : df_sorted.loc[0, ModelNames.model1 + ModelParameters.function_name],
+                ModelNames.model2   : df_sorted.loc[0, ModelNames.model2 + ModelParameters.function_name],
+                ModelNames.model3   : df_sorted.loc[0, ModelNames.model3 + ModelParameters.function_name]
+            }
+            print(bestModelDict)
+            return bestModelDict
+        return None
     
     def modelToDataFrame(self, prefix, model : CalibrationModel):
         df = DataFrame(columns=
         [
          prefix + ModelParameters.function_name,
          prefix + ModelParameters.predictor_names,
+         prefix + ModelParameters.predictors_count,
          prefix + ModelParameters.dependent_name,
          prefix + ModelParameters.coefficients,
          prefix + ModelParameters.rmse,
@@ -146,6 +156,7 @@ class MethaneAnalyzer:
         )
         df.at[0, prefix + ModelParameters.function_name] = model.function_name
         df.at[0, prefix + ModelParameters.predictor_names] = model.predictor_names
+        df.at[0, prefix + ModelParameters.predictors_count] = model.predictors_count
         df.at[0, prefix + ModelParameters.dependent_name] = model.dependent_name
         df.at[0, prefix + ModelParameters.coefficients] = model.coefficients
         df.at[0, prefix + ModelParameters.rmse] = model.rmse
@@ -202,4 +213,75 @@ class MethaneAnalyzer:
         df[ValuesNames.rsr0.name] = RsR0_calc(df) 
         return df
 
+        
+    def generateTestDatasets(self, measuresCount = 44, func = lin_X, coefficients = [2, 0.5], step = 1):
+        df_test = pd.DataFrame(columns=[
+            ValuesNames.timestamp.getString(),
+            ValuesNames.adc.getString(),
+            ValuesNames.voltage.getString(),
+            ValuesNames.temperature.getString(),
+            ValuesNames.rHumidity.getString(),
+            ValuesNames.aHumidity.getString(),
+            ValuesNames.pressure.getString(),
+            ValuesNames.ch4.getString()	
+            ])
+        t = dt.datetime.now()
+        time = [t + dt.timedelta(seconds=i + round(random.random(), 2)) for i in range(measuresCount)]
+        defaultADC = 50000
+        defaultTemperature = 20
+        defaultPressure = 100000
+        defaultCH4 = 0
+        minRH = 40
+        maxRH = 100
+        df_test[ValuesNames.timestamp.getString()] = time
+        df_test[ValuesNames.adc.getString()] = [defaultADC] * measuresCount
+        df_test[ValuesNames.voltage.getString()] = [defaultADC * 2.5 / 2**16] * measuresCount
+        df_test[ValuesNames.temperature.getString()] = [defaultTemperature] * measuresCount
+        df_test[ValuesNames.pressure.getString()] = [defaultPressure] * measuresCount
+        df_test[ValuesNames.ch4.getString()] = [defaultCH4] * measuresCount
+        if step == 1:
+            temperature = list(np.linspace(0, 30, measuresCount))
+            rh = random.sample(range(minRH, maxRH), measuresCount)
+            aH = [self.absoluteHumidity(rh[i], defaultPressure, temperature[i]) for i in range(len(rh))]
+            x_data = {ValuesNames.temperature.name : temperature, ValuesNames.aHumidity.name : aH, ValuesNames.rHumidity.name : rh}
+            voltage0 = func(x_data, *coefficients)
+            np.random.seed(1729)
+            y_noise = 0.2 * np.random.normal(size=measuresCount)
+            ydata = voltage0 + y_noise
+            df_test[ValuesNames.voltage.getString()] = ydata
+        #Второй шаг
+        elif step == 2:
+            temperature = [defaultTemperature] * measuresCount
+            rh = random.sample(range(minRH, maxRH), measuresCount)
+            aH = [self.absoluteHumidity(rh[i], defaultPressure, temperature[i]) for i in range(len(rh))]
+            x_data = {ValuesNames.temperature.name : temperature, ValuesNames.aHumidity.name : aH, ValuesNames.rHumidity.name : rh}
+            voltage0 = lin_X(x_data, *[2, 0.5])
+            x_data[ValuesNames.voltage0.name] = voltage0
+            df_test[ValuesNames.voltage0.getString()] = voltage0
+            voltage = lin_X( {ValuesNames.rHumidity.name : rh}, *[4, 1])
+            df_test[ValuesNames.voltage.getString()] = voltage
+            x_data[ValuesNames.voltage.name] = voltage
+            x_data[ValuesNames.rsr0.name] = RsR0_calc(x_data)
+            df_test[ValuesNames.rsr0.getString()] = x_data[ValuesNames.rsr0.name]
+            CH4 = ch4_lin_R_rH_T(x_data, *[0.5, 1, 2, -0.2])
+            np.random.seed(500)
+            y_noise = 0.2 * np.random.normal(size=measuresCount)
+            CH4data = CH4 + y_noise
+            df_test[ValuesNames.ch4Ref.getString()] = CH4data
+            df_test[ValuesNames.ch4.getString()] = CH4
+
+        df_test[ValuesNames.temperature.getString()] = list(temperature)
+        df_test[ValuesNames.rHumidity.getString()] = rh
+        df_test[ValuesNames.aHumidity.getString()] = aH
+        
+
+        df_test.to_csv('test_data.csv')
+
+    def absoluteHumidity(self, RH, P, t):	
+        Rv = 461.5 # J/(kg*K)
+        ew = 6.112 * exp(17.62 * t / (243.12 + t)) * (1.0016 + 3.15e-6 * P - 0.074 / P) # Pa
+        T = t + 273.15
+        AH = RH * ew / Rv / T
+        return AH
+            
 
