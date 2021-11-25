@@ -91,7 +91,7 @@ class MethaneAnalyzer:
         df2[ValuesNames.ch4.name] = df2[ValuesNames.ch4Ref.name]
 
         # Создать массив готовых калибровок ResultModel и заполнить его
-        dict_resultModels = []
+        dict_resultModels = {}
         df_resultModels = DataFrame()
         # Рассчитать модели и сохранить их в массив
         for model1 in step1models:
@@ -108,32 +108,32 @@ class MethaneAnalyzer:
                         self.modelToDataFrame(ModelNames.model2, model2),
                         self.modelToDataFrame(ModelNames.model3, model3)
                     ], axis=1)
+                    df_models['id'] = len(dict_resultModels)
+
                     df_resultModels = pd.concat([df_resultModels, df_models], axis=0, ignore_index=True)
-                    dict_resultModels.append(
-                        {
+
+                    dict_resultModels[len(dict_resultModels)] = {
                          ModelNames.model1   : model1,
                          ModelNames.model2   : model2,
                          ModelNames.model3   : model3
                         }
-
-                    )
         df_resultModels.to_csv('models.csv')
-        best_resultModel = self.findBestModel(df_resultModels)
+        bestModelId = self.findBestModelId(df_resultModels)
+        best_resultModel = None if not bestModelId else dict_resultModels[bestModelId]
         return df_resultModels, dict_resultModels, best_resultModel
 
-    def findBestModel(self, df_resultModels):
-        columnName0 = ModelNames.model1+ModelParameters.predictors_count
-        columnName1 = ModelNames.model1+ModelParameters.rmse
-        columnName2 = ModelNames.model1+ModelParameters.adjusted_r_squared
-        df_sorted = df_resultModels.sort_values(by=[columnName0, columnName1, columnName2], ascending=[True, True, False], inplace=False, ignore_index = True)
+    def findBestModelId(self, df_resultModels):
+        colV0PredCount = ModelNames.model1+ModelParameters.predictors_count
+        colCH4PredCount = ModelNames.model2+ModelParameters.predictors_count
+        colV0rmse = ModelNames.model1+ModelParameters.rmse
+        colCH4rmse = ModelNames.model2+ModelParameters.rmse
+        colV0r2 = ModelNames.model1+ModelParameters.adjusted_r_squared
+        colCH4r2 = ModelNames.model2+ModelParameters.adjusted_r_squared
+        colCH4LRr2 = ModelNames.model3+ModelParameters.adjusted_r_squared
+        df_conditions = df_resultModels.loc[(df_resultModels[colV0r2]>0) & (df_resultModels[colCH4r2]>0) & (df_resultModels[colCH4LRr2]>0)]
+        df_sorted = df_conditions.sort_values(by=[colV0r2, colCH4r2, colV0PredCount, colCH4PredCount, colV0rmse, colCH4rmse], ascending=[False, False, True, True, True, True], inplace=False, ignore_index = True)
         if not df_sorted is None or not df_sorted.emty:
-            bestModelDict = {
-                ModelNames.model1   : df_sorted.loc[0, ModelNames.model1 + ModelParameters.function_name],
-                ModelNames.model2   : df_sorted.loc[0, ModelNames.model2 + ModelParameters.function_name],
-                ModelNames.model3   : df_sorted.loc[0, ModelNames.model3 + ModelParameters.function_name]
-            }
-            print(bestModelDict)
-            return bestModelDict
+            return df_sorted.loc[0, 'id']
         return None
     
     def modelToDataFrame(self, prefix, model : CalibrationModel):

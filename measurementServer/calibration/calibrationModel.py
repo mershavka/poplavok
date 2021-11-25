@@ -58,7 +58,7 @@ class CalibrationModel:
             ModelParameters.predictor_names       	: self.predictor_names,
             ModelParameters.predictors_count     	: self.predictors_count,
             ModelParameters.dependent_name			: self.dependent_name,
-            ModelParameters.coefficients          	: self.coefficients,
+            ModelParameters.coefficients          	: list(map(float, list(self.coefficients))),
             ModelParameters.adjusted_r_squared    	: self.adjusted_r_squared,
             ModelParameters.rmse      				: self.rmse
             }        
@@ -70,7 +70,7 @@ class CalibrationModel:
         self.predictor_names = dict[ModelParameters.predictor_names]
         self.predictors_count = int(dict[ModelParameters.predictors_count])
         self.dependent_name = dict[ModelParameters.dependent_name]
-        self.coefficients = dict[ModelParameters.coefficients]
+        self.coefficients = np.array(dict[ModelParameters.coefficients])
         self.adjusted_r_squared = dict[ModelParameters.adjusted_r_squared]
         self.rmse = dict[ModelParameters.rmse]
     

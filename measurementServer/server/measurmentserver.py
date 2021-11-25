@@ -222,7 +222,8 @@ class MeasurementServer:
         id = self.lastResultModelId + 1
         self.lastResultModelId = id
         date = dt.datetime.now()
-        bestMethaneModel = ResultModel(id=id, date=date, series1Id=seriesIdStep1, series2Id=seriesIdStep2, V0Model=bestMethaneModelDict[ModelNames.model1], CH4Model=bestMethaneModelDict[ModelNames.model2], CH4LRModel=bestMethaneModelDict[ModelNames.model3])
+        if bestMethaneModelDict:
+            bestMethaneModel = ResultModel(id=id, date=date, series1Id=seriesIdStep1, series2Id=seriesIdStep2, V0Model=bestMethaneModelDict[ModelNames.model1], CH4Model=bestMethaneModelDict[ModelNames.model2], CH4LRModel=bestMethaneModelDict[ModelNames.model3])
         self.fs.addResultModel(bestMethaneModel)
         self.resultModels[id] = bestMethaneModel
         self.currentCalibration = bestMethaneModel

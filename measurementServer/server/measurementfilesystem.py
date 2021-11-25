@@ -75,7 +75,7 @@ class MeasurementFileSystem:
         matched = re.match(self.result_model_name_regex, pathStr)
         if bool(matched):
             rm = ResultModel()
-            with open(pathStr) as json_file:
+            with open(path) as json_file:
                 jsonDict = json.load(json_file)
                 rm.fromJson(jsonDict)
             return rm
@@ -136,7 +136,7 @@ class MeasurementFileSystem:
         return refDataPath
 
     def __resultModelToPath(self, bestModel : ResultModel):
-        resultModelPath = self.resultModelsPath + "/resultModel{}_{}_{}_{}".format(bestModel.id, bestModel.date.strftime(timeformat), bestModel.V0Model.function_name, bestModel.CH4Model.function_name)
+        resultModelPath = self.resultModelsPath + "/resultModel{}_{}_{}_{}.json".format(bestModel.id, bestModel.date.strftime(timeformat), bestModel.V0Model.function_name, bestModel.CH4Model.function_name)
         return resultModelPath
 
     def loadSeries(self):

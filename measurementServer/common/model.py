@@ -1,4 +1,4 @@
-# from enums import MeasureType, timeformat
+from .enums import timeformat
 # from series import Series
 
 from operator import index
@@ -37,7 +37,7 @@ class ResultModel:
             "id" : self.id,
             "series1Id" : self.series1Id,
             "series2Id" : self.series2Id,
-            "date" : self.date,
+            "date" : self.date.strftime(timeformat),
             "models" : [
                 {"V0Model" : self.V0Model.toDict()},
                 {"CH4Model" : self.CH4Model.toDict()},
@@ -51,10 +51,10 @@ class ResultModel:
         self.id = int(jsonDict['id'])
         self.series1Id = int(jsonDict['series1Id'])
         self.series2Id = int(jsonDict['series2Id'])
-        self.date = dt.fromisoformat(jsonDict['date'])
-        self.V0Model = self.calibrationModelFromJson(jsonDict['models']['V0Model'])
-        self.CH4Model = self.calibrationModelFromJson(jsonDict['models']['CH4Model'])
-        self.CH4LRModel = self.calibrationModelFromJson(jsonDict['models']['CH4LRModel'])
+        self.date = dt.strptime(jsonDict['date'], timeformat)
+        self.V0Model = self.calibrationModelFromJson(jsonDict['models'][0]['V0Model'])
+        self.CH4Model = self.calibrationModelFromJson(jsonDict['models'][1]['CH4Model'])
+        self.CH4LRModel = self.calibrationModelFromJson(jsonDict['models'][2]['CH4LRModel'])
 
     def calibrationModelFromJson(self, jsonDict):
         model = CalibrationModel()
