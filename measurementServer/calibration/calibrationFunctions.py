@@ -12,6 +12,18 @@ def lin_X(x, a, b):
     x = x[x_key]
     return a * np.array(x) + b
 
+def V0_lin_aH(X,a,b):
+	aH = X[ValuesNames.aHumidity.name]    
+	return a * np.array(aH) + b
+
+def V0_lin_T(X,a,b):
+	T = X[ValuesNames.temperature.name]
+	return a * np.array(T) + b
+
+def CH4LR_lin_CH4(X,a,b):
+	CH4 = X[ValuesNames.ch4.name]
+	return a * np.array(CH4) + b
+
 def V0_lin_aH_T(X, g, m, S):
     aH = X[ValuesNames.aHumidity.name]
     T = X[ValuesNames.temperature.name]
@@ -59,8 +71,8 @@ def RsR0_calc(X):
 
 calib1Functions = {
     'powFunc_aHT'   : (V0_pow_aH_T,  [ValuesNames.aHumidity.name, ValuesNames.temperature.name], [ValuesNames.voltage0.name]),
-    'linFunc_aH'	: (lin_X,  [ValuesNames.aHumidity.name], [ValuesNames.voltage0.name]),
-    'linFunc_T'	    : (lin_X,  [ValuesNames.temperature.name], [ValuesNames.voltage0.name]),
+    'linFunc_aH'	: (V0_lin_aH,  [ValuesNames.aHumidity.name], [ValuesNames.voltage0.name]),
+    'linFunc_T'	    : (V0_lin_T,  [ValuesNames.temperature.name], [ValuesNames.voltage0.name]),
     'V2Func_aHT'	: (V0_lin_aH_T,   [ValuesNames.aHumidity.name,ValuesNames.temperature.name], [ValuesNames.voltage0.name]),
     'V5Func_aH'	    : (V0_fraction_X,   [ValuesNames.aHumidity.name], [ValuesNames.voltage0.name]),
     'V5Func_T'	    : (V0_fraction_X,   [ValuesNames.temperature.name], [ValuesNames.voltage0.name]),
@@ -75,7 +87,7 @@ calib2Functions = {
 }
 
 calib3Functions = {
-    'lin_func_CH4pred' : (lin_X, [ValuesNames.ch4.name], [ValuesNames.ch4LR.name])
+    'lin_func_CH4pred' : (CH4LR_lin_CH4, [ValuesNames.ch4.name], [ValuesNames.ch4LR.name])
 }
 
 def functionByName(function_name):

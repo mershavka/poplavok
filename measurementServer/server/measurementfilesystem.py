@@ -1,7 +1,9 @@
+from json.decoder import JSONDecodeError
 from pandas.core.frame import DataFrame
 from measurementServer.common import referenceData
 from ..common import *
 from ..common.enums import *
+from .measurementServerConfig import MeasurementServerConfig
 
 import os
 import re
@@ -138,6 +140,22 @@ class MeasurementFileSystem:
     def __resultModelToPath(self, bestModel : ResultModel):
         resultModelPath = self.resultModelsPath + "/resultModel{}_{}_{}_{}.json".format(bestModel.id, bestModel.date.strftime(timeformat), bestModel.V0Model.function_name, bestModel.CH4Model.function_name)
         return resultModelPath
+
+    def updateConfig(self, config : MeasurementServerConfig):
+        configPath = self.path + '/measurementServerConfig.json'
+        with open(configPath, 'w') as json_file:
+            json_file.write(config.toJsonString())
+
+
+    def loadConfig(self) -> MeasurementServerConfig:
+        config = MeasurementServerConfig()
+        configPath = self.path + '/measurementServerConfig.json'
+        try:
+            with open(configPath, 'r') as json_file:
+                config.fromJson(json.load(json_file))
+        except Exception:
+            self.updateConfig(config)
+        return config
 
     def loadSeries(self):
         seriesPathes = glob.glob(self.path + "/series*")

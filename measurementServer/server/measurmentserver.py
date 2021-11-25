@@ -1,9 +1,13 @@
+from dataclasses import dataclass
+import json
+from measurementServer import calibration
 from measurementServer.common import values
 from measurementServer.server.methaneAnalyzer import MethaneAnalyzer
 from ..common import *
 # from calibration import CalibrationModule
 from .measurementfilesystem import MeasurementFileSystem
 from .measurementmodule import MeasurementModule
+from .measurementServerConfig import MeasurementServerConfig
 import datetime as dt
 
 # EXEC_DIR = "/home/pi/Documents/Repos/poplavok-algorithm/MServer"
@@ -36,14 +40,13 @@ class MeasurementServer:
         ms = MeasurementServer()
         if MeasurementServer.testMode:
             return { 	
-                        ValuesNames.timestamp.getString()	: dt.datetime.now(),  
-                        ValuesNames.adc.getString()			: 2044,
-                        ValuesNames.voltage.getString()		: 1.2,
-                        ValuesNames.temperature.getString()	: 25,
-                        ValuesNames.rHumidity.getString()	: 35, 
-                        ValuesNames.aHumidity.getString()	: 10,
-                        ValuesNames.pressure.getString()	: 10000,
-                        ValuesNames.ch4.getString()			: 0
+                        ValuesNames.timestamp.name	: dt.datetime.now(),  
+                        ValuesNames.adc.name			: 2044,
+                        ValuesNames.voltage.name		: 1.2,
+                        ValuesNames.temperature.name	: 25,
+                        ValuesNames.rHumidity.name	    : 35, 
+                        ValuesNames.aHumidity.name      : 10,
+                        ValuesNames.pressure.name	    : 10000,
                     }
         
         return ms.device.readData()
@@ -52,9 +55,10 @@ class MeasurementServer:
         ms = MeasurementServer()
         # Расчет метана по калибровке
         # newDataDict = ms.dataAnalyzer.prepareData(dataDict)
-        newDataDict = dataDict
-        ms.lastData = newDataDict   
-        ms.fs.writeMeasurementToFile(ms.currentMeasurement, newDataDict)
+        if not ms.currentCalibration is None:
+            dataDict = ms.currentCalibration.calculateCH4(dataDict)
+        ms.lastData = dataDict   
+        ms.fs.writeMeasurementToFile(ms.currentMeasurement, dataDict)
 
     def _measurementStopStatus(sender):
         ms = MeasurementServer()
@@ -75,6 +79,7 @@ class MeasurementServer:
         self.series = self.fs.loadSeries()
         self.refDatas = self.fs.loadReferencesData()
         self.resultModels = self.fs.loadResultModels()
+        self._config = self.fs.loadConfig()
 
         self.lastSeriesId = 0 if not self.series else max(self.series.keys())
         self.lastResultModelId = 0 if not self.resultModels else max(self.resultModels.keys())
@@ -89,9 +94,26 @@ class MeasurementServer:
         self.status = Status.NO
         self.currentSeries = None
         self.currentMeasurement = None
-        self.currentCalibration = None
+
+        if self._config.currentCalibrationId in self.resultModels.keys():
+            self._currentCalibration = self.resultModels[self._config.currentCalibrationId]
+        else:
+            self.currentCalibration = None
 
         self.initialized = True
+    
+    @property
+    def currentCalibration(self):
+        return self._currentCalibration
+
+    @currentCalibration.setter
+    def currentCalibration(self, value):
+        self._currentCalibration = value
+        if self.currentCalibration:
+            self._config.currentCalibrationId = self._currentCalibration.id
+        else:
+            self._config.currentCalibrationId = -1
+        self.fs.updateConfig(self._config)
 
     def createSeries(self, description="", type=MeasureType.COMMON):		
         new_series = Series(description=description, type=type, id = self.lastSeriesId + 1, date=dt.datetime.now())
@@ -127,10 +149,16 @@ class MeasurementServer:
             self.status = Status.ERROR
             print("Measurement and Series types are different")
             return
+        if not self.currentCalibration:
+            if type == MeasureType.EXPERIMENT:
+                print("No calibration")
+                return
+            calibrationId = -1
+        calibrationId = self.currentCalibration.id
         m_id = 1
         if self.currentSeries.getMeasurementsIds():
-            m_id += max(self.currentSeries.getMeasurementsIds())
-        new_measurement = Measurement(seriesId=self.currentSeries.id, duration=duration, periodicity=periodicity, date=dt.datetime.now(), description=description, calibrationId=self.currentCalibration.id, id=m_id)
+            m_id += max(self.currentSeries.getMeasurementsIds())		
+        new_measurement = Measurement(seriesId=self.currentSeries.id, duration=duration, periodicity=periodicity, date=dt.datetime.now(), description=description, calibrationId=calibrationId, id=m_id)
         self.fs.addMeasurement(new_measurement)
         self.currentSeries.addMeasurement(m_id, new_measurement)
         self.currentMeasurement = new_measurement
@@ -197,13 +225,16 @@ class MeasurementServer:
             return self.addCH4toDict(dataDict)
 
     def chooseCalibration(self, id):
-        if id in self.calibrations:
-            self.currentCalibration = self.calibrations[id]
+        if id in self.resultModels:
+            self.currentCalibration = self.resultModels[id]
             return self.currentCalibration
         else:	
             self.status = Status.ERROR
             print("No calibration with id={}".format(id))
             return None
+
+    def getCalibrationsList(self):
+        return [*self.resultModels.values()]
 
     def startCalibration(self, description, seriesIdStep1, seriesIdStep2):        
         series1Path = self.fs.getSeriesPathById(seriesIdStep1) # Путь к серии для калибровки V0

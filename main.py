@@ -1,5 +1,6 @@
 # from measurementServer.client import PyroMeasurementClient
 # from measurementServer.common import *
+from measurementServer.common.enums import MeasureType
 from measurementServer.server import MeasurementServer
 from datetime import datetime
 
@@ -33,8 +34,12 @@ ms = MeasurementServer()
 # ms.runMeasurement(10, 1, 'With df')
 # print(ms.getSeriesList())
 # ms.uploadReferenceData(2, timestamps, ch4Ref)
-ms.startCalibration("Test",1,2)
+# ms.startCalibration("Test",1,2)
 # ms.ma.generateTestDatasets(step=2)
+# ms.createSeries('Battle Series', MeasureType.EXPERIMENT)
+ms.chooseSeries(3)
+# ms.chooseCalibration(2)
+ms.runMeasurement(10, 1, 'Hello')
 
 # pmc = PyroMeasurementClient()
 # print(pmc.getServerStatus())
