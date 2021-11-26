@@ -7,6 +7,7 @@ from .series import Series
 from .measurement import Measurement
 from .referenceData import ReferenceData
 from .model import ResultModel
+from .myLogger import MyLogger
 
 
-__all__ = ['Series', 'Measurement', 'ResultModel', 'ReferenceData', 'MeasureType', 'Status', 'timeformat', 'ValuesNames', 'ModelNames', 'ModelParameters']
+__all__ = ['Series', 'Measurement', 'ResultModel', 'ReferenceData', 'MeasureType', 'Status', 'timeformat', 'ValuesNames', 'ModelNames', 'ModelParameters', 'MyLogger']

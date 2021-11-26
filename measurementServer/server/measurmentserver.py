@@ -4,11 +4,15 @@ from measurementServer import calibration
 from measurementServer.common import values
 from measurementServer.server.methaneAnalyzer import MethaneAnalyzer
 from ..common import *
-# from calibration import CalibrationModule
 from .measurementfilesystem import MeasurementFileSystem
 from .measurementmodule import MeasurementModule
 from .measurementServerConfig import MeasurementServerConfig
 import datetime as dt
+from ..common import MyLogger
+
+import sys
+import logging
+from logging import StreamHandler, Formatter
 
 # EXEC_DIR = "/home/pi/Documents/Repos/poplavok-algorithm/MServer"
 EXEC_DIR = "C:/Users/mershavka/Repositories/poplavok-algorithm/sandbox"
@@ -73,6 +77,9 @@ class MeasurementServer:
             self.device = Driver()
             self.device.open()
 
+        self.logger = MyLogger.__call__().get_logger()
+        self.logger.info("Hello, Logger")
+
         self.fs = MeasurementFileSystem(EXEC_DIR)
         self.ma = MethaneAnalyzer()        
 
@@ -101,6 +108,7 @@ class MeasurementServer:
             self.currentCalibration = None
 
         self.initialized = True
+        self.logger.debug('MeasurementServer initialized')
     
     @property
     def currentCalibration(self):
@@ -129,7 +137,7 @@ class MeasurementServer:
             self.currentSeries = self.series[seriesId]
         else:	
             self.status = Status.ERROR
-            print("No series with id={}".format(seriesId))
+            self.logger.error("No series with id={}".format(seriesId))
         return self.currentSeries
 
     def uploadReferenceData(self, seriesId, timestampsList, ch4RefList):
@@ -140,18 +148,18 @@ class MeasurementServer:
         return
 
     def runMeasurement(self, duration, periodicity, description):
-        type = self.currentSeries.type
         if not self.currentSeries:
             self.status = Status.ERROR
-            print('Choose a series before measuring')
+            self.logger.error('Choose a series before measuring')
             return
+        type = self.currentSeries.type
         if type != self.currentSeries.type:
             self.status = Status.ERROR
-            print("Measurement and Series types are different")
+            self.logger.warning("Measurement and Series types are different")
             return
         if not self.currentCalibration:
             if type == MeasureType.EXPERIMENT:
-                print("No calibration")
+                self.logger.error("No calibration")
                 return
             calibrationId = -1
         calibrationId = self.currentCalibration.id
@@ -173,23 +181,23 @@ class MeasurementServer:
 
     def chooseMeasurement(self, id):
         if self.currentSeries is None:
-            print("Select a Series before choosing a measurement")
+            self.logger.error("Select a Series before choosing a measurement")
             return None
         self.currentMeasurement = self.currentSeries.getMesurementById(id)
         if self.currentMeasurement is None:
-            print("No measurement with id {} in the Series with id {}".format(id, self.currentSeries.id))
+            self.logger.error("No measurement with id {} in the Series with id {}".format(id, self.currentSeries.id))
             return None
         return self.currentMeasurement
 
     def deleteCurrentMeasurement(self):
         if self.status in [Status.COMMON_MEASUREMENT, Status.CALIBRATION, Status.FIELD_EXPERIMENT]:
-            print('Measurement is underway, stop it before deleting')
+            self.logger.warning('Measurement is underway, stop it before deleting')
             return -1
         if self.currentMeasurement:
             m = self.currentSeries.popMeasurement(self.currentMeasurement.id)
             self.fs.deleteMeasurement(m)
             return 0
-        print("Current measurement not found")
+        self.logger.error("Current measurement not found")
         return -1
 
     def getCurrentSeries(self):
@@ -230,7 +238,7 @@ class MeasurementServer:
             return self.currentCalibration
         else:	
             self.status = Status.ERROR
-            print("No calibration with id={}".format(id))
+            self.logger.error("No calibration with id={}".format(id))
             return None
 
     def getCalibrationsList(self):
@@ -241,11 +249,11 @@ class MeasurementServer:
         series2Path = self.fs.getSeriesPathById(seriesIdStep2) # Путь к серии для калибровки CH4
 
         if not (series1Path and series2Path):
-            print("Series not found!")
+            self.logger.error("Series not found!")
             return None
 
         if not (seriesIdStep2 in self.refDatas.keys()):
-            print("Reference data not found!")
+            self.logger.error("Reference data not found!")
             return None
 
         refDataPath = self.fs.refDataToPath(self.refDatas[seriesIdStep2])

@@ -37,7 +37,7 @@ ms = MeasurementServer()
 # ms.startCalibration("Test",1,2)
 # ms.ma.generateTestDatasets(step=2)
 # ms.createSeries('Battle Series', MeasureType.EXPERIMENT)
-ms.chooseSeries(3)
+ms.chooseSeries(13)
 # ms.chooseCalibration(2)
 ms.runMeasurement(10, 1, 'Hello')
 
