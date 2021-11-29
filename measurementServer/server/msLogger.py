@@ -11,11 +11,19 @@ class SingletonType(type):
         return cls._instances[cls]
 
 
-class MsLogger(object, metaclass=SingletonType):
+class MsLogger:
 
     _logger = None
+    _initialized = False
+
+    def __new__(cls):
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(MsLogger, cls).__new__(cls)
+        return cls.instance
 
     def __init__(self):
+        if MsLogger._initialized:
+            return
         self._logger = logging.getLogger(__name__)
         self._logger.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s \t [%(levelname)s | %(filename)s:%(lineno)s] > %(message)s')
@@ -34,7 +42,7 @@ class MsLogger(object, metaclass=SingletonType):
 
         self._logger.addHandler(fileHandler)
         self._logger.addHandler(streamHandler)
-
+        MsLogger._initialized = True
         print("Generate new instance")
 
     def get_logger(self):

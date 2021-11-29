@@ -1,8 +1,10 @@
+from logging import Logger
 from ..common import *
 from .measurementmodule import MeasurementModule
 from .measurementfilesystem import MeasurementFileSystem
 from .methaneAnalyzer import MethaneAnalyzer
 from .msLogger import MsLogger
+from ..calibration import CalibrationResult
 
 import datetime as dt
 
@@ -57,8 +59,8 @@ class MeasurementServer:
             self.device = Driver()
             self.device.open()
 
-        self.logger = MsLogger.__call__().get_logger()
-        self.logger.info("Hello, Logger")
+        self.logger = MsLogger().get_logger()
+        self.logger.info("Hello, Logger! From MeasurementServer")
 
         self.fs = MeasurementFileSystem(EXEC_DIR)
         self.ma = MethaneAnalyzer()        
@@ -224,7 +226,7 @@ class MeasurementServer:
     def getCalibrationsList(self):
         return [*self.resultModels.values()]
 
-    def startCalibration(self, description, seriesIdStep1, seriesIdStep2):        
+    def startCalibration(self, seriesIdStep1, seriesIdStep2):        
         series1Path = self.fs.getSeriesPathById(seriesIdStep1) # Путь к серии для калибровки V0
         series2Path = self.fs.getSeriesPathById(seriesIdStep2) # Путь к серии для калибровки CH4
 
@@ -238,16 +240,15 @@ class MeasurementServer:
 
         refDataPath = self.fs.refDataToPath(self.refDatas[seriesIdStep2])
         methaneModels_df, methaneModels_dict, bestMethaneModelDict = self.ma.calibration(series1Path, series2Path, refDataPath)
-        id = self.lastResultModelId + 1
-        self.lastResultModelId = id
-        date = dt.datetime.now()
         if bestMethaneModelDict:
-            bestMethaneModel = CalibrationResult(id=id, date=date, series1Id=seriesIdStep1, series2Id=seriesIdStep2, V0Model=bestMethaneModelDict[ModelNames.model1], CH4Model=bestMethaneModelDict[ModelNames.model2], CH4LRModel=bestMethaneModelDict[ModelNames.model3])
-        self.fs.addResultModel(bestMethaneModel)
-        self.resultModels[id] = bestMethaneModel
-        self.currentCalibration = bestMethaneModel
-        # Сохранить все расчитанные модели в файл
-        return bestMethaneModel
+            id = self.lastResultModelId + 1
+            self.lastResultModelId = id
+            bestMethaneModel = CalibrationResult(id=id, date=dt.datetime.now(), series1Id=seriesIdStep1, series2Id=seriesIdStep2, V0Model=bestMethaneModelDict[ModelNames.model1], CH4Model=bestMethaneModelDict[ModelNames.model2], CH4LRModel=bestMethaneModelDict[ModelNames.model3])
+            self.fs.addResultModel(bestMethaneModel)
+            self.resultModels[id] = bestMethaneModel
+            self.currentCalibration = bestMethaneModel
+            return bestMethaneModel
+        self.logger.error("Calibration failed, no model found")
 
 
 

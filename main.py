@@ -4,7 +4,6 @@ from measurementServer.common.enums import MeasureType
 from measurementServer.server import MeasurementServer
 from datetime import datetime
 
-# datetime.fromisoformat()
 
 timestrings = [
     '2021-11-22 13:30:03.258601',
@@ -29,21 +28,22 @@ ch4Ref = [
     5
 ]
 
-# ms = MeasurementServer()
+ms = MeasurementServer()
 # ms.getServerStatus()
+ms.chooseSeries(3)
 # ms.createSeries("Test with dataframe")
-# ms.runMeasurement(10, 1, 'With df')
+# ms.runMeasurement(10, 1, 'Check logger')
+
 # print(ms.getSeriesList())
 # ms.uploadReferenceData(2, timestamps, ch4Ref)
 # ms.startCalibration("Test",1,2)
 # ms.ma.generateTestDatasets(step=2)
 # ms.createSeries('Battle Series', MeasureType.EXPERIMENT)
-# ms.chooseSeries(13)
 # ms.chooseCalibration(2)
 # ms.runMeasurement(10, 1, 'Hello')
 
-pmc = PyroMeasurementClient()
-print(pmc.getServerStatus())
+# pmc = PyroMeasurementClient()
+# print(pmc.getServerStatus())
 # print(pmc.getSeriesList())
 # pmc.runMeasurement(10, 1, 'TTTT')
 # pmc.createSeries('With sensor',MeasureType.COMMON)

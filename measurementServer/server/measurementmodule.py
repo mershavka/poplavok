@@ -1,4 +1,5 @@
 from ..common import Measurement
+from .msLogger import MsLogger
 
 from threading import Thread, Event
 import time
@@ -12,6 +13,8 @@ class MeasurementModule:
         self.readFunc = None
         self.writeFunc = None
         self.stopFunc = None
+        self.logger = MsLogger().get_logger()
+        self.logger.info("Hello, Logger! From MeasurementModule")
 
     def setReadFunc(self, f):
         self.readFunc = f
@@ -31,13 +34,14 @@ class MeasurementModule:
             if time.time() - timing >= periodicity:
                 timing = time.time()
                 dataDictionary = self.readFunc()
-                print(dataDictionary)
+                self.logger.info(str(dataDictionary))
                 self.writeFunc(dataDictionary)
         self.stopFunc()
 
     def stopMeasurement(self):
         if not self.th is None:
             if self.th.is_alive():
+                self.logger.info("Measurement stopped")
                 self.stopEvent.set()
         
     def startMeasurement(self, m : Measurement):
@@ -48,6 +52,7 @@ class MeasurementModule:
         self.th = Thread(target=MeasurementModule.__measurementsThreadFunc, args=(self, duration, period))
         self.stopEvent.clear()
         self.th.start()
+        self.logger.info("Measurement started")
     
     def isWorking(self):
         if self.th is None:

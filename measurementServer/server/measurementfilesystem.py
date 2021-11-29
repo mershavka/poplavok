@@ -5,6 +5,7 @@ from ..common import *
 from ..common.enums import *
 from ..calibration import CalibrationResult
 from .measurementServerConfig import MeasurementServerConfig
+from .msLogger import MsLogger
 
 import os
 import re
@@ -42,6 +43,9 @@ class MeasurementFileSystem:
 
         if not os.path.exists(self.resultModelsPath):
             os.mkdir(self.resultModelsPath)
+
+        self.logger = MsLogger().get_logger()
+        self.logger.info("Hello, Logger! From MeasurementFileSystem")
         
 
     def getReferenceDataDict(self, refData):
@@ -71,6 +75,7 @@ class MeasurementFileSystem:
             date = datetime.datetime.strptime(matched.group('date'), timeformat)
             return ReferenceData(seriesId, date)
         else:
+            self.logger.error("No match for path: {}".format(path))
             return None
 
     def __pathToResultModel(self, path):
@@ -83,6 +88,7 @@ class MeasurementFileSystem:
                 rm.fromJson(jsonDict)
             return rm
         else:
+            self.logger.error('No result model created for path: {}'.format(path))
             return None
 
     def __pathToMeasure(self, path):
@@ -92,13 +98,14 @@ class MeasurementFileSystem:
         if bool(matched):
             m = Measurement()
             if not os.path.exists(descriptionStr):
-                print("No description found for measurement")
+                self.logger.error("No description found for measurement: {}".format(path))
                 return None
             with open(descriptionStr) as json_file:
                 jsonDict = json.load(json_file)
                 m.fromJson(jsonDict)
             return m
         else:
+            self.logger.error("No match for path: {}".format(path))
             return None
 
     def __pathToSeries(self, seriesPath):
@@ -118,6 +125,7 @@ class MeasurementFileSystem:
                     s.addMeasurement(m.id, m)
             return s
         else:
+            self.logger.error("No match for path: {}".format(seriesPath))
             return None    
 
     def getSeriesPathById(self, id):
