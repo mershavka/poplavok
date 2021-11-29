@@ -11,7 +11,7 @@ class SingletonType(type):
         return cls._instances[cls]
 
 
-class MyLogger(object, metaclass=SingletonType):
+class MsLogger(object, metaclass=SingletonType):
 
     _logger = None
 

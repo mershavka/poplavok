@@ -1,18 +1,13 @@
-from .enums import timeformat
-# from series import Series
+from ..common import ValuesNames, timeformat
+from .calibrationModel import CalibrationModel
+from .calibrationFunctions import RsR0_calc
 
 from operator import index
 from datetime import datetime as dt
 from typing import Optional
-
-from measurementServer.calibration.calibrationModel import CalibrationModel
-
-# from scipy.sparse import data
-from .values import ValuesNames
-from ..calibration.calibrationFunctions import RsR0_calc
 import json
 
-class ResultModel:
+class CalibrationResult:
     
     def __init__(self, id:  Optional[int] = None, series1Id :  Optional[int] = None, series2Id:  Optional[int] = None, date=None, V0Model : Optional[CalibrationModel] = None, CH4Model : Optional[CalibrationModel] = None, CH4LRModel : Optional[CalibrationModel] = None) -> None:
         self.id = id

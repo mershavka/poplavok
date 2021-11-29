@@ -3,6 +3,7 @@ from pandas.core.frame import DataFrame
 from measurementServer.common import referenceData
 from ..common import *
 from ..common.enums import *
+from ..calibration import CalibrationResult
 from .measurementServerConfig import MeasurementServerConfig
 
 import os
@@ -76,7 +77,7 @@ class MeasurementFileSystem:
         pathStr = os.path.basename(os.path.normpath(path))
         matched = re.match(self.result_model_name_regex, pathStr)
         if bool(matched):
-            rm = ResultModel()
+            rm = CalibrationResult()
             with open(path) as json_file:
                 jsonDict = json.load(json_file)
                 rm.fromJson(jsonDict)
@@ -137,7 +138,7 @@ class MeasurementFileSystem:
         refDataPath = self.refPath + refDataFileName
         return refDataPath
 
-    def __resultModelToPath(self, bestModel : ResultModel):
+    def __resultModelToPath(self, bestModel : CalibrationResult):
         resultModelPath = self.resultModelsPath + "/resultModel{}_{}_{}_{}.json".format(bestModel.id, bestModel.date.strftime(timeformat), bestModel.V0Model.function_name, bestModel.CH4Model.function_name)
         return resultModelPath
 
@@ -214,7 +215,7 @@ class MeasurementFileSystem:
             self.appendRowToCsv(referenceDataPath, item)
         return
 
-    def addResultModel(self, bestModel : ResultModel):
+    def addResultModel(self, bestModel : CalibrationResult):
         bestModelPath = self.__resultModelToPath(bestModel)
         jsonString = bestModel.toJsonString()
         with open(bestModelPath, 'w') as f:

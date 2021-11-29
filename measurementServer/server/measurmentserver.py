@@ -1,31 +1,13 @@
-from dataclasses import dataclass
-import json
-from measurementServer import calibration
-from measurementServer.common import values
-from measurementServer.server.methaneAnalyzer import MethaneAnalyzer
 from ..common import *
-from .measurementfilesystem import MeasurementFileSystem
 from .measurementmodule import MeasurementModule
-from .measurementServerConfig import MeasurementServerConfig
-import datetime as dt
-from ..common import MyLogger
+from .measurementfilesystem import MeasurementFileSystem
+from .methaneAnalyzer import MethaneAnalyzer
+from .msLogger import MsLogger
 
-import sys
-import logging
-from logging import StreamHandler, Formatter
+import datetime as dt
 
 # EXEC_DIR = "/home/pi/Documents/Repos/poplavok-algorithm/MServer"
 EXEC_DIR = "C:/Users/mershavka/Repositories/poplavok-algorithm/sandbox"
-
-class Error(Exception):
-    """Base class for other exceptions"""
-    pass
-
-class BoardConnectionError(Error):
-    pass
-
-class FilePathError(Error):
-    pass
 
 class MeasurementServer:
 
@@ -57,8 +39,6 @@ class MeasurementServer:
  
     def __writeToMeasureFile(sender, dataDict: dict):
         ms = MeasurementServer()
-        # Расчет метана по калибровке
-        # newDataDict = ms.dataAnalyzer.prepareData(dataDict)
         if not ms.currentCalibration is None:
             dataDict = ms.currentCalibration.calculateCH4(dataDict)
         ms.lastData = dataDict   
@@ -77,7 +57,7 @@ class MeasurementServer:
             self.device = Driver()
             self.device.open()
 
-        self.logger = MyLogger.__call__().get_logger()
+        self.logger = MsLogger.__call__().get_logger()
         self.logger.info("Hello, Logger")
 
         self.fs = MeasurementFileSystem(EXEC_DIR)
@@ -130,7 +110,7 @@ class MeasurementServer:
             self.fs.addSeries(new_series)
             self.series[new_series.id] = new_series
             self.currentSeries = new_series
-        return new_series.toJsonString()
+        return new_series
 
     def chooseSeries(self, seriesId):
         if seriesId in self.series.keys():
@@ -262,7 +242,7 @@ class MeasurementServer:
         self.lastResultModelId = id
         date = dt.datetime.now()
         if bestMethaneModelDict:
-            bestMethaneModel = ResultModel(id=id, date=date, series1Id=seriesIdStep1, series2Id=seriesIdStep2, V0Model=bestMethaneModelDict[ModelNames.model1], CH4Model=bestMethaneModelDict[ModelNames.model2], CH4LRModel=bestMethaneModelDict[ModelNames.model3])
+            bestMethaneModel = CalibrationResult(id=id, date=date, series1Id=seriesIdStep1, series2Id=seriesIdStep2, V0Model=bestMethaneModelDict[ModelNames.model1], CH4Model=bestMethaneModelDict[ModelNames.model2], CH4LRModel=bestMethaneModelDict[ModelNames.model3])
         self.fs.addResultModel(bestMethaneModel)
         self.resultModels[id] = bestMethaneModel
         self.currentCalibration = bestMethaneModel

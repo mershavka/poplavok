@@ -11,7 +11,7 @@ from measurementServer.client import PyroMeasurementClient
 from measurementServer.common import ValuesNames
 
 
-pmc = PyroMeasurementClient()
+pmc = PyroMeasurementClient('host.docker.internal')
 
 # Create your views here.
 

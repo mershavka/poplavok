@@ -1,4 +1,4 @@
-# from measurementServer.client import PyroMeasurementClient
+from measurementServer.client import PyroMeasurementClient
 # from measurementServer.common import *
 from measurementServer.common.enums import MeasureType
 from measurementServer.server import MeasurementServer
@@ -29,7 +29,8 @@ ch4Ref = [
     5
 ]
 
-ms = MeasurementServer()
+# ms = MeasurementServer()
+# ms.getServerStatus()
 # ms.createSeries("Test with dataframe")
 # ms.runMeasurement(10, 1, 'With df')
 # print(ms.getSeriesList())
@@ -37,12 +38,12 @@ ms = MeasurementServer()
 # ms.startCalibration("Test",1,2)
 # ms.ma.generateTestDatasets(step=2)
 # ms.createSeries('Battle Series', MeasureType.EXPERIMENT)
-ms.chooseSeries(13)
+# ms.chooseSeries(13)
 # ms.chooseCalibration(2)
-ms.runMeasurement(10, 1, 'Hello')
+# ms.runMeasurement(10, 1, 'Hello')
 
-# pmc = PyroMeasurementClient()
-# print(pmc.getServerStatus())
+pmc = PyroMeasurementClient()
+print(pmc.getServerStatus())
 # print(pmc.getSeriesList())
 # pmc.runMeasurement(10, 1, 'TTTT')
 # pmc.createSeries('With sensor',MeasureType.COMMON)

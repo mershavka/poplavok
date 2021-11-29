@@ -17,11 +17,14 @@ Pyro4.util.SerializerBase.register_dict_to_class(ReferenceData, ReferenceData.fr
 
 class PyroMeasurementClient(PyroMeasurementInterface):
 
-    __proxy_name = "PYRONAME:PyroMeasurementServer"
+    __proxy_name = "PyroMeasurementServer"
 
-    def __init__(self) -> None:
+    def __init__(self,host='localhost') -> None:
         sys.excepthook = Pyro4.util.excepthook
-        self.ms = Pyro4.Proxy(self.__proxy_name)    # use name server object lookup uri shortcut
+        nameserver = Pyro4.locateNS(host)
+        uri = nameserver.lookup(self.__proxy_name)
+        uri.host = host
+        self.ms = Pyro4.Proxy(uri)    # use name server object lookup uri shortcut
         super().__init__(self.ms)
 
 
