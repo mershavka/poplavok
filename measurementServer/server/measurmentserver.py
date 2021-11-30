@@ -5,6 +5,7 @@ from .measurementfilesystem import MeasurementFileSystem
 from .methaneAnalyzer import MethaneAnalyzer
 from .msLogger import MsLogger
 from ..calibration import CalibrationResult
+from .measurementserverresponse import MeasurementServerRespone
 
 import datetime as dt
 

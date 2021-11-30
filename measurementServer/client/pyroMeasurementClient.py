@@ -19,34 +19,10 @@ class PyroMeasurementClient(PyroMeasurementInterface):
 
     __proxy_name = "PyroMeasurementServer"
 
-    def __init__(self,host='localhost') -> None:
+    def __init__(self, host='localhost') -> None:
         sys.excepthook = Pyro4.util.excepthook
         nameserver = Pyro4.locateNS(host)
         uri = nameserver.lookup(self.__proxy_name)
         uri.host = host
         self.ms = Pyro4.Proxy(uri)    # use name server object lookup uri shortcut
         super().__init__(self.ms)
-
-
-
-
-
-
-
-
-
-
-
-
-
-# print(pyro_measurement_server.getSeriesList())
-# print(pyro_measurement_server.createSeries("Pyro test", MeasureType.COMMON))
-# print(pyro_measurement_server.chooseSeries(1))
-# print(pyro_measurement_server.addReferenceDataToSeries("C:/Users/mershavka/Repositories/poplavok-algorithm/sandbox/exp_2021_06_23_185934.csv"))
-# print(pyro_measurement_server.getCurrentSeries())
-# print(pyro_measurement_server.chooseMeasurement(2))
-# print(pyro_measurement_server.getCurrentMeasurement())
-# print(pyro_measurement_server.runMeasurement(MeasureType.COMMON, 5, 1, "Pyro test"))
-# time.sleep(7)
-# print(pyro_measurement_server.getServerStatus())
-# print(pyro_measurement_server.deleteCurrentMeasurement())
