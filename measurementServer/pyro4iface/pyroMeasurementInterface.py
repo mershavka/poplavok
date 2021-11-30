@@ -2,7 +2,7 @@ from ..common import *
 
 class PyroMeasurementInterface(object):
     
-    def __init__(self, ms):
+    def __init__(self, ms ):
         self.ms = ms
     
     def createSeries(self, description, type):
@@ -10,9 +10,6 @@ class PyroMeasurementInterface(object):
     
     def chooseSeries(self, seriesId):
         return self.ms.chooseSeries(seriesId)
-
-    def addReferenceDataToSeries(self, path):
-        return self.ms.addReferenceDataToSeries(path)
 
     def runMeasurement(self, duration, periodicity, description):
         return self.ms.runMeasurement(duration, periodicity, description)
@@ -43,12 +40,15 @@ class PyroMeasurementInterface(object):
 
     def startCalibration(self, seriesIdStep1, seriesIdStep2):
         return self.ms.startCalibration(seriesIdStep1, seriesIdStep2)
-
-    def selectCH4Model(self, id):
-        return self.ms.selectCH4Model(id)
     
     def getLastData(self):
         return self.ms.getLastData()
 
-    # def helloString(self):
-    #     return "Hello!"
+    def uploadReferenceData(self, seriesId, timestampsList, ch4RefList):
+        return self.ms.uploadReferenceData(seriesId, timestampsList, ch4RefList)
+
+    def chooseCalibration(self, id):
+        return self.ms.chooseCalibration(id)
+    
+    def getCalibrationsList(self):
+        return self.ms.getCalibrationsList()

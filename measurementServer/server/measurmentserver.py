@@ -210,9 +210,11 @@ class MeasurementServer:
     def getLastData(self):
         if self.worker.isWorking():
             return self.lastData
-        else:
-            dataDict = self.device.readData()
-            return self.addCH4toDict(dataDict)
+
+        dataDict = self.device.readData()
+        if self.currentCalibration:
+            dataDict = self.currentCalibration.calculateCH4(dataDict)
+        return dataDict
 
     def chooseCalibration(self, id):
         if id in self.resultModels:
