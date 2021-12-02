@@ -35,6 +35,9 @@ class PyroMeasurementInterface(object):
     def getSeriesList(self):
         return self.ms.getSeriesList()
 
+    def getSeriesPath(self, id):
+        return self.ms.getSeriesPath(id)
+
     def getMeasurementsList(self, seriesId):
         return self.ms.getMeasurementsList(seriesId)
 
@@ -46,6 +49,9 @@ class PyroMeasurementInterface(object):
 
     def uploadReferenceData(self, seriesId, timestampsList, ch4RefList):
         return self.ms.uploadReferenceData(seriesId, timestampsList, ch4RefList)
+
+    def getReferenceDataPath(self):
+        return self.ms.getReferenceDataPath()
 
     def chooseCalibration(self, id):
         return self.ms.chooseCalibration(id)

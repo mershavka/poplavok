@@ -198,6 +198,16 @@ class MeasurementServer:
     def getSeriesDict(self):
         return self.series
 
+    def getSeriesPath(self, id):
+        if id in self.series:
+            return self.fs.getSeriesPathById(id)
+        self.logger.warning("No series with id = {}".format(id))
+    
+    def getReferenceDataPath(self, seriesId):
+        if seriesId in self.refDatas:
+            return self.fs.refDataToPath(self.refDatas[seriesId])
+        return 
+
     def getMeasurementsList(self, seriesId):
         s = self.series[seriesId]
         m = s.getMeasurementsDict()
