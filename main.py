@@ -28,12 +28,12 @@ ch4Ref = [
     5
 ]
 
-ms = MeasurementServer()
+# ms = MeasurementServer()
 # ms.getServerStatus()
 # ms.chooseSeries(3)
 # ms.createSeries("Test with dataframe")
 # ms.runMeasurement(10, 1, 'Check logger')
-print(ms.getSeriesDict())
+# print(ms.getSeriesDict())
 
 # print(ms.getSeriesList())
 # ms.uploadReferenceData(2, timestamps, ch4Ref)
@@ -43,8 +43,9 @@ print(ms.getSeriesDict())
 # ms.chooseCalibration(2)
 # ms.runMeasurement(10, 1, 'Hello')
 
-# pmc = PyroMeasurementClient()
-# print(pmc.getServerStatus())
+pmc = PyroMeasurementClient()
+print(pmc.getSeriesPath(id))
+# print(pmc.getCurrentSeries())
 # print(pmc.getSeriesList())
 # pmc.runMeasurement(10, 1, 'TTTT')
 # pmc.createSeries('With sensor',MeasureType.COMMON)

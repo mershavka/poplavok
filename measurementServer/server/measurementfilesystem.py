@@ -31,7 +31,7 @@ class MeasurementFileSystem:
             try:
                 os.mkdir(self.path)
             except FileNotFoundError:
-                self.path = os.getenv('HOME') + '/Poplavok'
+                self.path = 'MS_DATA'
                 if not os.path.exists(self.path):
                     os.mkdir(self.path)
         

@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  web:
+    image: poplavok-web
+    build: ./site
+    context: ./site
+    command: ["sh", "-c", "pip install debugpy -t /tmp && python /tmp/debugpy --wait-for-client --listen 0.0.0.0:5678 site/manage.py runserver 0.0.0.0:8000 --nothreading --noreload"]
+    volumes:
+      - .:/usr/src/app/
+    ports:
+      - 8000:8000
+      - 52603:52603
+      - 5678:5678
+    depends_on:
+      - pyro-ns
+  pyro-ns:
+    image: farshidtz/pyro4-ns
+    privileged: true
+    restart: always
+    ports:
+      - 9090:9090
+    command: ["--host=pyro-ns","--nathost=localhost","--natport=9090"]
+
+

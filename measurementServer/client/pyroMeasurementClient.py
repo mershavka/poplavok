@@ -21,7 +21,7 @@ class PyroMeasurementClient(PyroMeasurementInterface):
 
     def __init__(self, host='localhost') -> None:
         sys.excepthook = Pyro4.util.excepthook
-        nameserver = Pyro4.locateNS(host)
+        nameserver = Pyro4.locateNS('pyro-ns')
         uri = nameserver.lookup(self.__proxy_name)
         uri.host = host
         self.ms = Pyro4.Proxy(uri)    # use name server object lookup uri shortcut

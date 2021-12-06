@@ -9,9 +9,6 @@ from .measurementserverresponse import MeasurementServerRespone
 
 import datetime as dt
 
-# EXEC_DIR = "/home/pi/Documents/Repos/poplavok-algorithm/MServer"
-EXEC_DIR = "C:/Users/mershavka/Repositories/poplavok-algorithm/sandbox"
-
 class MeasurementServer:
 
     testMode = True
@@ -26,18 +23,7 @@ class MeasurementServer:
         return cls.instance
 
     def __readFromDevice(sender):
-        ms = MeasurementServer()
-        if MeasurementServer.testMode:
-            return { 	
-                        ValuesNames.timestamp.name	: dt.datetime.now(),  
-                        ValuesNames.adc.name			: 2044,
-                        ValuesNames.voltage.name		: 1.2,
-                        ValuesNames.temperature.name	: 25,
-                        ValuesNames.rHumidity.name	    : 35, 
-                        ValuesNames.aHumidity.name      : 10,
-                        ValuesNames.pressure.name	    : 10000,
-                    }
-        
+        ms = MeasurementServer()        
         return ms.device.readData()
  
     def __writeToMeasureFile(sender, dataDict: dict):
@@ -51,25 +37,30 @@ class MeasurementServer:
         ms = MeasurementServer()
         ms.status = Status.NO
 
-    def __init__(self):
+    def __init__(self, path : str ='MS_DATA'):
         if self.initialized:
             return
 
         if not MeasurementServer.testMode:            
-            from ..drivers import Driver
+            from ..drivers.driver import Driver
             self.device = Driver()
+            self.device.open()
+        else:
+            from ..drivers.testDriver import TestDriver
+            self.device = TestDriver()
             self.device.open()
 
         self.logger = MsLogger().get_logger()
         self.logger.info("Hello, Logger! From MeasurementServer")
 
-        self.fs = MeasurementFileSystem(EXEC_DIR)
+        self.path = path
+        self.fs = MeasurementFileSystem(self.path)
         self.ma = MethaneAnalyzer()        
 
-        self.series = self.fs.loadSeries()
-        self.refDatas = self.fs.loadReferencesData()
-        self.resultModels = self.fs.loadResultModels()
-        self._config = self.fs.loadConfig()
+        self.series         = self.fs.loadSeries()
+        self.refDatas       = self.fs.loadReferencesData()
+        self.resultModels   = self.fs.loadResultModels()
+        self._config        = self.fs.loadConfig()
 
         self.lastSeriesId = 0 if not self.series else max(self.series.keys())
         self.lastResultModelId = 0 if not self.resultModels else max(self.resultModels.keys())
@@ -143,9 +134,9 @@ class MeasurementServer:
         if not self.currentCalibration:
             if type == MeasureType.EXPERIMENT:
                 self.logger.error("No calibration")
-                return
             calibrationId = -1
-        calibrationId = self.currentCalibration.id
+        else:
+            calibrationId = self.currentCalibration.id
         m_id = 1
         if self.currentSeries.getMeasurementsIds():
             m_id += max(self.currentSeries.getMeasurementsIds())		
