@@ -1,0 +1,20 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "docker-compose",
+			"command": "docker-compose -f \"docker-compose.debug.yml\" up -d",
+		},
+		{
+			"type": "shell",
+			"label": "runPyroServer",
+			"command": "echo Run",
+			"presentation": {
+				"reveal": "never",
+				"panel": "new"
+			  },
+			"dependsOn":["docker-compose"]
+		}
+	]
+}

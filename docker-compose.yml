@@ -1,23 +1,19 @@
-version: '3.8'
+version: '3.4'
 
 services:
-  web:
-    image: poplavok-web
-    build: ./site
-    command: python site/manage.py runserver 0.0.0.0:8000
-    volumes:
-      - .:/usr/src/app/
+  poplavokalgorithm:
+    image: poplavokalgorithm
+    build:
+      context: .
+      dockerfile: ./Dockerfile
     ports:
       - 8000:8000
-      - 52603:52603
     depends_on:
       - pyro-ns
   pyro-ns:
-    image: farshidtz/pyro4-ns
-    privileged: true
-    restart: always
-    ports:
-      - 9090:9090
-    command: ["--host=pyro-ns","--nathost=localhost","--natport=9090"]
-
-
+      image: farshidtz/pyro4-ns
+      privileged: true
+      restart: always
+      ports:
+        - 9090:9090
+      command: ["--host=pyro-ns","--nathost=localhost","--natport=9090"]
