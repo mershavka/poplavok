@@ -16,20 +16,20 @@ class MsLogger:
     _logger = None
     _initialized = False
 
-    def __new__(cls):
+    def __new__(cls, *args, **kwargs):
         if not hasattr(cls, 'instance'):
             cls.instance = super(MsLogger, cls).__new__(cls)
         return cls.instance
 
-    def __init__(self):
+    def __init__(self, dirname : str = "./log"):
         if MsLogger._initialized:
             return
+        logging.captureWarnings(True)
         self._logger = logging.getLogger(__name__)
         self._logger.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s \t [%(levelname)s | %(filename)s:%(lineno)s] > %(message)s')
 
         now = datetime.datetime.now()
-        dirname = "./log"
 
         if not os.path.isdir(dirname):
             os.mkdir(dirname)

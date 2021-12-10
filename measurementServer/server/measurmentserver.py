@@ -5,7 +5,7 @@ from .measurementfilesystem import MeasurementFileSystem
 from .methaneAnalyzer import MethaneAnalyzer
 from .msLogger import MsLogger
 from ..calibration import CalibrationResult
-from .measurementserverresponse import MeasurementServerRespone
+# from .measurementserverresponse import MeasurementServerRespone
 
 import datetime as dt
 
@@ -49,8 +49,8 @@ class MeasurementServer:
             from ..drivers.testDriver import TestDriver
             self.device = TestDriver()
             self.device.open()
-
-        self.logger = MsLogger().get_logger()
+        self.logger_path = path + "/log"
+        self.logger = MsLogger(self.logger_path).get_logger()
         self.logger.info("Hello, Logger! From MeasurementServer")
 
         self.path = path
@@ -96,6 +96,9 @@ class MeasurementServer:
         else:
             self._config.currentCalibrationId = -1
         self.fs.updateConfig(self._config)
+
+    def getLogger(self):
+        return self.logger
 
     def createSeries(self, description="", type=MeasureType.COMMON):		
         new_series = Series(description=description, type=type, id = self.lastSeriesId + 1, date=dt.datetime.now())

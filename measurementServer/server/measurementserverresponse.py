@@ -3,7 +3,7 @@ import json
 import enum
 from .msLogger import MsLogger
 
-logger = MsLogger().get_logger()
+# logger = MsLogger().get_logger()
 
 class MeasurementServerRespone:
     
