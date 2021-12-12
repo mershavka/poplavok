@@ -4,6 +4,7 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('startCalibration', views.startCalibration),
     path('startExperiment', views.startExperiment),
     path('stopExperiment', views.stopExperiment),
     path('createSeries', views.createSeries),
