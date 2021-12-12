@@ -17,19 +17,19 @@ class PhysicalValue:
 
 @dataclass
 class ValuesNames:
-	timestamp 		: PhysicalValue = PhysicalValue('timestamp',	'Timestamp'							, ''		)
-	adc  			: PhysicalValue = PhysicalValue('ADC',			'ADC value'							, ''		)
-	voltage 		: PhysicalValue = PhysicalValue('V', 			'Voltage'							, 'volt'	)
-	voltage0 		: PhysicalValue = PhysicalValue('V0', 			'Background Voltage'				, 'volt'	)
-	resistance 		: PhysicalValue = PhysicalValue('R', 			'Resistance'						, 'Ohm'		) 
-	temperature 	: PhysicalValue = PhysicalValue('T', 			'Temperature'						, 'Celsius'	)
-	rHumidity		: PhysicalValue = PhysicalValue('rH', 			'Relative Humidity'					, '%'		)
-	aHumidity		: PhysicalValue = PhysicalValue('aH', 			'Absolute Humidity'					, 'kg*m^-3'	)
-	pressure      	: PhysicalValue = PhysicalValue('P', 			'Pressure'							, 'Pascal'	)
-	ch4 			: PhysicalValue = PhysicalValue('CH4', 			'Methane concentration'				, 'ppm'		)
-	ch4LR 			: PhysicalValue = PhysicalValue('CH4LR',		'Methane concentration LR'			, 'ppm'		)
-	rsr0			: PhysicalValue = PhysicalValue('Rs/R0', 		'Relative sensor response'			, ''		)
-	ch4Ref			: PhysicalValue = PhysicalValue('CH4Ref', 		'Reference Methane Concentration'	, 'ppm' 	)
+	timestamp 		: PhysicalValue = PhysicalValue('timestamp',	'Timestamp'							, ''			)
+	adc  			: PhysicalValue = PhysicalValue('ADC',			'ADC value'							, ''			)
+	voltage 		: PhysicalValue = PhysicalValue('V', 			'Voltage'							, 'volt'		)
+	voltage0 		: PhysicalValue = PhysicalValue('V0', 			'Background Voltage'				, 'volt'		)
+	resistance 		: PhysicalValue = PhysicalValue('R', 			'Resistance'						, 'Ohm'			) 
+	temperature 	: PhysicalValue = PhysicalValue('T', 			'Temperature'						, 'Celsius'		)
+	rHumidity		: PhysicalValue = PhysicalValue('rH', 			'Relative Humidity'					, '%'			)
+	aHumidity		: PhysicalValue = PhysicalValue('aH', 			'Absolute Humidity'					, 'kg*m^-3'		)
+	pressure      	: PhysicalValue = PhysicalValue('P', 			'Pressure'							, 'hectopascal'	)
+	ch4 			: PhysicalValue = PhysicalValue('CH4', 			'Methane concentration'				, 'ppm'			)
+	ch4LR 			: PhysicalValue = PhysicalValue('CH4LR',		'Methane concentration LR'			, 'ppm'			)
+	rsr0			: PhysicalValue = PhysicalValue('Rs/R0', 		'Relative sensor response'			, ''			)
+	ch4Ref			: PhysicalValue = PhysicalValue('CH4Ref', 		'Reference Methane Concentration'	, 'ppm' 		)
 
 	stringToName = {
 		timestamp.getString() 		: timestamp.name,

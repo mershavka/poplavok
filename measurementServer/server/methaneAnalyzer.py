@@ -61,7 +61,7 @@ class MethaneAnalyzer:
             X = {name: list(df[name]) for name in m.predictor_names}
             Y = (df[m.dependent_name[0]]).to_numpy()
             m.fit(X, Y)
-            if np.isnan(m.coefficients).any():
+            if m.coefficients is None or np.isnan(m.coefficients).any():
                 continue
             modelsList.append(m)
 
@@ -133,7 +133,7 @@ class MethaneAnalyzer:
         colCH4LRrmse = ModelNames.model3+ModelParameters.rmse
         df_conditions = df_resultModels.loc[(df_resultModels[colV0r2]>0.5) & (df_resultModels[colCH4r2]>0.5) & (df_resultModels[colCH4LRr2]>0.5)]
         df_sorted = df_conditions.sort_values(by=[colV0r2, colCH4r2, colCH4LRr2, colV0PredCount, colCH4PredCount, colV0rmse, colCH4rmse, colCH4LRrmse], ascending=[False, False, False, True, True, True, True, True], inplace=False, ignore_index = True)
-        if not df_sorted is None or not df_sorted.emty:
+        if not df_sorted.empty:
             return df_sorted.loc[0, 'id']
         return None
     
@@ -215,7 +215,7 @@ class MethaneAnalyzer:
         return df
 
         
-    def generateTestDatasets(self, measuresCount = 44, func = lin_X, coefficients = [2, 0.5], step = 1):
+    def generateTestDatasets(self, measuresCount = 100, func = V0_lin_aH, coefficients = [10, 1.024], step = 1):
         df_test = pd.DataFrame(columns=[
             ValuesNames.timestamp.getString(),
             ValuesNames.adc.getString(),
@@ -229,11 +229,13 @@ class MethaneAnalyzer:
         t = dt.datetime.now()
         time = [t + dt.timedelta(seconds=i + round(random.random(), 2)) for i in range(measuresCount)]
         defaultADC = 50000
-        defaultTemperature = 20
-        defaultPressure = 100000
+        defaultTemperature = 30
+        defaultPressure = 1013.25
         defaultCH4 = 0
         minRH = 40
         maxRH = 100
+        minT = 0
+        maxT = 30
         df_test[ValuesNames.timestamp.getString()] = time
         df_test[ValuesNames.adc.getString()] = [defaultADC] * measuresCount
         df_test[ValuesNames.voltage.getString()] = [defaultADC * 2.5 / 2**16] * measuresCount
@@ -241,48 +243,67 @@ class MethaneAnalyzer:
         df_test[ValuesNames.pressure.getString()] = [defaultPressure] * measuresCount
         df_test[ValuesNames.ch4.getString()] = [defaultCH4] * measuresCount
         if step == 1:
-            temperature = list(np.linspace(0, 30, measuresCount))
-            rh = random.sample(range(minRH, maxRH), measuresCount)
+            temperature = [defaultTemperature] * measuresCount
+            # temperature = list(np.around(np.linspace(minT, maxT, measuresCount)), decimals = 2)
+            # temperature = random.sample(temperature, measuresCount)
+            # rh = random.sample(range(minRH, maxRH), measuresCount)
+            rh = list(np.around(np.linspace(minRH, maxRH, measuresCount), decimals = 1))
             aH = [self.absoluteHumidity(rh[i], defaultPressure, temperature[i]) for i in range(len(rh))]
             x_data = {ValuesNames.temperature.name : temperature, ValuesNames.aHumidity.name : aH, ValuesNames.rHumidity.name : rh}
             voltage0 = func(x_data, *coefficients)
-            np.random.seed(1729)
-            y_noise = 0.2 * np.random.normal(size=measuresCount)
+            np.random.seed(10)
+            y_noise = 0.002 * np.random.normal(size=measuresCount)
             ydata = voltage0 + y_noise
             df_test[ValuesNames.voltage.getString()] = ydata
         #Второй шаг
         elif step == 2:
+            a = 10
+            g = 10
             temperature = [defaultTemperature] * measuresCount
-            rh = random.sample(range(minRH, maxRH), measuresCount)
+            rh = list(np.around(np.linspace(minRH, maxRH, measuresCount), decimals = 1))
+            random.shuffle(rh)
             aH = [self.absoluteHumidity(rh[i], defaultPressure, temperature[i]) for i in range(len(rh))]
             x_data = {ValuesNames.temperature.name : temperature, ValuesNames.aHumidity.name : aH, ValuesNames.rHumidity.name : rh}
-            voltage0 = lin_X(x_data, *[2, 0.5])
+            voltage0 = V0_lin_aH(x_data, *coefficients)
             x_data[ValuesNames.voltage0.name] = voltage0
             df_test[ValuesNames.voltage0.getString()] = voltage0
-            voltage = lin_X( {ValuesNames.rHumidity.name : rh}, *[4, 1])
-            df_test[ValuesNames.voltage.getString()] = voltage
+            CH4 = list(np.around(np.linspace(2, 100, measuresCount), decimals = 1))
+            voltage = [a *g * aH[i]/CH4[i] + 1.024  for i in range(len(aH))]
             x_data[ValuesNames.voltage.name] = voltage
             x_data[ValuesNames.rsr0.name] = RsR0_calc(x_data)
+            CH4 = ch4_nonlin_R_aH( x_data, *[a, 1, 0, 0])
             df_test[ValuesNames.rsr0.getString()] = x_data[ValuesNames.rsr0.name]
-            CH4 = ch4_lin_R_rH_T(x_data, *[0.5, 1, 2, -0.2])
             np.random.seed(500)
-            y_noise = 0.2 * np.random.normal(size=measuresCount)
-            CH4data = CH4 + y_noise
-            df_test[ValuesNames.ch4Ref.getString()] = CH4data
+            y_noise = 0.002 * np.random.normal(size=measuresCount)
+            voltageData = voltage + y_noise
+            df_test[ValuesNames.voltage.getString()] = voltageData
+            # CH4data = CH4 + y_noise
             df_test[ValuesNames.ch4.getString()] = CH4
+
+            df_ref = pd.DataFrame(columns=[
+            ValuesNames.timestamp.getString(),
+            ValuesNames.ch4Ref.getString()	
+            ])
+            df_ref[ValuesNames.ch4Ref.getString()] = CH4
+            time = [t + dt.timedelta(seconds=i + round(random.random(), 2)) for i in range(measuresCount)]
+            df_ref[ValuesNames.timestamp.getString()] = time
+            df_ref.to_csv('test_ref_data{}.csv'.format(step))
+
 
         df_test[ValuesNames.temperature.getString()] = list(temperature)
         df_test[ValuesNames.rHumidity.getString()] = rh
         df_test[ValuesNames.aHumidity.getString()] = aH
         
 
-        df_test.to_csv('test_data.csv')
+        df_test.to_csv('test_data_step{}.csv'.format(step))
 
-    def absoluteHumidity(self, RH, P, t):	
+    def absoluteHumidity(self, RH = 40, hPa = 1013.25, t = 20):
+        #RH [%], P[гПa], t[C]	
         Rv = 461.5 # J/(kg*K)
-        ew = 6.112 * exp(17.62 * t / (243.12 + t)) * (1.0016 + 3.15e-6 * P - 0.074 / P) # Pa
+        ew = 6.112 * exp(17.62 * t / (243.12 + t)) * (1.0016 + 3.15e-6 * hPa - 0.074 / hPa) #  насыщенное давление чистой фазы водяного пара, hPa
+        #Температура задается в градусах Цельсия, давление — в гектопаскалях  (1 гектопаскаль = 100 Паскаль)
         T = t + 273.15
-        AH = RH * ew / Rv / T
+        AH = RH * ew / (Rv * T)
         return AH
             
 

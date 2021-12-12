@@ -59,11 +59,12 @@ class Driver:
         self.spi.bits_per_word = 8
         self.spi.max_speed_hz = 1000
 
-    def absoluteHumidity(RH, P, t):	
-        Rv = 461.5 # J/(kg*K)
-        ew = 6.112 * exp(17.62 * t / (243.12 + t)) * (1.0016 + 3.15e-6 * P - 0.074 / P) # Pa
-        T = t + 273.15
-        AH = RH * ew / Rv / T
+    def absoluteHumidity(RH = 40, hPa = 1013.25, t = 20):
+        #RH [%], P[гПa], t[C]
+        Rv = 461.5 # газовая постоянная для водяного пара [Дж/(кг*K)]
+        ew = 6.112 * exp(17.62 * t / (243.12 + t)) * (1.0016 + 3.15e-6 * hPa - 0.074 / hPa) # [гПа]
+        T = t + 273.15 #[K]
+        AH = RH * ew / Rv / T #кг/м^3
         return AH
 
     def readData(self):

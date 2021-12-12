@@ -3,48 +3,35 @@ from measurementServer.client import PyroMeasurementClient
 from measurementServer.common.enums import MeasureType
 from measurementServer.server import MeasurementServer
 from datetime import datetime
+import traceback
+import warnings
 
 
-timestrings = [
-    '2021-11-22 13:30:03.258601',
-	'2021-11-22 13:30:05.259419',
-	'2021-11-22 13:30:06.259882',
-	'2021-11-22 13:30:07.259971',
-	'2021-11-22 13:30:08.260496',
-	'2021-11-22 13:30:09.260864',
-	'2021-11-22 13:30:10.260983',
-	'2021-11-22 13:30:12.261718'
-]
-timestamps = [datetime.fromisoformat(s) for s in timestrings]
-
-ch4Ref = [
-    5.1,
-    5.2,
-    4.9,
-    5.2,
-    5,
-    5,
-    5.1,
-    5
-]
-
-# ms = MeasurementServer()
+ms = MeasurementServer()
+logger = ms.getLogger()
 # ms.getServerStatus()
 # ms.chooseSeries(3)
-# ms.createSeries("Test with dataframe")
-# ms.runMeasurement(10, 1, 'Check logger')
+# ms.createSeries("Test with generated data")
+# ms.runMeasurement(10, 1, 'Check CH4')
 # print(ms.getSeriesDict())
 
 # print(ms.getSeriesList())
 # ms.uploadReferenceData(2, timestamps, ch4Ref)
-# ms.startCalibration("Test",1,2)
-# ms.ma.generateTestDatasets(step=2)
+# try:
+# 	ms.startCalibration(seriesIdStep1=1,seriesIdStep2=2)
+# except Warning as w:
+# 	logger.warning(w)
+# 	print(traceback.format_exc())
+# except Exception as e:
+# 	logger.exception(e, exc_info=True)
+
+# ms.ma.generateTestDatasets(measuresCount=200,step=2)
 # ms.createSeries('Battle Series', MeasureType.EXPERIMENT)
 # ms.chooseCalibration(2)
 # ms.runMeasurement(10, 1, 'Hello')
 
-pmc = PyroMeasurementClient()
-print(pmc.getSeriesPath(id))
+# pmc = PyroMeasurementClient()
+# print(pmc.getSeriesPath(id))
 # print(pmc.getCurrentSeries())
 # print(pmc.getSeriesList())
 # pmc.runMeasurement(10, 1, 'TTTT')

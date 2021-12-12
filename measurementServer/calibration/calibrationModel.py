@@ -39,18 +39,21 @@ class CalibrationModel:
         return self.function(X, *self.coefficients)
 
     def __fit(self):
-        self.coefficients, self.pcov = curve_fit(self.function, self.X, self.y, maxfev=5000)
-        self.y_hat = self.function(self.X, *self.coefficients)
-        #Residual sum of squares (сумма квадратов остатков)
-        self.ss_residual = sum((self.y-self.y_hat)**2)
-         #Total sum of squares (общая сумма квадратов)
-        self.ss_total = sum((self.y-np.mean(self.y))**2)
-        #Коэффициент детерминации — R-квадрат  
-        self.r_squared = 1 - (float(self.ss_residual))/self.ss_total
-        #Скорректированный коэффициент детерминации (adjusted)
-        self.adjusted_r_squared = 1 - (1-self.r_squared)*(len(self.y)-1)/(len(self.y)-self.predictors_count)
-        #Root Mean Square Error Среднеквадратическая ошибка модели
-        self.rmse = sqrt(self.ss_residual / len(self.y))
+        try:
+            self.coefficients, self.pcov = curve_fit(self.function, self.X, self.y, maxfev=5000)
+            self.y_hat = self.function(self.X, *self.coefficients)
+            #Residual sum of squares (сумма квадратов остатков)
+            self.ss_residual = sum((self.y-self.y_hat)**2)
+            #Total sum of squares (общая сумма квадратов)
+            self.ss_total = sum((self.y-np.mean(self.y))**2)
+            #Коэффициент детерминации — R-квадрат  
+            self.r_squared = 1 - (float(self.ss_residual))/self.ss_total
+            #Скорректированный коэффициент детерминации (adjusted)
+            self.adjusted_r_squared = 1 - (1-self.r_squared)*(len(self.y)-1)/(len(self.y)-self.predictors_count)
+            #Root Mean Square Error Среднеквадратическая ошибка модели
+            self.rmse = sqrt(self.ss_residual / len(self.y))
+        except Exception:
+            pass
 
     def toDict(self):        
         data = {
