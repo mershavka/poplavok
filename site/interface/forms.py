@@ -1,6 +1,7 @@
 from django import forms
 from django.db.models import fields
-from django.forms.fields import CharField, ChoiceField, FloatField
+from django.forms.fields import CharField, ChoiceField, FileField, FloatField, IntegerField
+
 from .models import MeasurmentSeries, Measurement
 from measurementServer.common import MeasureType
 
@@ -18,3 +19,8 @@ class StartExperimentForm(forms.Form):
     name=CharField(max_length=50)
     period=FloatField(initial=1.0)
     duration=FloatField(initial=10.0)
+
+class StartCalibrationForm(forms.Form):
+    series1Id=ChoiceField()
+    series2Id=ChoiceField()
+    referenceFile=FileField()

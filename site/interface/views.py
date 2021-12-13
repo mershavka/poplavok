@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, Http404
 from django.views.generic import TemplateView
 from measurementServer.common.enums import Status
-from .forms import CreateSeriesForm, StartExperimentForm
+from .forms import CreateSeriesForm, StartExperimentForm, StartCalibrationForm
 from django.urls import reverse
 from django.shortcuts import redirect
 from datetime import datetime
@@ -106,6 +106,18 @@ def startExperiment(request):
     else:
         form  = StartExperimentForm()
     return render(request, 'createSeries.html', {'form': form})
+
+def startCalibration(requset):
+    
+    if requset.method == 'POST':
+        form = StartExperimentForm(requset.POST)
+    else:
+        series = pmc.getSeriesList()
+        seriesTuple = [(s.description, str(s.id)) for s in series] 
+        form = StartCalibrationForm()
+        form.series1Id.choices = seriesTuple
+        form.series2Id.choices = seriesTuple
+    return render(requset, 'createSeries.html', {'form' : form})
 
 def zipfolder(foldername, target_dir):            
     zipobj = ZipFile(foldername, 'w', ZIP_DEFLATED)
