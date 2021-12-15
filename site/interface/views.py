@@ -16,7 +16,7 @@ import json
 
 
 
-pmc = PyroMeasurementClient('host.docker.internal')
+pmc = PyroMeasurementClient()
 
 # Create your views here.
 
