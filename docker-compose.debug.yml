@@ -1,8 +1,8 @@
 version: '3.4'
 
 services:
-  poplavok-site:
-    image: poplavok-site
+  poplavok-site-debug:
+    image: poplavok-site-debug
     build:
       context: .
       dockerfile: ./site.Dockerfile
@@ -24,7 +24,7 @@ services:
     - .:/app
     ports:
       - 52603:52603
-    command: ["python3", "runPyroServer.py"]
+    command: ["python3", "runPyroServer.py", "--host=pyro-server", "--port=52603"]
     depends_on:
       - pyro-ns
   pyro-ns:
