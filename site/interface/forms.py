@@ -21,6 +21,19 @@ class StartExperimentForm(forms.Form):
     duration=FloatField(initial=10.0)
 
 class StartCalibrationForm(forms.Form):
-    series1Id=ChoiceField()
-    series2Id=ChoiceField()
-    referenceFile=FileField()
+
+    def __init__(self, choicesList, *args, **kwargs):
+        super(StartCalibrationForm, self).__init__(*args, **kwargs)
+        self.fields['series1Id'] = forms.ChoiceField(label="Id серии 1 шаг",
+            choices=choicesList
+        )
+        self.fields['series2Id'] = forms.ChoiceField(label="Id серии 2 шаг",
+            choices=choicesList
+        )
+
+class UploadRefDataForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        super(UploadRefDataForm, self).__init__(*args, **kwargs)
+        self.fields['referenceData'] = FileField(label="Референсные данные")
+
+        

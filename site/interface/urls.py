@@ -12,5 +12,6 @@ urlpatterns = [
     path('getStatus', views.getStatus, name='getStatus'),
     path('chooseSeries/<int:series_id>', views.chooseSeries),
     path('downloadSeries/<int:series_id>', views.downloadSeries),
+    path('uploadReferenceData/<int:series_id>', views.uploadReferenceData),
     path('calibrations', views.calibrations)
 ]
