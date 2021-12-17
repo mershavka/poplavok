@@ -192,6 +192,11 @@ class MeasurementServer:
     def getSeriesDict(self):
         return self.series
 
+    def getSeriesById(self, id):
+        if id in self.series.keys():
+            return self.series[id]
+        return None
+
     def getSeriesPath(self, id):
         if id in self.series:
             return self.fs.getSeriesPathById(id)

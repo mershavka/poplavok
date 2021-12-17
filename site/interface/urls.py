@@ -9,6 +9,7 @@ urlpatterns = [
     path('stopExperiment', views.stopExperiment),
     path('createSeries', views.createSeries),
     path('series', views.series),
+    path('seriesDetails/<int:series_id>', views.seriesDetails),
     path('getStatus', views.getStatus, name='getStatus'),
     path('chooseSeries/<int:series_id>', views.chooseSeries),
     path('downloadSeries/<int:series_id>', views.downloadSeries),

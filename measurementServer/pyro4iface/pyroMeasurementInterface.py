@@ -35,6 +35,9 @@ class PyroMeasurementInterface(object):
     def getSeriesList(self):
         return self.ms.getSeriesList()
 
+    def getSeriesById(self, id):
+        return self.ms.getSeriesById(id)
+
     def getSeriesPath(self, id):
         return self.ms.getSeriesPath(id)
 

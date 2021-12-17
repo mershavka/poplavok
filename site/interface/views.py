@@ -80,6 +80,10 @@ def series(request):
     seriesList = pmc.getSeriesList()    
     return render(request, 'series.html', {'series' : seriesList})
 
+def seriesDetails(request, series_id):
+	pmc.get
+    return render(request, 'seriesDetails.html', {'series_id' : series_id})
+
 def calibrations(request):
     calibrationList = pmc.getCalibrationsList()
     return JsonResponse(json.dumps(calibrationList))
