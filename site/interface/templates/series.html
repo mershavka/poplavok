@@ -22,31 +22,18 @@
     <th>Кол-во измерений</th>
     <th>Дата</th>
     <th></th>
-    <th>Загрузить референсные данные</th>
+    <th>Референсные данные</th>
   </tr>
   </thead>
   <tbody>
   {% for s in series %}
   <tr id="{{s.id}}">
-    <td><a href="./seriesDetails/{{s}}">{{s}}</a></td>
+    <td><a href="./seriesDetails/{{s.id}}">{{s.id}}</a></td>
     <td>{{s.description}}</td>
     <td>{{s.date}}</td>
     <td>{{s.date}}</td>
     <td><a href="./downloadSeries/{{s.id}}">Скачать серию</a></td>
-    <td>
-        <form class="w3-center" action="./uploadReferenceData/{{s.id}}" method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <table class="w3-table w3-center">
-            <div class="w3-section"> 
-            <!-- {{ form.as_table }} -->
-            <input name="referenceDataFile" type="file">            
-            <button type="submit">Submit</button>
-            </div>
-            </table>
-            <br>
-            <!-- <input class="w3-btn w3-theme w3-padding" type="submit" value="Загрузить" /> -->
-     
-        </form></td>
+    <td>Есть/Нет</td>
   </tr>
   {% endfor %}
   </tbody>

@@ -81,7 +81,7 @@ def series(request):
     return render(request, 'series.html', {'series' : seriesList})
 
 def seriesDetails(request, series_id):
-	pmc.get
+    # pmc.get
     return render(request, 'seriesDetails.html', {'series_id' : series_id})
 
 def calibrations(request):
@@ -119,8 +119,8 @@ def startCalibration(request):
     if request.method == 'POST':
         form = StartCalibrationForm(seriesTuple, request.POST)
 
-        series1Id = form.data['series1Id']
-        series2Id = form.data['series2Id']
+        series1Id = int(form.data['series1Id'])
+        series2Id = int(form.data['series2Id'])
         pmc.startCalibration(series1Id, series2Id)
 
     else:

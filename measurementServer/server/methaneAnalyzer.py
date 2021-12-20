@@ -125,10 +125,12 @@ class MethaneAnalyzer:
                          ModelNames.model2   : model2,
                          ModelNames.model3   : model3
                         }
-        df_resultModels.to_csv('models.csv')
-        bestModelId = self.findBestModelId(df_resultModels)
-        best_resultModel = None if not bestModelId else dict_resultModels[bestModelId]
-        return df_resultModels, dict_resultModels, best_resultModel
+        if not df_resultModels.empty:
+            df_resultModels.to_csv('models.csv')
+            bestModelId = self.findBestModelId(df_resultModels)
+            best_resultModel = None if not bestModelId else dict_resultModels[bestModelId]
+            return df_resultModels, dict_resultModels, best_resultModel
+        return None, None, None
 
     def findBestModelId(self, df_resultModels):
         colV0PredCount = ModelNames.model1+ModelParameters.predictors_count
