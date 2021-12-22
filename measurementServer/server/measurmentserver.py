@@ -192,6 +192,11 @@ class MeasurementServer:
     def getSeriesDict(self):
         return self.series
 
+    def getSeriesById(self, id):
+        if id in self.series.keys():
+            return self.series[id]
+        return None
+
     def getSeriesPath(self, id):
         if id in self.series:
             return self.fs.getSeriesPathById(id)
@@ -242,7 +247,7 @@ class MeasurementServer:
             return None
 
         if not (seriesIdStep2 in self.refDatas.keys()):
-            self.logger.error("Reference data not found!")
+            self.logger.error("Reference data for series with id = {} not found!".format(seriesIdStep2))
             return None
 
         refDataPath = self.fs.refDataToPath(self.refDatas[seriesIdStep2])
@@ -256,6 +261,36 @@ class MeasurementServer:
             self.currentCalibration = bestMethaneModel
             return bestMethaneModel
         self.logger.error("Calibration failed, no model found")
+
+    def startRecalibration(self, seriesId, calibrationId):
+        seriesPath = self.fs.getSeriesPathById(seriesId) #Путь к серии с данными
+        if not seriesPath:
+            self.logger.error("Series not found!")
+            return None
+        if not (seriesId in self.refDatas.keys()):
+            self.logger.error("Reference data for series with id = {} not found!".format(seriesId))
+            return None
+        if not calibrationId in self.resultModels.keys():
+            self.logger.error("Calibration with id = {} not found!".format(calibrationId))
+            return None
+        refDataPath = self.fs.refDataToPath(self.refDatas[seriesId])
+        oldCalibrationResult = self.resultModels[calibrationId]
+        resultModel3 = self.ma.recalibration(seriesPath, refDataPath)
+        recalibrationResult = CalibrationResult(date=dt.datetime.now(), series1Id=oldCalibrationResult.series1Id, series2Id=oldCalibrationResult.series2Id, V0Model=oldCalibrationResult.V0Model, CH4Model=oldCalibrationResult.CH4Model, CH4LRModel=resultModel3)
+        recalibrationResultWithId = self.updateCurrentCalibration(recalibrationResult)
+        return recalibrationResultWithId
+
+    def updateCurrentCalibration(self, calibrationResult : CalibrationResult):
+            id = self.lastResultModelId + 1
+            self.lastResultModelId = id
+            calibrationResult.id = id
+            self.fs.addResultModel(calibrationResult)
+            self.resultModels[id] = calibrationResult
+            self.currentCalibration = calibrationResult
+            return calibrationResult
+
+    def getRefDatas(self):
+        return self.refDatas
 
 
 

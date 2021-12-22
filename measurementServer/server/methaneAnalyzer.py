@@ -78,6 +78,14 @@ class MethaneAnalyzer:
         df[model.dependent_name[0]] = df_result
         return df
 
+    def recalibration(self, seriesPath, referencePath):
+        df_CH4_observed = self.concatCsvIntoFrame(referencePath)
+        df_CH4_predicted = self.concatCsvIntoFrame(seriesPath)
+        df_CH4_observed_interpolated = self.interpolateCH4Data(df_CH4_predicted, df_CH4_observed)
+        df_CH4_observed_interpolated[ValuesNames.ch4LR.name] = df_CH4_observed_interpolated[ValuesNames.ch4Ref.name]
+        step3models = self.getCalibratedModels(df_CH4_observed_interpolated, self.model3Templates)
+        return step3models[0]
+
     def calibration(self, seriespath1, seriespath2, referencePath):
         # Загрузить данные
         df1 = self.concatCsvIntoFrame(seriespath1)
@@ -87,7 +95,7 @@ class MethaneAnalyzer:
         # Подготовить данные
         df2 = self.concatCsvIntoFrame(seriespath2)
         df_Ch4_Ref = self.concatCsvIntoFrame(referencePath)
-        df2 = self.interpolateCH4Data(df2, df_Ch4_Ref)
+        df2 = self.interpolateCH4RefData(df2, df_Ch4_Ref)
         df2[ValuesNames.ch4.name] = df2[ValuesNames.ch4Ref.name]
 
         # Создать массив готовых калибровок ResultModel и заполнить его
@@ -117,10 +125,12 @@ class MethaneAnalyzer:
                          ModelNames.model2   : model2,
                          ModelNames.model3   : model3
                         }
-        df_resultModels.to_csv('models.csv')
-        bestModelId = self.findBestModelId(df_resultModels)
-        best_resultModel = None if not bestModelId else dict_resultModels[bestModelId]
-        return df_resultModels, dict_resultModels, best_resultModel
+        if not df_resultModels.empty:
+            df_resultModels.to_csv('models.csv')
+            bestModelId = self.findBestModelId(df_resultModels)
+            best_resultModel = None if not bestModelId else dict_resultModels[bestModelId]
+            return df_resultModels, dict_resultModels, best_resultModel
+        return None, None, None
 
     def findBestModelId(self, df_resultModels):
         colV0PredCount = ModelNames.model1+ModelParameters.predictors_count
@@ -181,7 +191,7 @@ class MethaneAnalyzer:
             return ch4_new
         return None
 
-    def interpolateCH4Data(self, df_calculated, df_reference) -> np.ndarray:
+    def interpolateCH4RefData(self, df_calculated, df_reference) -> np.ndarray:
         
         timestrings = df_calculated[ValuesNames.timestamp.name].to_numpy()
         timestamps = [dt.datetime.fromisoformat(s) for s in timestrings]
@@ -199,10 +209,24 @@ class MethaneAnalyzer:
 
         return df_calculated
 
-        # new_array = np.column_stack((timestamps, interploated_ch4_reference))
-        # df = pd.DataFrame(data=new_array, columns=[ValuesNames.timestamp.getString(), ValuesNames.ch4Ref.getString()])
-        # path = ref_ch4_dirPath + "/ch4_ref_interpolated_{}.csv".format(dt.datetime.now().strftime(timeformat))
-        # df.to_csv(path, sep=",", index=False, header=df.columns)
+    def interpolateCH4Data(self, df_calculated, df_reference) -> np.ndarray:
+    
+        timestrings = df_calculated[ValuesNames.timestamp.name].to_numpy()
+        timestamps = [dt.datetime.fromisoformat(s) for s in timestrings]
+        ref_timestrings = df_reference[ValuesNames.timestamp.name].to_numpy()
+        ref_timestamps = [dt.datetime.fromisoformat(s) for s in ref_timestrings]
+
+        unix_times = self.convertTimestampsToFloats(timestamps)
+        ref_unix_times = self.convertTimestampsToFloats(ref_timestamps)
+
+        ch4 = df_calculated[ValuesNames.ch4.name].to_numpy()
+        interploated_ch4 = self.interpolation(t=ref_unix_times, t_new=unix_times, ch4=ch4)
+
+        if not interploated_ch4 is None:
+            df_calculated[ValuesNames.ch4.name] = interploated_ch4
+            df_calculated[ValuesNames.ch4Ref.name] = df_reference[ValuesNames.ch4Ref.name]
+
+        return df_calculated
 
     def prepareAndTransferData(self, ):
         pass
@@ -299,10 +323,10 @@ class MethaneAnalyzer:
 
     def absoluteHumidity(self, RH = 40, hPa = 1013.25, t = 20):
         #RH [%], P[гПa], t[C]	
-        Rv = 461.5 # J/(kg*K)
+        Rv = 461.5 # Дж/(кг*К)
         ew = 6.112 * exp(17.62 * t / (243.12 + t)) * (1.0016 + 3.15e-6 * hPa - 0.074 / hPa) #  насыщенное давление чистой фазы водяного пара, hPa
         #Температура задается в градусах Цельсия, давление — в гектопаскалях  (1 гектопаскаль = 100 Паскаль)
-        T = t + 273.15
+        T = t + 273.15 #Температура в Кельвинах
         AH = RH * ew / (Rv * T)
         return AH
             

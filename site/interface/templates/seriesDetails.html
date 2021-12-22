@@ -1,0 +1,24 @@
+{% extends 'base_pretty.html' %}
+
+{% block content %}
+<div class="w3-container">
+    <hr>
+    <div class="w3-center">
+    <h2>Детали серии {{series_id}}</h2>
+	<form class="w3-center" action="./uploadReferenceData/{{s.id}}" method="post" enctype="multipart/form-data">
+		{% csrf_token %}
+		<table class="w3-table w3-center">
+		<div class="w3-section"> 
+		<!-- {{ form.as_table }} -->
+		<input name="referenceDataFile" type="file">            
+		<button type="submit">Submit</button>
+		</div>
+		</table>
+		<br>
+		<!-- <input class="w3-btn w3-theme w3-padding" type="submit" value="Загрузить" /> -->
+ 
+	</form>
+</div>
+</div>   
+<br>
+{% endblock %}

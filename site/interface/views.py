@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, Http404
 from django.views.generic import TemplateView
 from measurementServer.common.enums import Status
-from .forms import CreateSeriesForm, StartExperimentForm, StartCalibrationForm
+from .forms import CreateSeriesForm, StartExperimentForm, StartCalibrationForm, UploadRefDataForm
 from django.urls import reverse
 from django.shortcuts import redirect
 from datetime import datetime
@@ -16,7 +16,7 @@ import json
 
 
 
-pmc = PyroMeasurementClient('host.docker.internal')
+pmc = PyroMeasurementClient()
 
 # Create your views here.
 
@@ -80,6 +80,10 @@ def series(request):
     seriesList = pmc.getSeriesList()    
     return render(request, 'series.html', {'series' : seriesList})
 
+def seriesDetails(request, series_id):
+    # pmc.get
+    return render(request, 'seriesDetails.html', {'series_id' : series_id})
+
 def calibrations(request):
     calibrationList = pmc.getCalibrationsList()
     return JsonResponse(json.dumps(calibrationList))
@@ -107,17 +111,21 @@ def startExperiment(request):
         form  = StartExperimentForm()
     return render(request, 'createSeries.html', {'form': form})
 
-def startCalibration(requset):
+def startCalibration(request):
     
-    if requset.method == 'POST':
-        form = StartExperimentForm(requset.POST)
+    series = pmc.getSeriesList()
+    seriesTuple = [(s['id'], "id = {} ({}, {})".format(s['id'],s['description'],s['date'])) for s in series] 
+
+    if request.method == 'POST':
+        form = StartCalibrationForm(seriesTuple, request.POST)
+
+        series1Id = int(form.data['series1Id'])
+        series2Id = int(form.data['series2Id'])
+        pmc.startCalibration(series1Id, series2Id)
+
     else:
-        series = pmc.getSeriesList()
-        seriesTuple = [(s.description, str(s.id)) for s in series] 
-        form = StartCalibrationForm()
-        form.series1Id.choices = seriesTuple
-        form.series2Id.choices = seriesTuple
-    return render(requset, 'createSeries.html', {'form' : form})
+        form = StartCalibrationForm(seriesTuple)
+    return render(request, 'startCalibration.html', {'form' : form})
 
 def zipfolder(foldername, target_dir):            
     zipobj = ZipFile(foldername, 'w', ZIP_DEFLATED)
@@ -138,3 +146,21 @@ def downloadSeries(request, series_id):
             return response
     os.remove(zippath)
     raise Http404
+
+def handle_uploaded_file(f):
+    with open('file.txt', 'wb+') as destination:
+        for chunk in f.chunks():
+            destination.write(chunk)
+
+def uploadReferenceData(request, series_id):
+    series = pmc.getSeriesList()
+    if request.method == 'POST':
+        # form = UploadRefDataForm(request.POST)
+        # refData = form.data["referenceData"]
+        print(request)
+        print(request.FILES)
+        handle_uploaded_file(request.FILES['referenceDataFile'])
+        # pmc.uploadReferenceData(series_id, refData)
+    else:
+        form = UploadRefDataForm()
+    return redirect('/series') 

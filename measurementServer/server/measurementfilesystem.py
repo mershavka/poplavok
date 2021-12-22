@@ -184,6 +184,9 @@ class MeasurementFileSystem:
             refData = self.__pathToReferenceData(refDataPath)
             if refData is None:
                 continue
+            if refData.seriesId in refDataDict.keys():
+                if refData.loadingDate <= refDataDict[refData.seriesId].loadingDate :
+                    continue
             refDataDict[refData.seriesId] = refData
         return refDataDict
 

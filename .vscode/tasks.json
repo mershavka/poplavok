@@ -4,7 +4,7 @@
 		{
 			"type": "shell",
 			"label": "docker-compose",
-			"command": "docker-compose -f \"docker-compose.debug.yml\" up -d",
+			"command": "docker-compose -f \"docker-compose.debug.yml\" up -d --build",
 		},
 		{
 			"type": "shell",

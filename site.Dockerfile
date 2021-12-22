@@ -1,5 +1,5 @@
 # For more information, please refer to https://aka.ms/vscode-docker-python
-FROM python:slim
+FROM python:3.8
 
 EXPOSE 8000
 EXPOSE 9090
@@ -13,8 +13,9 @@ ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH "${PYTHONPATH}:/app"
 
 # Install pip requirements
-COPY requirements.txt .
-RUN python -m pip install -r requirements.txt
+RUN pip install --upgrade pip
+COPY site.requirements.txt .
+RUN python -m pip install -r site.requirements.txt
 
 WORKDIR /app
 COPY . /app

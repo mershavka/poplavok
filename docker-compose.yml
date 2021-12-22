@@ -1,13 +1,30 @@
 version: '3.4'
 
 services:
-  poplavokalgorithm:
-    image: poplavokalgorithm
+  poplavok-site:
+    image: poplavok-site
     build:
       context: .
-      dockerfile: ./Dockerfile
+      dockerfile: ./site.Dockerfile
+    volumes:
+    - .:/app
+    command: ['python3', 'site/manage.py', 'runserver', '0.0.0.0:8000']
     ports:
       - 8000:8000
+    depends_on:
+      - pyro-ns
+      - pyro-server
+  pyro-server: 
+    image: pyro-server
+    privileged: true
+    build: 
+      context: .
+      dockerfile: ./pyro-server.Dockerfile
+    volumes:
+    - .:/app
+    ports:
+      - 52603:52603
+    command: ["python3", "runPyroServer.py", "--host=pyro-server", "--port=52603"]
     depends_on:
       - pyro-ns
   pyro-ns:

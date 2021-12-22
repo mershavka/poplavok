@@ -1,4 +1,5 @@
 {% load static %}<!DOCTYPE html>
+<!-- https://www.w3schools.com/w3css/tryw3css_templates_black.htm -->
 <html>
 <title>{% block title %}Поплавок{% endblock %}</title>
 <meta charset="UTF-8">
@@ -14,6 +15,7 @@
   <button class="w3-bar-item w3-button" onclick="w3_close()">Закрыть <i class="fa fa-remove"></i></button>
   <a href="./" class="w3-bar-item w3-button">Статус</a>
   <a href="./series" class="w3-bar-item w3-button">Управление сериями</a>
+  <a href="./startCalibration" class="w3-bar-item w3-button">Калибровка</a>
   <!-- <a href="#" class="w3-bar-item w3-button">Link 3</a> -->
   <!-- <a href="#" class="w3-bar-item w3-button">Link 4</a> -->
 </nav>
@@ -25,7 +27,7 @@
   <div class="w3-left w3-half">
     <table class="w3-table">
       <tr>
-        <th>Vremya poslednego izmereniya:</th>
+        <th>Время последнего измерения :</th>
         <td id="lastTime">32</td>
       </tr>
 

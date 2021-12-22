@@ -1,3 +1,4 @@
+from measurementServer import calibration
 from measurementServer.client import PyroMeasurementClient
 # from measurementServer.common import *
 from measurementServer.common.enums import MeasureType
@@ -7,18 +8,19 @@ import traceback
 import warnings
 
 
-ms = MeasurementServer()
-logger = ms.getLogger()
+# ms = MeasurementServer()
+# logger = ms.getLogger()
 # ms.getServerStatus()
 # ms.chooseSeries(3)
 # ms.createSeries("Test with generated data")
 # ms.runMeasurement(10, 1, 'Check CH4')
 # print(ms.getSeriesDict())
-
+# print(ms.getRefDatas())
+# ms.startRecalibration(seriesId=2, refDataId=2, calibrationId = 1)
 # print(ms.getSeriesList())
 # ms.uploadReferenceData(2, timestamps, ch4Ref)
 # try:
-# 	ms.startCalibration(seriesIdStep1=1,seriesIdStep2=2)
+# ms.startCalibration(seriesIdStep1=1,seriesIdStep2=2)
 # except Warning as w:
 # 	logger.warning(w)
 # 	print(traceback.format_exc())
@@ -31,6 +33,7 @@ logger = ms.getLogger()
 # ms.runMeasurement(10, 1, 'Hello')
 
 # pmc = PyroMeasurementClient()
+# pmc.startCalibration(1,2)
 # print(pmc.getSeriesPath(id))
 # print(pmc.getCurrentSeries())
 # print(pmc.getSeriesList())
