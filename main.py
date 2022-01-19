@@ -7,6 +7,11 @@ from datetime import datetime
 import traceback
 import warnings
 
+from measurementServer.drivers import driver
+
+mbDriver = driver.Driver()
+mbDriver.open()
+print(mbDriver.readData())
 
 # ms = MeasurementServer()
 # logger = ms.getLogger()

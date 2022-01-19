@@ -9,6 +9,7 @@ class Driver:
     #0x76 - BME280 address (pressure)
     i2c_port = 1	
     bme280_address = 0x76
+    pca9685_address = 0x40
     adcRange = 2.5 #V
     adcQuantizationLevels = 2**16
     RL = 3*10**3
@@ -33,8 +34,8 @@ class Driver:
     scanStartByte = 0xC0
             
     def __init__(self):
-        #bme280
-        self.i2c_bus = smbus2.SMBus(Driver.i2c_port)
+        #i2c
+        self.i2c_bus = smbus2.SMBus(Driver.i2c_port)        
         #spi
         self.spi = spidev.SpiDev()
         self.__lastData = dict.fromkeys([Driver.timeString, Driver.adcString, Driver.voltageString, Driver.temperatureString, Driver.rHumidityString, Driver.aHumidityString, Driver.pressureString])
@@ -48,9 +49,58 @@ class Driver:
         adcData = adcData[6:22]
         adcValue = int(adcData,2)
         return adcValue
+    
+    def pca_init(self):
+        mode1_addr = 0x00
+        mode1_value = 0x01 # Disable Sleep Mode to Enable LEDs
+        self.i2c_bus.write_byte_data(Driver.pca9685_address, mode1_addr, mode1_value)
+        ALL_LED_ON_L_addr  = 0xFA
+        ALL_LED_ON_H_addr  = 0xFB
+        ALL_LED_OFF_L_addr = 0xFC
+        ALL_LED_OFF_H_addr = 0xFD
+        self.i2c_bus.write_byte_data(Driver.pca9685_address, ALL_LED_ON_L_addr, 0x00)
+        self.i2c_bus.write_byte_data(Driver.pca9685_address, ALL_LED_ON_H_addr, 0x00)
+        self.i2c_bus.write_byte_data(Driver.pca9685_address, ALL_LED_OFF_L_addr, 0x00)
+        self.i2c_bus.write_byte_data(Driver.pca9685_address, ALL_LED_OFF_H_addr, 0x10)
+    
+    def pca_set_led8(self, value):
+        LED8_ON_L_addr  = 0x26
+        LED8_ON_H_addr  = 0x27
+        LED8_OFF_L_addr = 0x28
+        LED8_OFF_H_addr = 0x29
+        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED8_ON_L_addr, 0x00)
+        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED8_ON_H_addr, 0x10 if value else 0x00)
+        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED8_OFF_L_addr, 0x00)
+        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED8_OFF_H_addr, 0x00 if value else 0x10)
+    
+    def pca_set_led9(self, value):
+        LED9_ON_L_addr  = 0x2A
+        LED9_ON_H_addr  = 0x2B
+        LED9_OFF_L_addr = 0x2C
+        LED9_OFF_H_addr = 0x2D
+        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED9_ON_L_addr, 0x00)
+        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED9_ON_H_addr, 0x10 if value else 0x00)
+        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED9_OFF_L_addr, 0x00)
+        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED9_OFF_H_addr, 0x00 if value else 0x10)
+    
+    def pca_set_heater(self, value):
+        LED2_ON_L_addr  = 0x0E
+        LED2_ON_H_addr  = 0x0F
+        LED2_OFF_L_addr = 0x10
+        LED2_OFF_H_addr = 0x11
+        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED2_ON_L_addr, 0x00)
+        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED2_ON_H_addr, 0x10 if value else 0x00)
+        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED2_OFF_L_addr, 0x00)
+        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED2_OFF_H_addr, 0x00 if value else 0x10)
+
+
 
     def open(self):
+        self.pca_init()
         self.bme280_calibration_params = bme280.load_calibration_params(self.i2c_bus, Driver.bme280_address)
+        self.pca_set_led8(1)
+        self.pca_set_led9(0)
+        self.pca_set_heater(1)
 
         self.spi.open(0,0) #модуль и сигнал Chip Select, SPI0 и SPI0_CE0_N
         self.spi.lsbfirst = False
@@ -68,6 +118,7 @@ class Driver:
         return AH
 
     def readData(self):
+            self.pca_set_led9(1)
             bme280_data = bme280.sample(self.i2c_bus, Driver.bme280_address, self.bme280_calibration_params)
             value = self.adcGetData()
             self.__lastData[Driver.timeString] = dt.datetime.now()
@@ -77,4 +128,5 @@ class Driver:
             self.__lastData[Driver.rHumidityString] = bme280_data.humidity
             self.__lastData[Driver.aHumidityString] = Driver.absoluteHumidity(bme280_data.humidity, bme280_data.pressure, bme280_data.temperature)
             self.__lastData[Driver.pressureString] = bme280_data.pressure
+            self.pca_set_led9(0)
             return self.__lastData
