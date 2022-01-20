@@ -27,7 +27,7 @@ class CalibrationResult:
         dataDict[ValuesNames.ch4LR.name] = self.CH4LRModel.calculate(dataDict)
         return dataDict
 
-    def toJsonString(self):
+    def toDict(self):
         data = {
             "id" : self.id,
             "series1Id" : self.series1Id,
@@ -39,8 +39,11 @@ class CalibrationResult:
                 {"CH4LRModel" : self.CH4LRModel.toDict()}
                 ]
             }
+        return data
 
-        return json.dumps(data, indent=4)
+    def toJsonString(self):
+
+        return json.dumps(self.toDict(), indent=4)
 
     def fromJson(self, jsonDict):
         self.id = int(jsonDict['id'])

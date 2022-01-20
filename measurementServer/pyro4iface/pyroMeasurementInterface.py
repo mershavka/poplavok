@@ -56,8 +56,14 @@ class PyroMeasurementInterface(object):
     def getReferenceDataPath(self):
         return self.ms.getReferenceDataPath()
 
+    def getRefIdsList(self):
+        return self.ms.getRefIdsList()
+
     def chooseCalibration(self, id):
         return self.ms.chooseCalibration(id)
+
+    def getCurrentCalibration(self):
+        return self.ms.getCurrentCalibration()
     
     def getCalibrationsList(self):
         return self.ms.getCalibrationsList()

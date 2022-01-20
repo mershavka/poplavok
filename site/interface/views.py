@@ -13,7 +13,7 @@ from measurementServer.common import ValuesNames
 from zipfile import ZipFile, ZIP_DEFLATED
 import os
 import json
-
+from django.contrib import messages
 
 
 pmc = PyroMeasurementClient()
@@ -43,16 +43,23 @@ def getStatus(request):
     lastHum =  "{:2.2f}".format(lastDataDict[ValuesNames.rHumidity.name])
 
     
-    currentSeriesString = pmc.getCurrentSeries()    
+    currentSeriesString = pmc.getCurrentSeries()
+    currentCalibrationString = pmc.getCurrentCalibration()
     if (currentSeriesString is None):
         currentSeriesString = "Серия не выбрана"
     else:
         currentSeriesString = str(currentSeriesString['id'])
 
+    if (currentCalibrationString is None):
+        currentCalibrationString = "Калибровка не выбрана"
+    else:
+        currentCalibrationString = str(currentCalibrationString['id'])
+
     return JsonResponse({
         'server_time'   : server_time,
         'device_status' : deviceStatusString,
         'current_series': currentSeriesString,
+        'current_calibration': currentCalibrationString,
         'lastTime': lastTime,
         'lastTemp' : lastTemp,
         'lastPres' : lastPres,
@@ -77,8 +84,9 @@ def createSeries(request):
     return render(request, 'createSeries.html', {'form': form})
 
 def series(request):
-    seriesList = pmc.getSeriesList()    
-    return render(request, 'series.html', {'series' : seriesList})
+    seriesList = pmc.getSeriesList()
+    seriesIdsWithRefData = pmc.getRefIdsList()  
+    return render(request, 'series.html', {'series' : seriesList, "seriesIdsWithRefData" : seriesIdsWithRefData})
 
 def seriesDetails(request, series_id):
     # pmc.get
@@ -114,17 +122,23 @@ def startExperiment(request):
 def startCalibration(request):
     
     series = pmc.getSeriesList()
-    seriesTuple = [(s['id'], "id = {} ({}, {})".format(s['id'],s['description'],s['date'])) for s in series] 
+    seriesIdsWithRefData = pmc.getRefIdsList()
+    seriesTuple = [(s['id'], "id = {} ({}, {})".format(s['id'],s['description'],s['date'])) for s in series]
+    seriesTupleWithRefData = [(s['id'], "id = {} ({}, {})".format(s['id'],s['description'],s['date'])) for s in series if s['id'] in seriesIdsWithRefData]
 
     if request.method == 'POST':
-        form = StartCalibrationForm(seriesTuple, request.POST)
+        form = StartCalibrationForm(seriesTuple, seriesTupleWithRefData, request.POST)
 
         series1Id = int(form.data['series1Id'])
         series2Id = int(form.data['series2Id'])
-        pmc.startCalibration(series1Id, series2Id)
+        result = pmc.startCalibration(series1Id, series2Id)
+        if result:
+            messages.info(request, 'Калибровка успешно проведена')
+        else:
+            messages.info(request, 'Что-то пошло не так')
 
     else:
-        form = StartCalibrationForm(seriesTuple)
+        form = StartCalibrationForm(seriesTuple, seriesTupleWithRefData)
     return render(request, 'startCalibration.html', {'form' : form})
 
 def zipfolder(foldername, target_dir):            

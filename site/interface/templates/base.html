@@ -38,6 +38,10 @@
                 <th>Current Series</th>
                 <td id="current_series"></td>
             </tr>
+            </tr>
+                <th>Current Calibration</th>
+                <td id="current_calibration"></td>
+            </tr>
             <tr>
                 <th>Temperature</th>
                 <td id="temperature">{{temperature}}</td>
@@ -68,6 +72,7 @@
                 success: function(data) {
                     $('#server_time').html(data['server_time']);
                     $('#current_series').html(data['current_series']);
+					$('#current_calibration').html(data['current_calibration']);
                     $('#temperature').html(data['lastTemp']);
                     $('#pressure').html(data['lastPres']);
                     $('#humidity').html(data['lastHum']);

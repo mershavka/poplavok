@@ -58,9 +58,9 @@ class CalibrationModel:
     def toDict(self):        
         data = {
             ModelParameters.function_name         	: self.function_name,
-            ModelParameters.predictor_names       	: self.predictor_names,
+            ModelParameters.predictor_names       	: list(map(str, list(self.predictor_names))),
             ModelParameters.predictors_count     	: self.predictors_count,
-            ModelParameters.dependent_name			: self.dependent_name,
+            ModelParameters.dependent_name			: list(map(str, list(self.dependent_name))),
             ModelParameters.coefficients          	: list(map(float, list(self.coefficients))),
             ModelParameters.adjusted_r_squared    	: self.adjusted_r_squared,
             ModelParameters.rmse      				: self.rmse

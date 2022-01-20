@@ -226,6 +226,9 @@ class MeasurementServer:
             dataDict = self.currentCalibration.calculateCH4(dataDict)
         return dataDict
 
+    def getCurrentCalibration(self):
+        return self.currentCalibration
+
     def chooseCalibration(self, id):
         if id in self.resultModels:
             self.currentCalibration = self.resultModels[id]
@@ -238,7 +241,8 @@ class MeasurementServer:
     def getCalibrationsList(self):
         return [*self.resultModels.values()]
 
-    def startCalibration(self, seriesIdStep1, seriesIdStep2):        
+    def startCalibration(self, seriesIdStep1, seriesIdStep2): 
+        self.logger.info('Into StartCalibration!!!!')      
         series1Path = self.fs.getSeriesPathById(seriesIdStep1) # Путь к серии для калибровки V0
         series2Path = self.fs.getSeriesPathById(seriesIdStep2) # Путь к серии для калибровки CH4
 
@@ -291,6 +295,9 @@ class MeasurementServer:
 
     def getRefDatas(self):
         return self.refDatas
+    
+    def getRefIdsList(self):
+        return list(self.refDatas.keys())
 
 
 

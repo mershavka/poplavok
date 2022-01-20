@@ -63,6 +63,11 @@
       <th>Текущая серия :</th>
       <td id="current_series">Серия 12</td>
     </tr>
+
+    </tr>
+      <th>Текущая калибровка :</th>
+      <td id="current_calibration">Датчик не откалиброван</td>
+    </tr>
     </table>  
   </div>
   <!-- <div class="w3-center">
@@ -117,6 +122,7 @@
           success: function(data) {
               $('#server_time').html(data['server_time']);
               $('#current_series').html(data['current_series']);
+              $('#current_calibration').html(data['current_calibration']);
               $('#device_status').html(data['device_status']);
               $('#temperature').html(data['lastTemp']);
               $('#pressure').html(data['lastPres']);
