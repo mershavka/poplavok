@@ -62,6 +62,16 @@ class Driver:
         self.i2c_bus.write_byte_data(Driver.pca9685_address, ALL_LED_ON_H_addr, 0x00)
         self.i2c_bus.write_byte_data(Driver.pca9685_address, ALL_LED_OFF_L_addr, 0x00)
         self.i2c_bus.write_byte_data(Driver.pca9685_address, ALL_LED_OFF_H_addr, 0x10)
+
+    def pca_set_led0(self, value):
+        LED0_ON_L_addr  = 0x06
+        LED0_ON_H_addr  = 0x07
+        LED0_OFF_L_addr = 0x08
+        LED0_OFF_H_addr = 0x09
+        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED0_ON_L_addr, 0x00)
+        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED0_ON_H_addr, 0x10 if value else 0x00)
+        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED0_OFF_L_addr, 0x00)
+        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED0_OFF_H_addr, 0x00 if value else 0x10)
     
     def pca_set_led8(self, value):
         LED8_ON_L_addr  = 0x26
@@ -102,10 +112,11 @@ class Driver:
         #channel — Один из выводов PWM от 0 до 15
         #on — В какой момент цикла из 4096 частей включить ШИМ
         #off — В какой момент цикла из 4096 частей выключить ШИМ
-        self.i2cBus.write_byte_data(self.address, LED0_ON_L_addr + 4 * channel, on & 0xFF)
-        self.i2cBus.write_byte_data(self.address, LED0_ON_H_addr + 4 * channel, (on & 0xF00) >> 8)
-        self.i2cBus.write_byte_data(self.address, LED0_OFF_L_addr + 4 * channel, off & 0xFF)
-        self.i2cBus.write_byte_data(self.address, LED0_OFF_H_addr + 4 * channel, (off & 0xF00) >> 8)
+
+        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED0_ON_L_addr + 4 * channel, (on & 0xFF))
+        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED0_ON_H_addr + 4 * channel, (on & 0xF00) >> 8)
+        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED0_OFF_L_addr + 4 * channel, (off & 0xFF))
+        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED0_OFF_H_addr + 4 * channel, (off & 0xF00) >> 8)
 
     def pca_control_fan(self, fan_id = 0, dutycycle = 50, delay = 0):
         #id = 0 или 1 (первый или второй вентилятор)
@@ -113,7 +124,17 @@ class Driver:
         delay_time = round(delay * maxValue / 100, 0)
         led_on_time = round(maxValue * dutycycle / 100, 0)
         led_off_count = delay_time + led_on_time - 1
-        self.set_pwm(channel=fan_id, on=delay_time, off=led_off_count)
+        on = int(delay_time)
+        off = int(0 if led_off_count < 0 else led_off_count)
+        print("On: {} / 4096, off : {} / 4096".format(on, off))
+        self.set_pwm(channel=fan_id, on=int(delay_time), off=int(led_off_count))
+
+
+    def pca_turn_fan_on(self, fan_id):
+        self.set_pwm(channel=fan_id, on=0, off=4095)
+
+    def pca_turn_fan_off(self, fan_id):
+        self.set_pwm(channel=fan_id, on=0, off=0)
 
 
     def open(self):
