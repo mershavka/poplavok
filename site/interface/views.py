@@ -21,11 +21,21 @@ pmc = PyroMeasurementClient()
 # Create your views here.
 
 def index(request):
-    currentSeries = pmc.getCurrentSeries()
+    try:
+        currentSeries = pmc.getCurrentSeries()
+    except Exception:
+        return HttpResponseRedirect('unavailible')
     measurements = []
     if not currentSeries is None:
         measurements = pmc.getMeasurementsList(currentSeries['id'])
     return render(request, 'index.html', {'measurements' : measurements})
+
+def unavailible(request):
+    if pmc.connect():
+        return HttpResponseRedirect('/')
+    else:
+        return render(request, "unavailible.html")
+
 
 def getStatus(request):
     # here you return whatever data you need updated in your template
@@ -33,7 +43,10 @@ def getStatus(request):
     server_time = dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
 
     # device_status = 'init'
-    deviceStatus = pmc.getServerStatus()  
+    try:
+        deviceStatus = pmc.getServerStatus()  
+    except Exception:
+        return HttpResponseRedirect('unavailible')
     deviceStatusString = deviceStatus[1]
 
     lastDataDict = pmc.getLastData()

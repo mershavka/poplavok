@@ -1,5 +1,6 @@
 import Pyro4
 import Pyro4.util
+import os
 
 from . import MeasurementServer
 from ..common import *
@@ -22,7 +23,13 @@ Pyro4.util.SerializerBase.register_dict_to_class(CalibrationResult, CalibrationR
 @Pyro4.behavior(instance_mode="single")
 class PyroMeasurementServer(PyroMeasurementInterface):
     
-    def __init__(self):        
+    def __init__(self):
+        path = os.getenv('PYRO_MS_DATA_PATH')
+        if path is None:
+            path = './MS_DATA'
+        mode = os.getenv('PYRO_MS_MODE')  
+        if mode is None:
+            mode = True
         self.ms = MeasurementServer()
         super().__init__(self.ms)
 

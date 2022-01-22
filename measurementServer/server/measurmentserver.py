@@ -11,7 +11,6 @@ import datetime as dt
 
 class MeasurementServer:
 
-    testMode = True
     initialized = False
 
     def now(self):
@@ -37,11 +36,12 @@ class MeasurementServer:
         ms = MeasurementServer()
         ms.status = Status.NO
 
-    def __init__(self, path : str ='MS_DATA'):
+    def __init__(self, path : str ='MS_DATA', testMode : bool = True):
         if self.initialized:
             return
 
-        if not MeasurementServer.testMode:            
+        self.testMode = testMode
+        if not self.testMode:            
             from ..drivers.driver import Driver
             self.device = Driver()
             self.device.open()
@@ -49,12 +49,11 @@ class MeasurementServer:
             from ..drivers.testDriver import TestDriver
             self.device = TestDriver()
             self.device.open()
-        self.logger_path = path + "/log"
-        self.logger = MsLogger(self.logger_path).get_logger()
-        self.logger.info("Hello, Logger! From MeasurementServer")
 
         self.path = path
         self.fs = MeasurementFileSystem(self.path)
+        self.logger = MsLogger().get_logger()
+
         self.ma = MethaneAnalyzer()        
 
         self.series         = self.fs.loadSeries()

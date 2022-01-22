@@ -44,8 +44,8 @@ class MeasurementFileSystem:
         if not os.path.exists(self.resultModelsPath):
             os.mkdir(self.resultModelsPath)
 
-        self.logger = MsLogger().get_logger()
-        self.logger.info("Hello, Logger! From MeasurementFileSystem")
+        self.logger = MsLogger(path + "/log").get_logger()
+        self.logger.info("FileSystem Initialized!")
         
 
     def getReferenceDataDict(self, refData):
