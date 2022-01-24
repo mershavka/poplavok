@@ -4,6 +4,7 @@ import bme280
 from math import exp
 import datetime as dt
 from ..common import ValuesNames
+import PCA9685
 
 class Driver:
     #0x76 - BME280 address (pressure)
@@ -32,10 +33,13 @@ class Driver:
     VOCHighByte = 0x0D
     optionalSensorByte = 0x82
     scanStartByte = 0xC0
+
             
     def __init__(self):
         #i2c
-        self.i2c_bus = smbus2.SMBus(Driver.i2c_port)        
+        self.i2c_bus = smbus2.SMBus(Driver.i2c_port)
+        #pca
+        self.pca9685 = PCA9685.PCA9685(self.i2c_bus, self.pca9685_address)
         #spi
         self.spi = spidev.SpiDev()
         self.__lastData = dict.fromkeys([Driver.timeString, Driver.adcString, Driver.voltageString, Driver.temperatureString, Driver.rHumidityString, Driver.aHumidityString, Driver.pressureString])
@@ -50,73 +54,27 @@ class Driver:
         adcValue = int(adcData,2)
         return adcValue
     
-    def pca_init(self):
-        mode1_addr = 0x00
-        mode1_value = 0x01 # Disable Sleep Mode to Enable LEDs
-        self.i2c_bus.write_byte_data(Driver.pca9685_address, mode1_addr, mode1_value)
-        ALL_LED_ON_L_addr  = 0xFA
-        ALL_LED_ON_H_addr  = 0xFB
-        ALL_LED_OFF_L_addr = 0xFC
-        ALL_LED_OFF_H_addr = 0xFD
-        self.i2c_bus.write_byte_data(Driver.pca9685_address, ALL_LED_ON_L_addr, 0x00)
-        self.i2c_bus.write_byte_data(Driver.pca9685_address, ALL_LED_ON_H_addr, 0x00)
-        self.i2c_bus.write_byte_data(Driver.pca9685_address, ALL_LED_OFF_L_addr, 0x00)
-        self.i2c_bus.write_byte_data(Driver.pca9685_address, ALL_LED_OFF_H_addr, 0x10)
 
-    def pca_set_led0(self, value):
-        LED0_ON_L_addr  = 0x06
-        LED0_ON_H_addr  = 0x07
-        LED0_OFF_L_addr = 0x08
-        LED0_OFF_H_addr = 0x09
-        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED0_ON_L_addr, 0x00)
-        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED0_ON_H_addr, 0x10 if value else 0x00)
-        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED0_OFF_L_addr, 0x00)
-        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED0_OFF_H_addr, 0x00 if value else 0x10)
+    #LED0 -> Вентилятор 1
+    #LED1 -> Вентилятор 2
+    def pca_set_fan1(self, value):
+        self.pca9685.set_led(0, value)
+
+    def pca_set_fan2(self, value):
+        self.pca9685.set_led(1, value)
     
-    def pca_set_led8(self, value):
-        LED8_ON_L_addr  = 0x26
-        LED8_ON_H_addr  = 0x27
-        LED8_OFF_L_addr = 0x28
-        LED8_OFF_H_addr = 0x29
-        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED8_ON_L_addr, 0x00)
-        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED8_ON_H_addr, 0x10 if value else 0x00)
-        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED8_OFF_L_addr, 0x00)
-        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED8_OFF_H_addr, 0x00 if value else 0x10)
+    #LED8 -> Светодиод 1
+    def pca_set_first_led(self, value):
+        self.pca9685.set_led(8, value)
     
-    def pca_set_led9(self, value):
-        LED9_ON_L_addr  = 0x2A
-        LED9_ON_H_addr  = 0x2B
-        LED9_OFF_L_addr = 0x2C
-        LED9_OFF_H_addr = 0x2D
-        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED9_ON_L_addr, 0x00)
-        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED9_ON_H_addr, 0x10 if value else 0x00)
-        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED9_OFF_L_addr, 0x00)
-        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED9_OFF_H_addr, 0x00 if value else 0x10)
+    #LED9 -> Светодиод 2
+    def pca_set_second_led(self, value):
+        self.pca9685.set_led(9, value)
     
+    #LED2 -> Накал сенсора
     def pca_set_heater(self, value):
-        LED2_ON_L_addr  = 0x0E
-        LED2_ON_H_addr  = 0x0F
-        LED2_OFF_L_addr = 0x10
-        LED2_OFF_H_addr = 0x11
-        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED2_ON_L_addr, 0x00)
-        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED2_ON_H_addr, 0x10 if value else 0x00)
-        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED2_OFF_L_addr, 0x00)
-        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED2_OFF_H_addr, 0x00 if value else 0x10)
+        self.pca9685.set_led(2, value)
 
-    def set_pwm(self, channel, on, off):
-        """Sets a single PWM channel."""
-        LED0_ON_L_addr  = 0x06
-        LED0_ON_H_addr  = 0x07
-        LED0_OFF_L_addr = 0x08
-        LED0_OFF_H_addr = 0x09
-        #channel — Один из выводов PWM от 0 до 15
-        #on — В какой момент цикла из 4096 частей включить ШИМ
-        #off — В какой момент цикла из 4096 частей выключить ШИМ
-
-        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED0_ON_L_addr + 4 * channel, (on & 0xFF))
-        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED0_ON_H_addr + 4 * channel, (on & 0xF00) >> 8)
-        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED0_OFF_L_addr + 4 * channel, (off & 0xFF))
-        self.i2c_bus.write_byte_data(Driver.pca9685_address, LED0_OFF_H_addr + 4 * channel, (off & 0xF00) >> 8)
 
     def pca_control_fan(self, fan_id = 0, dutycycle = 50, delay = 0):
         #id = 0 или 1 (первый или второй вентилятор)
@@ -127,22 +85,24 @@ class Driver:
         on = int(delay_time)
         off = int(0 if led_off_count < 0 else led_off_count)
         print("On: {} / 4096, off : {} / 4096".format(on, off))
-        self.set_pwm(channel=fan_id, on=int(delay_time), off=int(led_off_count))
+        self.pca9685.set_pwm(channel=fan_id, on=int(delay_time), off=int(led_off_count))
 
 
-    def pca_turn_fan_on(self, fan_id):
-        self.set_pwm(channel=fan_id, on=0, off=4095)
+    def pca_turn_fans_on(self, fan_id):
+        self.pca9685.set_led(0, 1)
+        self.pca9685.set_led(1, 1)
 
-    def pca_turn_fan_off(self, fan_id):
-        self.set_pwm(channel=fan_id, on=0, off=0)
+    def pca_turn_fans_off(self, fan_id):
+        self.pca9685.set_led(0, 0)
+        self.pca9685.set_led(1, 0)
 
 
     def open(self):
-        self.pca_init()
+        # self.pca9685.begin()
         self.bme280_calibration_params = bme280.load_calibration_params(self.i2c_bus, Driver.bme280_address)
-        self.pca_set_led8(1)
-        self.pca_set_led9(0)
-        self.pca_set_heater(1)
+        self.pca_set_first_led(1) #зажечь первый светодиод
+        self.pca_set_second_led(0) #не зажигать второй светодиод
+        self.pca_set_heater(1) #включить нагрев сенсора
 
         self.spi.open(0,0) #модуль и сигнал Chip Select, SPI0 и SPI0_CE0_N
         self.spi.lsbfirst = False
@@ -160,7 +120,7 @@ class Driver:
         return AH
 
     def readData(self):
-            self.pca_set_led9(1)
+            self.pca_set_second_led(1)
             bme280_data = bme280.sample(self.i2c_bus, Driver.bme280_address, self.bme280_calibration_params)
             value = self.adcGetData()
             self.__lastData[Driver.timeString] = dt.datetime.now()
@@ -170,5 +130,5 @@ class Driver:
             self.__lastData[Driver.rHumidityString] = bme280_data.humidity
             self.__lastData[Driver.aHumidityString] = Driver.absoluteHumidity(bme280_data.humidity, bme280_data.pressure, bme280_data.temperature)
             self.__lastData[Driver.pressureString] = bme280_data.pressure
-            self.pca_set_led9(0)
+            self.pca_set_second_led(0)
             return self.__lastData

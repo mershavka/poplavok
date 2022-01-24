@@ -20,7 +20,7 @@ class TestDriver:
 
     def readData(self):
             return { 	
-                        ValuesNames.timestamp.name	: dt.datetime.now(),  
+                        ValuesNames.timestamp.name		: dt.datetime.now(),  
                         ValuesNames.adc.name			: 52428,
                         ValuesNames.voltage.name		: 2,
                         ValuesNames.temperature.name	: 25,
