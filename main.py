@@ -7,7 +7,7 @@ from datetime import datetime
 import traceback
 import warnings
 from time import sleep
-# from measurementServer.drivers import driver
+from measurementServer.drivers import driver
 
 # mbDriver = driver.Driver()
 # mbDriver.open()
@@ -29,9 +29,9 @@ from time import sleep
 # mbDriver.pca_turn_fan_off(0)
 # mbDriver.pca_turn_fan_off(0)
 
-ms = MeasurementServer()
+# ms = MeasurementServer()
 # logger = ms.getLogger()
-print(ms.getServerStatus())
+# print(ms.getServerStatus())
 # ms.chooseSeries(3)
 # ms.createSeries("Test with generated data")
 # ms.runMeasurement(10, 1, 'Check CH4')
@@ -53,11 +53,11 @@ print(ms.getServerStatus())
 # ms.chooseCalibration(2)
 # ms.runMeasurement(10, 1, 'Hello')
 
-# pmc = PyroMeasurementClient()
+pmc = PyroMeasurementClient()
 # pmc.startCalibration(1,2)
 # print(pmc.getSeriesPath(id))
 # print(pmc.getCurrentSeries())
-# print(pmc.getSeriesList())
+print(pmc.getSeriesList())
 # pmc.runMeasurement(10, 1, 'TTTT')
 # pmc.createSeries('With sensor',MeasureType.COMMON)
 # print(pmc.getSeriesList())

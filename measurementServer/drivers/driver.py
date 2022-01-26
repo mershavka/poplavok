@@ -4,7 +4,7 @@ import bme280
 from math import exp
 import datetime as dt
 from ..common import ValuesNames
-import PCA9685
+from .PCA9685 import PCA9685
 
 class Driver:
     #0x76 - BME280 address (pressure)
@@ -39,7 +39,7 @@ class Driver:
         #i2c
         self.i2c_bus = smbus2.SMBus(Driver.i2c_port)
         #pca
-        self.pca9685 = PCA9685.PCA9685(self.i2c_bus, self.pca9685_address)
+        self.pca9685 = PCA9685(self.i2c_bus, self.pca9685_address)
         #spi
         self.spi = spidev.SpiDev()
         self.__lastData = dict.fromkeys([Driver.timeString, Driver.adcString, Driver.voltageString, Driver.temperatureString, Driver.rHumidityString, Driver.aHumidityString, Driver.pressureString])
