@@ -30,7 +30,9 @@ class PyroMeasurementServer(PyroMeasurementInterface):
         mode = os.getenv('PYRO_MS_MODE')  
         if mode is None:
             mode = True
-        self.ms = MeasurementServer()
+        else:
+            mode = False if mode=='False' else True
+        self.ms = MeasurementServer(path, mode)
         super().__init__(self.ms)
 
 
