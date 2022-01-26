@@ -16,7 +16,7 @@ class MeasurementServer:
     def now(self):
         return dt.datetime.now()
 
-    def __new__(cls):
+    def __new__(cls, *args, **kwargs):
         if not hasattr(cls, 'instance'):
             cls.instance = super(MeasurementServer, cls).__new__(cls)
         return cls.instance
@@ -39,20 +39,27 @@ class MeasurementServer:
     def __init__(self, path : str ='MS_DATA', testMode : bool = True):
         if self.initialized:
             return
+            
+        self.path = path
+        self.fs = MeasurementFileSystem(self.path)
+        self.logger = MsLogger().get_logger()
 
         self.testMode = testMode
-        if not self.testMode:            
-            from ..drivers.driver import Driver
-            self.device = Driver()
-            self.device.open()
+        if not self.testMode:
+            try:            
+                from ..drivers.driver import Driver
+                self.device = Driver()
+                self.device.open()
+            except Exception as e:
+                self.logger.error(e)
         else:
             from ..drivers.testDriver import TestDriver
             self.device = TestDriver()
             self.device.open()
 
-        self.path = path
-        self.fs = MeasurementFileSystem(self.path)
-        self.logger = MsLogger().get_logger()
+        
+
+        self.logger.info("Path = {}, testModeOn = {}".format(path, testMode))
 
         self.ma = MethaneAnalyzer()        
 
