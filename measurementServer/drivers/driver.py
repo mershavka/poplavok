@@ -57,11 +57,11 @@ class Driver:
 
     #LED0 -> Вентилятор 1
     #LED1 -> Вентилятор 2
-    def pca_turn_fans_on(self, fan_id):
+    def pca_turn_fans_on(self):
         self.pca9685.set_led(0, 1)
         self.pca9685.set_led(1, 1)
 
-    def pca_turn_fans_off(self, fan_id):
+    def pca_turn_fans_off(self):
         self.pca9685.set_led(0, 0)
         self.pca9685.set_led(1, 0)
     
@@ -79,7 +79,12 @@ class Driver:
 
     
     def pca_set_fans_speed(self, percentage):
-        self.__pca_set_fans_pwm(dutycycle=percentage)
+        if percentage == 0:
+            self.pca_turn_fans_off()
+        elif percentage == 100:
+            self.pca_turn_fans_on()
+        else:
+            self.__pca_set_fans_pwm(dutycycle=percentage)
 
 
     def __pca_set_fans_pwm(self, dutycycle = 50, delay = 0):

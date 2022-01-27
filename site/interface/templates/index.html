@@ -14,15 +14,12 @@
          url : `setFansSpeed/${speed}`,
          success: function(data)
          {
-             if (data['status'] == 1)
-             {
-                document.getElementById('rangeValue').innerHTML = speed + '%'
-             }
-             else
-             {
-                document.getElementById('rangeValue').value = 0
-                document.getElementById('rangeValue').innerHTML = 0 + '%'
-             }
+            fan_slider = document.getElementById('rangeValue')
+            if (data['status'] == 0)
+            {
+              speed = 0
+            }
+            fan_slider.innerHTML = speed + '%'
          }		 
      }) 
   }
@@ -33,7 +30,7 @@
     <a class="w3-button w3-border w3-third w3-theme" href="./stopExperiment">Остановить эксперимент</a>
     <a class="w3-button w3-border w3-third w3-theme" href="./createSeries">Создать серию</a>
 </div>
-<p align="center">Скорость вентиляторов <input class="" type="range" min="0" max="100" list="tickmarks" id="fan_slider" value="0" step="5" oninput=setFansSpeed(this.value) onchange=setFansSpeed(this.value)>
+<p align="center">Скорость вентиляторов <input class="" type="range" min="0" max="100" list="tickmarks" id="fan_slider" value="0" step="5" onchange=setFansSpeed(this.value) oninput="document.getElementById('rangeValue').innerHTML = this.value + '%'">
 <datalist id="tickmarks">
 <option value="0" label="0%">
 <option value="10">

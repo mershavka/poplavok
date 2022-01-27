@@ -37,7 +37,7 @@
 
       <tr>
         <th>Напряжение, В :</th>
-        <td id="lastVolt">1.024</td>
+        <td id="voltage">1.024</td>
       </tr>
 
       <tr>
@@ -76,6 +76,11 @@
     </tr>
       <th>Текущая калибровка :</th>
       <td id="current_calibration">Датчик не откалиброван</td>
+    </tr>
+
+    </tr>
+      <th>Содержание метана, ppm :</th>
+      <td id="CH4">Неизвестно</td>
     </tr>
     </table>  
   </div>
@@ -137,7 +142,8 @@
               $('#pressure').html(data['lastPres']);
               $('#humidity').html(data['lastHum']);
               $('#lastTime').html(data['lastTime']);
-              $('#lastVolt').html(data['lastVolt']);
+              $('#voltage').html(data['lastVolt']);
+              $('#CH4').html(data['lastCH4']);
           }
       });
   };
