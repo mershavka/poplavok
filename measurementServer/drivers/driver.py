@@ -57,11 +57,13 @@ class Driver:
 
     #LED0 -> Вентилятор 1
     #LED1 -> Вентилятор 2
-    def pca_set_fan1(self, value):
-        self.pca9685.set_led(0, value)
+    def pca_turn_fans_on(self, fan_id):
+        self.pca9685.set_led(0, 1)
+        self.pca9685.set_led(1, 1)
 
-    def pca_set_fan2(self, value):
-        self.pca9685.set_led(1, value)
+    def pca_turn_fans_off(self, fan_id):
+        self.pca9685.set_led(0, 0)
+        self.pca9685.set_led(1, 0)
     
     #LED8 -> Светодиод 1
     def pca_set_first_led(self, value):
@@ -75,9 +77,12 @@ class Driver:
     def pca_set_heater(self, value):
         self.pca9685.set_led(2, value)
 
+    
+    def pca_set_fans_speed(self, percentage):
+        self.__pca_set_fans_pwm(dutycycle=percentage)
 
-    def pca_control_fan(self, fan_id = 0, dutycycle = 50, delay = 0):
-        #id = 0 или 1 (первый или второй вентилятор)
+
+    def __pca_set_fans_pwm(self, dutycycle = 50, delay = 0):
         maxValue = 2**12
         delay_time = round(delay * maxValue / 100, 0)
         led_on_time = round(maxValue * dutycycle / 100, 0)
@@ -85,16 +90,9 @@ class Driver:
         on = int(delay_time)
         off = int(0 if led_off_count < 0 else led_off_count)
         print("On: {} / 4096, off : {} / 4096".format(on, off))
-        self.pca9685.set_pwm(channel=fan_id, on=int(delay_time), off=int(led_off_count))
-
-
-    def pca_turn_fans_on(self, fan_id):
-        self.pca9685.set_led(0, 1)
-        self.pca9685.set_led(1, 1)
-
-    def pca_turn_fans_off(self, fan_id):
-        self.pca9685.set_led(0, 0)
-        self.pca9685.set_led(1, 0)
+        #channel = 0 или 1 (первый или второй вентилятор)
+        self.pca9685.set_pwm(channel=0, on=int(delay_time), off=int(led_off_count))
+        self.pca9685.set_pwm(channel=1, on=int(delay_time), off=int(led_off_count))
 
 
     def open(self):

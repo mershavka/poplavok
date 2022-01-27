@@ -15,5 +15,6 @@ urlpatterns = [
     path('downloadSeries/<int:series_id>', views.downloadSeries),
     path('uploadReferenceData/<int:series_id>', views.uploadReferenceData),
     path('calibrations', views.calibrations),
-    path('unavailible', views.unavailible)
+    path('unavailible', views.unavailible),
+	path('setFansSpeed/<int:speed>/', views.setFansSpeed, name='setFansSpeed')
 ]

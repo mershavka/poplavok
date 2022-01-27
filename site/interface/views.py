@@ -54,7 +54,7 @@ def getStatus(request):
     lastTemp = "{:2.2f}".format(lastDataDict[ValuesNames.temperature.name])
     lastPres = "{:4.2f}".format(lastDataDict[ValuesNames.pressure.name])
     lastHum =  "{:2.2f}".format(lastDataDict[ValuesNames.rHumidity.name])
-
+    lastVolt = "{:.2f}".format(lastDataDict[ValuesNames.voltage.name])
     
     currentSeriesString = pmc.getCurrentSeries()
     currentCalibrationString = pmc.getCurrentCalibration()
@@ -76,7 +76,8 @@ def getStatus(request):
         'lastTime': lastTime,
         'lastTemp' : lastTemp,
         'lastPres' : lastPres,
-        'lastHum':  lastHum
+        'lastHum':  lastHum,
+        'lastVolt': lastVolt
     })
 
 def stopExperiment(request):
@@ -178,6 +179,21 @@ def handle_uploaded_file(f):
     with open('file.txt', 'wb+') as destination:
         for chunk in f.chunks():
             destination.write(chunk)
+
+def setFansSpeed(request, speed):
+    if speed > 100 or speed < 0:
+        pmc.setFansSpeed(0)
+        return JsonResponse(
+            {
+                'status' : 0
+            })
+    pmc.setFansSpeed(speed)
+    return JsonResponse(
+        {
+            'status' : 1
+        }
+    )
+
 
 def uploadReferenceData(request, series_id):
     series = pmc.getSeriesList()

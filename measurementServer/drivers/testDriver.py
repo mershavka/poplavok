@@ -18,6 +18,9 @@ class TestDriver:
     def open(self):
         pass
 
+    def pca_set_fans_speed(self, percentage):
+        pass
+
     def readData(self):
             return { 	
                         ValuesNames.timestamp.name		: dt.datetime.now(),  
@@ -27,5 +30,6 @@ class TestDriver:
                         ValuesNames.rHumidity.name	    : 60,
                         ValuesNames.aHumidity.name      : 0.014,
                         ValuesNames.pressure.name	    : 1013.25,
+                        ValuesNames.ch4.name	        : 2.5,
                     }
             

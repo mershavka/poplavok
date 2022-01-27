@@ -19,7 +19,7 @@
   <button class="w3-bar-item w3-button" onclick="w3_close()">Закрыть <i class="fa fa-window-close"></i></button>
   <a href="./" class="w3-bar-item w3-button">Статус</a>
   <a href="./series" class="w3-bar-item w3-button">Управление сериями</a>
-  <a href="./startCalibration" class="w3-bar-item w3-button">Калибровка</a>
+  <a href="../startCalibration" class="w3-bar-item w3-button">Калибровка</a>
   <!-- <a href="#" class="w3-bar-item w3-button">Link 3</a> -->
   <!-- <a href="#" class="w3-bar-item w3-button">Link 4</a> -->
 </nav>
@@ -36,17 +36,22 @@
       </tr>
 
       <tr>
-        <th>Температура :</th>
+        <th>Напряжение, В :</th>
+        <td id="lastVolt">1.024</td>
+      </tr>
+
+      <tr>
+        <th>Температура, °C :</th>
         <td id="temperature">32</td>
       </tr>
       
       <tr>
-        <th>Давление :</th>
-        <td id="pressure">100</td>
+        <th>Давление, гПа :</th>
+        <td id="pressure">1000</td>
       </tr>
   
       </tr>
-        <th>Влажность :</th>
+        <th>Влажность, % :</th>
         <td id="humidity">10</td>
       </tr>
       </table> 
@@ -132,6 +137,7 @@
               $('#pressure').html(data['lastPres']);
               $('#humidity').html(data['lastHum']);
               $('#lastTime').html(data['lastTime']);
+              $('#lastVolt').html(data['lastVolt']);
           }
       });
   };

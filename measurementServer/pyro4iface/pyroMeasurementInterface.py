@@ -67,3 +67,6 @@ class PyroMeasurementInterface(object):
     
     def getCalibrationsList(self):
         return self.ms.getCalibrationsList()
+    
+    def setFansSpeed(self, speed):
+        return self.ms.setFansSpeed(speed)

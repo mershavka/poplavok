@@ -305,5 +305,6 @@ class MeasurementServer:
     def getRefIdsList(self):
         return list(self.refDatas.keys())
 
-
-
+    def setFansSpeed(self, percentage = 100):
+        self.device.pca_set_fans_speed(percentage)
+        self.logger.info('Fans speed value: ' + str(percentage))
