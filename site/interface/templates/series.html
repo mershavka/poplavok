@@ -27,10 +27,10 @@
   <tbody>
   {% for s in series %}
   <tr id="{{s.id}}">
-    <td><a href="./seriesDetails/{{s.id}}">{{s.id}}</a></td>
+    <td><a href="{% url 'seriesDetails' s.id %}">{{s.id}}</a></td> 
     <td>{{s.description}}</td>
     <td>{{s.date}}</td>
-    <td><a href="./downloadSeries/{{s.id}}">Скачать серию</a></td>
+    <td><a href="{% url 'downloadSeries' s.id %}">Скачать серию</a></td>
     <td>{% if s.id in seriesIdsWithRefData %} Есть {% else %} Нет {% endif %}</td>
   </tr>
   {% endfor %}

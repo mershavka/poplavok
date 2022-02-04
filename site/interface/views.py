@@ -55,6 +55,7 @@ def getStatus(request):
     lastPres = "{:4.2f}".format(lastDataDict[ValuesNames.pressure.name])
     lastHum =  "{:2.2f}".format(lastDataDict[ValuesNames.rHumidity.name])
     lastVolt = "{:.2f}".format(lastDataDict[ValuesNames.voltage.name])
+    lastCH4 = "{:.2f}".format(lastDataDict[ValuesNames.ch4.name])
     
     currentSeriesString = pmc.getCurrentSeries()
     currentCalibrationString = pmc.getCurrentCalibration()
@@ -77,7 +78,8 @@ def getStatus(request):
         'lastTemp' : lastTemp,
         'lastPres' : lastPres,
         'lastHum':  lastHum,
-        'lastVolt': lastVolt
+        'lastVolt': lastVolt,
+        'lastCH4': lastCH4
     })
 
 def stopExperiment(request):

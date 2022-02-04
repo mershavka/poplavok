@@ -15,6 +15,8 @@ import numpy as np
 import datetime as dt
 import random
 from math import exp
+import matplotlib.pyplot as plt
+import matplotlib.dates as md
 
 class MethaneAnalyzer:
     
@@ -42,6 +44,26 @@ class MethaneAnalyzer:
         with open(filename, 'a+', newline ='') as writeObj:
             writer = csv.writer(writeObj)
             writer.writerow(listOfElements)
+
+    def plotMeasurement(self, path, variable):
+        measurement = self.concatCsvIntoFrame(path)
+        # plotData = measurement[[ValuesNames.timestamp.name, variable]]
+        x = measurement[ValuesNames.timestamp.name].tolist()
+        x = [dt.datetime.strptime(i, '%Y-%m-%d %H:%M:%S.%f') for i in x]
+        y = measurement[variable].tolist()
+        formatter = md.DateFormatter('%H:%M:%S')
+        fig, ax = plt.subplots(figsize=(16,10), dpi = 300)
+        plt.gca().xaxis.set_major_formatter(formatter)
+        plt.gcf().autofmt_xdate()
+        plt.title("Старт = {}, конец = {}".format(x[0], x[-1]), loc = 'left')
+        plt.xlabel("Время измерения")
+        plt.ylabel(variable)
+        # plt.axis([xmin, xmax, ymin, ymax])
+        plt.minorticks_on()
+        ax.grid(b=True, which = 'major', axis='both')
+        ax.scatter(x,y)
+        image_path = os.path.splitext(path)[0]+'_{}.png'.format(variable)
+        fig.savefig(image_path)
 
     def getCalibratedModels(self, df, modelTemplates):
 

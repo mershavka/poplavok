@@ -17,9 +17,9 @@
 <nav class="w3-sidebar w3-bar-block w3-card w3-animate-left w3-center" style="display:none" id="mySidebar">
   <h1 class="w3-xxxlarge w3-text-theme">Меню</h1>
   <button class="w3-bar-item w3-button" onclick="w3_close()">Закрыть <i class="fa fa-window-close"></i></button>
-  <a href="./" class="w3-bar-item w3-button">Статус</a>
-  <a href="./series" class="w3-bar-item w3-button">Управление сериями</a>
-  <a href="../startCalibration" class="w3-bar-item w3-button">Калибровка</a>
+  <a href="{% url 'index' %}" class="w3-bar-item w3-button">Статус</a>
+  <a href="{% url 'series' %}" class="w3-bar-item w3-button">Управление сериями</a>
+  <a href="{% url 'startCalibration' %}" class="w3-bar-item w3-button">Калибровка</a>
   <!-- <a href="#" class="w3-bar-item w3-button">Link 3</a> -->
   <!-- <a href="#" class="w3-bar-item w3-button">Link 4</a> -->
 </nav>

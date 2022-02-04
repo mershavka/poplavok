@@ -308,3 +308,6 @@ class MeasurementServer:
     def setFansSpeed(self, percentage = 100):
         self.device.pca_set_fans_speed(percentage)
         self.logger.info('Fans speed value: ' + str(percentage))
+
+    def plotMeasurement(self, variable, path):
+        self.ma.plotMeasurement(variable=variable, path=path)
