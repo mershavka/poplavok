@@ -134,6 +134,14 @@ class MeasurementFileSystem:
             return None
         return seriesPath[-1]
 
+    def getMeasurementPathById(self, series_id, measurement_id):
+        seriesPath = self.getSeriesPathById(series_id)
+        if seriesPath:
+            measurementPath = glob.glob(seriesPath + "/measure{}*.csv".format(measurement_id))
+            if not measurementPath:
+                return None
+            return measurementPath[-1]
+
     def __seriesToPath(self, s: Series):
         return self.path + "/series{}_{}_{}".format(s.id, s.type.value, s.date.strftime(timeformat))
 

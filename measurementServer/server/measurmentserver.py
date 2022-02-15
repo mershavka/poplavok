@@ -1,11 +1,9 @@
-from logging import Logger
 from ..common import *
 from .measurementmodule import MeasurementModule
 from .measurementfilesystem import MeasurementFileSystem
 from .methaneAnalyzer import MethaneAnalyzer
 from .msLogger import MsLogger
 from ..calibration import CalibrationResult
-# from .measurementserverresponse import MeasurementServerRespone
 
 import datetime as dt
 
@@ -113,6 +111,7 @@ class MeasurementServer:
             self.fs.addSeries(new_series)
             self.series[new_series.id] = new_series
             self.currentSeries = new_series
+            self.logger.info("Series {} created".format(new_series.id))
         return new_series
 
     def chooseSeries(self, seriesId):
@@ -121,6 +120,7 @@ class MeasurementServer:
         else:	
             self.status = Status.ERROR
             self.logger.error("No series with id={}".format(seriesId))
+        self.logger.info("Current series: {} ".format(self.currentSeries.id))
         return self.currentSeries
 
     def uploadReferenceData(self, seriesId, timestampsList, ch4RefList):
@@ -207,6 +207,12 @@ class MeasurementServer:
         if id in self.series:
             return self.fs.getSeriesPathById(id)
         self.logger.warning("No series with id = {}".format(id))
+
+    def getMeasurementPath(self, series_id, measurement_id):
+        if series_id in self.series:
+            return self.fs.getMeasurementPathById(series_id=series_id, measurement_id=measurement_id)
+        self.logger.warning("No series with id = {}".format(series_id))
+        return None
     
     def getReferenceDataPath(self, seriesId):
         if seriesId in self.refDatas:
@@ -309,5 +315,10 @@ class MeasurementServer:
         self.device.pca_set_fans_speed(percentage)
         self.logger.info('Fans speed value: ' + str(percentage))
 
-    def plotMeasurement(self, variable, path):
-        self.ma.plotMeasurement(variable=variable, path=path)
+    def plotMeasurement(self, variable, series_id, measurement_id):
+        measurement_path = self.getMeasurementPath(series_id, measurement_id)
+        if not measurement_path:
+            self.logger.error('No measurement with id = {} in series with id = {}'.format(measurement_id, series_id))
+            return None
+        image_path = self.ma.plotMeasurement(variable=variable, path=measurement_path)
+        return image_path

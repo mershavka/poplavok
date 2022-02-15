@@ -44,6 +44,9 @@ class PyroMeasurementInterface(object):
     def getMeasurementsList(self, seriesId):
         return self.ms.getMeasurementsList(seriesId)
 
+    def getMeasurementPath(self, seriesId, measurementId):
+        return self.ms.getMeasurementPath(seriesId, measurementId)
+
     def startCalibration(self, seriesIdStep1, seriesIdStep2):
         return self.ms.startCalibration(seriesIdStep1, seriesIdStep2)
     
@@ -70,3 +73,6 @@ class PyroMeasurementInterface(object):
     
     def setFansSpeed(self, speed):
         return self.ms.setFansSpeed(speed)
+
+    def plotMeasurement(self, variable, series_id, measurement_id):
+        return self.ms.plotMeasurement(variable, series_id, measurement_id)

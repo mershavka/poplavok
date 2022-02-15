@@ -27,7 +27,7 @@ class MsLogger:
         logging.captureWarnings(True)
         self._logger = logging.getLogger(__name__)
         self._logger.setLevel(logging.DEBUG)
-        formatter = logging.Formatter('%(asctime)s \t [%(levelname)s | %(filename)s:%(lineno)s] > %(message)s')
+        formatter = logging.Formatter('%(asctime)s \t [%(levelname)s | %(filename)s, line %(lineno)s in %(funcName)s] > %(message)s')
 
         now = datetime.datetime.now()
 

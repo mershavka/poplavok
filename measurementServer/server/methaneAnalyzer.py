@@ -64,6 +64,7 @@ class MethaneAnalyzer:
         ax.scatter(x,y)
         image_path = os.path.splitext(path)[0]+'_{}.png'.format(variable)
         fig.savefig(image_path)
+        return image_path
 
     def getCalibratedModels(self, df, modelTemplates):
 

@@ -13,7 +13,8 @@ urlpatterns = [
     path('getStatus', views.getStatus, name='getStatus'),
     path('chooseSeries/<int:series_id>', views.chooseSeries),
     path('downloadSeries/<int:series_id>', views.downloadSeries, name='downloadSeries'),
-    path('uploadReferenceData/<int:series_id>', views.uploadReferenceData),
+    path('downloadPlot/<int:series_id>/<int:measurement_id>/<str:var_name>', views.downloadPlot, name='downloadPlot'),
+    path('uploadReferenceData/<int:series_id>', views.uploadReferenceData, name = 'uploadReferenceData'),
     path('calibrations', views.calibrations),
     path('unavailible', views.unavailible),
 	path('setFansSpeed/<int:speed>/', views.setFansSpeed, name='setFansSpeed')

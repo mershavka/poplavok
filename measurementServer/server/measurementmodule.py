@@ -14,7 +14,7 @@ class MeasurementModule:
         self.writeFunc = None
         self.stopFunc = None
         self.logger = MsLogger().get_logger()
-        self.logger.info("Hello, Logger! From MeasurementModule")
+        self.logger.info("MeasurementModule initialized")
 
     def setReadFunc(self, f):
         self.readFunc = f

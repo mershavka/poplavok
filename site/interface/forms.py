@@ -1,6 +1,7 @@
 from django import forms
 from django.db.models import fields
 from django.forms.fields import CharField, ChoiceField, FileField, FloatField, IntegerField
+from django.core.exceptions import ValidationError
 
 from .models import MeasurmentSeries, Measurement
 from measurementServer.common import MeasureType
@@ -34,6 +35,10 @@ class StartCalibrationForm(forms.Form):
 class UploadRefDataForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(UploadRefDataForm, self).__init__(*args, **kwargs)
-        self.fields['referenceData'] = FileField(label="Референсные данные")
+        self.file = forms.FileField(label="Референсные данные", validators=[self.validate_file_extension])
+    def validate_file_extension(self):
+        valid_extensions = ['application/pdf','application/doc','application/docx']
+        if not self.file.content_type in valid_extensions:
+            raise ValidationError(u'Error message')
 
         

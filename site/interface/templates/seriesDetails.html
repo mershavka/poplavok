@@ -4,21 +4,36 @@
 <div class="w3-container">
     <hr>
     <div class="w3-center">
-    <h2>Детали серии {{series_id}}</h2>
-	<form class="w3-center" action="./uploadReferenceData/{{s.id}}" method="post" enctype="multipart/form-data">
-		{% csrf_token %}
-		<table class="w3-table w3-center">
-		<div class="w3-section"> 
-		<!-- {{ form.as_table }} -->
-		<input name="referenceDataFile" type="file">            
-		<button type="submit">Submit</button>
-		</div>
-		</table>
-		<br>
-		<!-- <input class="w3-btn w3-theme w3-padding" type="submit" value="Загрузить" /> -->
- 
-	</form>
+    <h2>Детали серии #{{series_id}}</h2>
+	<a href="{% url 'uploadReferenceData' series_id %}">Добавить референсные данные</a>
+	</div>	
 </div>
-</div>   
+<div class="w3-center">
+<h2>Список измерений в серии</h2>
+</div>
+<div class="w3-container">
+<div class="w3-responsive w3-card-4">
+	<table id="measurementsTable" class="w3-table w3-striped w3-bordered">
+	<thead>
+	<tr class="w3-theme">
+	  <th>ID</th>
+	  <th>Описание</th>
+	  <th>Дата</th>
+	  <th>Построить график</th>
+	</tr>
+	</thead>
+	<tbody>
+	{% for m in measurements %}
+	<tr id="{{m.id}}">
+	  <td>{{m.id}}</a></td> 
+	  <td>{{m.description}}</td>
+	  <td>{{m.date}}</td>
+	  <td><a href="{% url 'downloadPlot' series_id m.id 'T' %}">Температура</a>, <a href="{% url 'downloadPlot' series_id m.id 'rH' %}">Влажность</a>, <a href="{% url 'downloadPlot' series_id m.id 'CH4' %}">Метан</a>, <a href="{% url 'downloadPlot' series_id m.id 'P' %}">Давление</a></td>
+	</tr>
+	{% endfor %}
+	</tbody>
+	</table>
+	</div>
+</div>
 <br>
 {% endblock %}

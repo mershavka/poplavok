@@ -1,0 +1,29 @@
+{% extends 'base_pretty.html' %}
+
+{% block content %}
+<div class="w3-container">
+    <hr>
+    <div class="w3-center">
+    <h2>Добавить референсные данные в серию #{{series_id}}</h2>
+<form class="w3-center" action="" method="post" enctype="multipart/form-data">
+	{% csrf_token %}
+	<table class="w3-table w3-center">
+	<div class="w3-section">
+	<input name="referenceDataFile" type="file">            
+	<button type="submit">Отправить</button>
+	</div>
+	</table>
+	<br>
+</form>
+
+{% if messages %}
+<ul class="messages" style="list-style-type: none">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+</div>
+</div>   
+<br>
+{% endblock %}

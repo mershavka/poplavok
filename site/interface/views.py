@@ -105,8 +105,8 @@ def series(request):
     return render(request, 'series.html', {'series' : seriesList, "seriesIdsWithRefData" : seriesIdsWithRefData})
 
 def seriesDetails(request, series_id):
-    # pmc.get
-    return render(request, 'seriesDetails.html', {'series_id' : series_id})
+    measurements = pmc.getMeasurementsList(series_id)
+    return render(request, 'seriesDetails.html', {'series_id' : series_id, 'measurements' : measurements})
 
 def calibrations(request):
     calibrationList = pmc.getCalibrationsList()
@@ -177,6 +177,15 @@ def downloadSeries(request, series_id):
     os.remove(zippath)
     raise Http404
 
+def downloadPlot(request, series_id, measurement_id, var_name):
+    image_path = pmc.plotMeasurement(variable=var_name, series_id=series_id, measurement_id=measurement_id)
+    if os.path.exists(image_path):
+        with open(image_path, 'rb') as img:
+            response = HttpResponse(img.read(), content_type="image/png")
+            response['Content-Disposition'] = 'inline; filename=' + os.path.basename(image_path) + '.png'
+            return response
+    raise Http404
+
 def handle_uploaded_file(f):
     with open('file.txt', 'wb+') as destination:
         for chunk in f.chunks():
@@ -198,14 +207,13 @@ def setFansSpeed(request, speed):
 
 
 def uploadReferenceData(request, series_id):
-    series = pmc.getSeriesList()
     if request.method == 'POST':
-        # form = UploadRefDataForm(request.POST)
-        # refData = form.data["referenceData"]
-        print(request)
-        print(request.FILES)
-        handle_uploaded_file(request.FILES['referenceDataFile'])
-        # pmc.uploadReferenceData(series_id, refData)
+        form = UploadRefDataForm(request.POST, request.FILES)
+        if form.is_valid():
+            refDataFile = request.FILES['referenceDataFile']
+            messages.info(request, 'Получен файл {}'.format(refDataFile))
+            refData = []
+            # pmc.uploadReferenceData(series_id, refData)
     else:
         form = UploadRefDataForm()
-    return redirect('/series') 
+    return render(request, 'uploadReferenceData.html', {'form' : form, "series_id" : series_id})
