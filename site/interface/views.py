@@ -14,7 +14,8 @@ from zipfile import ZipFile, ZIP_DEFLATED
 import os
 import json
 from django.contrib import messages
-
+import csv
+import pandas as pd
 
 pmc = PyroMeasurementClient()
 
@@ -211,9 +212,24 @@ def uploadReferenceData(request, series_id):
         form = UploadRefDataForm(request.POST, request.FILES)
         if form.is_valid():
             refDataFile = request.FILES['referenceDataFile']
-            messages.info(request, 'Получен файл {}'.format(refDataFile))
-            refData = []
-            # pmc.uploadReferenceData(series_id, refData)
+            if not refDataFile.content_type in ['text/csv', 'application/vnd.ms-excel']:
+                messages.error(request, "Референсные данные должны быть в формате CSV, получен файл формата {}".format(refDataFile.content_type))
+            else:    
+                messages.info(request, 'Получен файл {}, {:.2f} Мб'.format(refDataFile.name, refDataFile.size / 1024**2))
+                # messages.info(request, refDataFile.read())
+                refDataPath = "veryStrangeFile.csv"
+                with open(refDataPath, "wb+") as destination:
+                    for chunk in refDataFile.chunks():
+                        destination.write(chunk)
+                if os.path.exists(refDataPath):
+                    column_names = ["Timestamp", "Reference Methane Concentration, ppm"]
+                    df = pd.read_csv(refDataPath, delimiter=',', names=column_names)
+                    if len(df.columns) == 2:
+                        timestampsList = df[column_names[0]].tolist()
+                        ch4RefList = df[column_names[1]].tolist()
+                        pmc.uploadReferenceData(series_id, timestampsList, ch4RefList)
+                    os.remove(refDataPath)
+
     else:
         form = UploadRefDataForm()
     return render(request, 'uploadReferenceData.html', {'form' : form, "series_id" : series_id})
