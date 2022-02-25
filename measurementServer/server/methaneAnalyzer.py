@@ -48,6 +48,8 @@ class MethaneAnalyzer:
     def plotMeasurement(self, path, variable):
         measurement = self.concatCsvIntoFrame(path)
         # plotData = measurement[[ValuesNames.timestamp.name, variable]]
+        if not variable in measurement.columns:
+            return None
         x = measurement[ValuesNames.timestamp.name].tolist()
         x = [dt.datetime.strptime(i, '%Y-%m-%d %H:%M:%S.%f') for i in x]
         y = measurement[variable].tolist()

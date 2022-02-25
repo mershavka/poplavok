@@ -56,7 +56,7 @@ def getStatus(request):
     lastPres = "{:4.2f}".format(lastDataDict[ValuesNames.pressure.name])
     lastHum =  "{:2.2f}".format(lastDataDict[ValuesNames.rHumidity.name])
     lastVolt = "{:.2f}".format(lastDataDict[ValuesNames.voltage.name])
-    lastCH4 = "{:.2f}".format(lastDataDict[ValuesNames.ch4.name])
+    lastCH4 = "{:.2f}".format(lastDataDict[ValuesNames.ch4.name]) if ValuesNames.ch4.name in lastDataDict.keys() else "-"
     
     currentSeriesString = pmc.getCurrentSeries()
     currentCalibrationString = pmc.getCurrentCalibration()
@@ -180,12 +180,13 @@ def downloadSeries(request, series_id):
 
 def downloadPlot(request, series_id, measurement_id, var_name):
     image_path = pmc.plotMeasurement(variable=var_name, series_id=series_id, measurement_id=measurement_id)
+    if not image_path:
+        return HttpResponse('Не удалось построить график. Проверьте, что данные существуют')
     if os.path.exists(image_path):
         with open(image_path, 'rb') as img:
             response = HttpResponse(img.read(), content_type="image/png")
             response['Content-Disposition'] = 'inline; filename=' + os.path.basename(image_path) + '.png'
             return response
-    raise Http404
 
 def handle_uploaded_file(f):
     with open('file.txt', 'wb+') as destination:

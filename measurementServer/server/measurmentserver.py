@@ -325,4 +325,7 @@ class MeasurementServer:
             self.logger.error('No measurement with id = {} in series with id = {}'.format(measurement_id, series_id))
             return None
         image_path = self.ma.plotMeasurement(variable=variable, path=measurement_path)
+        if not image_path:
+            self.logger.error("Failed to graph {} from measurement with id = {} in series with id {}".format(variable, measurement_id, series_id))
         return image_path
+        
