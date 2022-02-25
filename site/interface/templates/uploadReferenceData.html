@@ -5,12 +5,13 @@
     <hr>
     <div class="w3-center">
     <h2>Добавить референсные данные в серию #{{series_id}}</h2>
+	<h3>Требования: формат csv, две колонки с числами, первый столбец - время в формате '%Y-%m-%d %H:%M:%S.%f', второй - доля CH4 в ppm</h3>
 <form class="w3-center" action="" method="post" enctype="multipart/form-data">
 	{% csrf_token %}
 	<table class="w3-table w3-center">
 	<div class="w3-section">
-	<input name="referenceDataFile" type="file">            
-	<button type="submit">Отправить</button>
+	<input class="w3-btn w3-theme w3-padding" name="referenceDataFile" type="file">            
+	<button class="w3-btn w3-theme w3-padding" type="submit">Отправить</button>
 	</div>
 	</table>
 	<br>

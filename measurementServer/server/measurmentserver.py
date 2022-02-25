@@ -126,9 +126,13 @@ class MeasurementServer:
     def uploadReferenceData(self, seriesId, timestampsList, ch4RefList):
         valuesDict = {ValuesNames.timestamp.name : timestampsList, ValuesNames.ch4Ref.name : ch4RefList}        
         refData = ReferenceData(seriesId, self.now(), valuesDict)
-        self.fs.addReferenceData(refData)
-        self.refDatas[refData.seriesId] = refData
-        return
+        if refData:
+            self.fs.addReferenceData(refData)
+            self.refDatas[refData.seriesId] = refData
+            self.logger.info("Reference data for series №{} successfully added".format(seriesId))
+            return True
+        self.logger.error("Failed to add reference data for series №{}".format(seriesId))
+        return False
 
     def runMeasurement(self, duration, periodicity, description):
         if not self.currentSeries:
@@ -254,7 +258,7 @@ class MeasurementServer:
         return [*self.resultModels.values()]
 
     def startCalibration(self, seriesIdStep1, seriesIdStep2): 
-        self.logger.info('Into StartCalibration!!!!')      
+        self.logger.info('Into StartCalibration')      
         series1Path = self.fs.getSeriesPathById(seriesIdStep1) # Путь к серии для калибровки V0
         series2Path = self.fs.getSeriesPathById(seriesIdStep2) # Путь к серии для калибровки CH4
 

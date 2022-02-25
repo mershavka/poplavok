@@ -216,7 +216,6 @@ def uploadReferenceData(request, series_id):
                 messages.error(request, "Референсные данные должны быть в формате CSV, получен файл формата {}".format(refDataFile.content_type))
             else:    
                 messages.info(request, 'Получен файл {}, {:.2f} Мб'.format(refDataFile.name, refDataFile.size / 1024**2))
-                # messages.info(request, refDataFile.read())
                 refDataPath = "veryStrangeFile.csv"
                 with open(refDataPath, "wb+") as destination:
                     for chunk in refDataFile.chunks():
@@ -227,7 +226,8 @@ def uploadReferenceData(request, series_id):
                     if len(df.columns) == 2:
                         timestampsList = df[column_names[0]].tolist()
                         ch4RefList = df[column_names[1]].tolist()
-                        pmc.uploadReferenceData(series_id, timestampsList, ch4RefList)
+                        if pmc.uploadReferenceData(series_id, timestampsList, ch4RefList):
+                            messages.info(request, "Данные успешно загружены")
                     os.remove(refDataPath)
 
     else:
