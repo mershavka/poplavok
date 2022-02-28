@@ -47,12 +47,14 @@ class MethaneAnalyzer:
 
     def plotMeasurement(self, path, variable):
         measurement = self.concatCsvIntoFrame(path)
-        # plotData = measurement[[ValuesNames.timestamp.name, variable]]
         if not variable in measurement.columns:
             return None
-        x = measurement[ValuesNames.timestamp.name].tolist()
-        x = [dt.datetime.strptime(i, '%Y-%m-%d %H:%M:%S.%f') for i in x]
-        y = measurement[variable].tolist()
+        try:
+            x = measurement[ValuesNames.timestamp.name].tolist()
+            x = [dt.datetime.strptime(i, '%Y-%m-%d %H:%M:%S.%f') for i in x]
+            y = measurement[variable].tolist()
+        except TypeError:
+            return None
         formatter = md.DateFormatter('%H:%M:%S')
         fig, ax = plt.subplots(figsize=(16,10), dpi = 300)
         plt.gca().xaxis.set_major_formatter(formatter)

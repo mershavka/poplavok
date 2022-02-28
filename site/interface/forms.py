@@ -18,9 +18,9 @@ class CreateMeasurementSeriesForm(forms.ModelForm):
         fields = ['name', 'description', 'type']
 
 class StartExperimentForm(forms.Form):
-    name=CharField(max_length=50)
-    period=FloatField(initial=1.0)
-    duration=FloatField(initial=10.0)
+    name=forms.CharField(max_length=50, label = "Описание")
+    period=forms.FloatField(initial=1.0, label = "Периодичность измерений")
+    duration=forms.FloatField(initial=10.0, label = "Длительность измерения")
 
 class StartCalibrationForm(forms.Form):
 
