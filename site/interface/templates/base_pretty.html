@@ -127,6 +127,9 @@
       </footer>
     </div>
 </div>
+<script src={% static 'plotly-latest.min.js' %}></script>
+<script src={% static 'w3_functions.js' %}></script>
+<script src={% static 'jquery-3.6.0.min.js' %}></script>
 {% block content %}
 {% endblock %}
 <!-- Footer -->
@@ -142,28 +145,27 @@
 </footer> -->
 
 <!-- Script for Sidebar, Tabs, Accordions, Progress bars and slideshows -->
-<script src={% static 'w3_functions.js' %}></script>
-<script src={% static 'jquery-3.6.0.min.js' %}></script>
-
 <script>
+  function fillHeader(data)
+  {
+    $('#server_time').html(data['server_time']);
+    $('#current_series').html(data['current_series']);
+    $('#current_calibration').html(data['current_calibration']);
+    $('#device_status').html(data['device_status']);
+    $('#temperature').html(data['lastTemp']);
+    $('#pressure').html(data['lastPres']);
+    $('#r_humidity').html(data['lastRHum']);
+    $('#a_humidity').html(data['lastAHum']);
+    $('#ppmM_H2O').html(data['lastH2OppmM']);
+    $('#ppmV_H2O').html(data['lastH2OppmV']);
+    $('#last_time').html(data['lastTime']);
+    $('#voltage').html(data['lastVolt']);
+    $('#CH4').html(data['lastCH4']);
+  };
   function refresh() {
       $.ajax({
           url: "{% url 'getStatus' %}",
-          success: function(data) {
-              $('#server_time').html(data['server_time']);
-              $('#current_series').html(data['current_series']);
-              $('#current_calibration').html(data['current_calibration']);
-              $('#device_status').html(data['device_status']);
-              $('#temperature').html(data['lastTemp']);
-              $('#pressure').html(data['lastPres']);
-              $('#r_humidity').html(data['lastRHum']);
-              $('#a_humidity').html(data['lastAHum']);
-              $('#ppmM_H2O').html(data['lastH2OppmM']);
-              $('#ppmV_H2O').html(data['lastH2OppmV']);
-              $('#last_time').html(data['lastTime']);
-              $('#voltage').html(data['lastVolt']);
-              $('#CH4').html(data['lastCH4']);
-          }
+          success: function (data) { fillHeader(data); },
       });
   };
   $(document).ready(function ($) {

@@ -9,74 +9,115 @@
 
 <script>
 
-    function setFansSpeed(speed) {	
-     $.ajax({
-         url : `setFansSpeed/${speed}`,
-         success: function(data)
-         {
-            fan_slider = document.getElementById('rangeValue')
-            if (data['status'] == 0)
-            {
-              speed = 0
-            }
-            fan_slider.innerHTML = speed + '%'
-         }		 
-     }) 
+  function setFansSpeed(speed) {
+    $.ajax({
+      url: `setFansSpeed/${speed}`,
+      success: function (data) {
+        fan_slider = document.getElementById('rangeValue')
+        if (data['status'] == 0) {
+          speed = 0
+        }
+        fan_slider.innerHTML = speed + '%'
+      }
+    })
   }
 </script>
 <br><br>
 <div class="w3-center w3-row-padding">
-    <a class="w3-button w3-border w3-third w3-theme" href="./startExperiment">Запустить эксперимент</a>
-    <a class="w3-button w3-border w3-third w3-theme" href="./stopExperiment">Остановить эксперимент</a>
-    <a class="w3-button w3-border w3-third w3-theme" href="./createSeries">Создать серию</a>
+  <a class="w3-button w3-border w3-third w3-theme" href="./startExperiment">Запустить эксперимент</a>
+  <a class="w3-button w3-border w3-third w3-theme" href="./stopExperiment">Остановить эксперимент</a>
+  <a class="w3-button w3-border w3-third w3-theme" href="./createSeries">Создать серию</a>
 </div>
-<p align="center">Скорость вентиляторов <input class="" type="range" min="0" max="100" list="tickmarks" id="fan_slider" value="0" step="5" onchange=setFansSpeed(this.value) oninput="document.getElementById('rangeValue').innerHTML = this.value + '%'">
-<datalist id="tickmarks">
-<option value="0" label="0%">
-<option value="10">
-<option value="20">
-<option value="30">
-<option value="40">
-<option value="50" label="50%">
-<option value="60">
-<option value="70">
-<option value="80">
-<option value="90">
-<option value="100" label="100%">
-</datalist>
-<span id="rangeValue">0%</span></p>
+<p align="center">Скорость вентиляторов <input class="" type="range" min="0" max="100" list="tickmarks" id="fan_slider"
+    value="0" step="5" onchange=setFansSpeed(this.value)
+    oninput="document.getElementById('rangeValue').innerHTML = this.value + '%'">
+  <datalist id="tickmarks">
+    <option value="0" label="0%">
+    <option value="10">
+    <option value="20">
+    <option value="30">
+    <option value="40">
+    <option value="50" label="50%">
+    <option value="60">
+    <option value="70">
+    <option value="80">
+    <option value="90">
+    <option value="100" label="100%">
+  </datalist>
+  <span id="rangeValue">0%</span>
+</p>
 
 {% if measurements|length > 0 %}
 <div class="w3-container">
-    <hr>
-    <div class="w3-center">
-      <h2>Измерения в текущей серии</h2>
-      <!-- <p w3-class="w3-large">Don't worry. W3.CSS takes care of your tables.</p> -->
-    </div>
-  <div class="w3-responsive w3-card-4">
-  <table class="w3-table w3-striped w3-bordered">
-  <thead>
-  <tr class="w3-theme">
-    <th>ИД</th>
-    <th>Описание</th>
-    <th>Дата</th>
-  </tr>
-  </thead>
-  <tbody>
-  {% for m in measurements %}
-  <tr>
-    <td>{{m.id}}</td>
-    <td>{{m.description}}</td>
-    <td>{{m.date}}</td>
-  </tr>
-  {% endfor %}
-  </tbody>
-  </table>
+  <hr>
+  <div class="w3-center">
+    <h2>Измерения в текущей серии</h2>
+    <!-- <p w3-class="w3-large">Don't worry. W3.CSS takes care of your tables.</p> -->
   </div>
-{% endif %}
-<br><br>
+  <div class="w3-responsive w3-card-4">
+    <table class="w3-table w3-striped w3-bordered">
+      <thead>
+        <tr class="w3-theme">
+          <th>ИД</th>
+          <th>Описание</th>
+          <th>Дата</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in measurements %}
+        <tr>
+          <td>{{m.id}}</td>
+          <td>{{m.description}}</td>
+          <td>{{m.date}}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+  <br><br>
+  <div class="result"></div>
+  <div id="myPlot" style="width:100%;max-width:1000px"></div>
+  <script>
+    var xArray = [];
+    var yArray = [];
 
-<!-- <p>
+    // Define Data
+    var data = [{
+      x: xArray,
+      y: yArray,
+      mode: "markers"
+    }];
+
+    // Define Layout
+    var layout = {
+      xaxis: { range: [0, 0]}
+    };
+    Plotly.newPlot("myPlot", data, layout);
+    var graphDiv = document.getElementById('myPlot');
+    var graphDivData = graphDiv.data;
+    // Display using Plotly
+    var a = 1;
+    $(document).ajaxComplete(function (event, xhr, settings) {   
+      var lastDate = new Date(xhr.responseJSON.lastTime);
+      var lastTemp = parseFloat(xhr.responseJSON.lastTemp);
+      // console.log(lastDate);
+      // console.log(lastTemp);
+      if (graphDivData[0].x.length > 9)
+      {
+        graphDivData[0].x.shift();
+        graphDivData[0].y.shift();
+      }
+      layout.xaxis['range'] = [graphDivData[0].x, graphDivData[0].x.slice(-1)];
+      graphDivData[0].x.push(lastDate);
+      graphDivData[0].y.push(lastTemp);
+      Plotly.newPlot("myPlot", data, layout);
+      a = a + 1;
+    });
+  </script>
+
+
+  <!-- <p>
 <form action='stopExperiment' method='GET'>
     <button type="submit">Stop Experiment</button>
 </form>
@@ -91,4 +132,4 @@
     <button type="submit">Chooes Series</button>
 </form>
 </p> -->
-{% endblock %}
+  {% endblock %}
