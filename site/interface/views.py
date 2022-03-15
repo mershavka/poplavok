@@ -27,9 +27,19 @@ def index(request):
     except Exception:
         return HttpResponseRedirect('unavailible')
     measurements = []
+    plotValues = [  
+        'lastTemp'    ,
+        'lastPres'    ,
+        'lastRHum'    ,
+        'lastAHum'    ,
+        'lastVolt'    ,
+        'lastCH4'     ,
+        'lastH2OppmM' ,
+        'lastH2OppmV' 
+    ]
     if not currentSeries is None:
         measurements = pmc.getMeasurementsList(currentSeries['id'])
-    return render(request, 'index.html', {'measurements' : measurements})
+    return render(request, 'index.html', {'measurements' : measurements, 'plotValues': plotValues})
 
 def unavailible(request):
     if pmc.connect():

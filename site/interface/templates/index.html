@@ -47,6 +47,19 @@
   <span id="rangeValue">0%</span>
 </p>
 
+<div class="w3-center w3-container">
+  <div class="w3-dropdown-hover">
+    <button class="w3-button w3-theme">Переменная <i class="fa fa-caret-down"></i></button>
+    <div class="w3-dropdown-content w3-bar-block w3-border">
+      {% for value in plotValues %}
+      <button id={{value}}_bar onclick=selectPlotValue(this) class="w3-bar-item w3-button">{{value}}</button>
+      {% endfor %}
+    </div>
+  </div>
+  <br><br>
+  <div class="w3-center w3-card-4 w3-large" id="myPlot"></div>
+</div>
+
 {% if measurements|length > 0 %}
 <div class="w3-container">
   <hr>
@@ -76,43 +89,35 @@
   </div>
   {% endif %}
   <br><br>
-  <div class="result"></div>
-  <div id="myPlot" style="width:100%;max-width:1000px"></div>
   <script>
-    var xArray = [];
-    var yArray = [];
+    var plotValue = 'lastTemp';
+    function updatePlot(valueName)
+    {
+      var timeArray = statusBuffer.map((d)=>new Date(d['lastTime']));
+      var dataArray = statusBuffer.map((d)=>parseFloat(d[valueName]));
 
-    // Define Data
-    var data = [{
-      x: xArray,
-      y: yArray,
-      mode: "markers"
-    }];
+      var layout = {
+        xaxis: { 
+          range: [timeArray[0], timeArray.slice(-1)],
+          ticks: 'outside'
+        },
+        title: plotValue
+      };
+      var data = [{
+        x: timeArray,
+        y: dataArray,
+        mode: 'lines+markers'
+      }];
+      Plotly.newPlot("myPlot", data, layout,{staticPlot: true});
+    }
 
-    // Define Layout
-    var layout = {
-      xaxis: { range: [0, 0]}
-    };
-    Plotly.newPlot("myPlot", data, layout);
-    var graphDiv = document.getElementById('myPlot');
-    var graphDivData = graphDiv.data;
-    // Display using Plotly
-    var a = 1;
-    $(document).ajaxComplete(function (event, xhr, settings) {   
-      var lastDate = new Date(xhr.responseJSON.lastTime);
-      var lastTemp = parseFloat(xhr.responseJSON.lastTemp);
-      // console.log(lastDate);
-      // console.log(lastTemp);
-      if (graphDivData[0].x.length > 9)
-      {
-        graphDivData[0].x.shift();
-        graphDivData[0].y.shift();
-      }
-      layout.xaxis['range'] = [graphDivData[0].x, graphDivData[0].x.slice(-1)];
-      graphDivData[0].x.push(lastDate);
-      graphDivData[0].y.push(lastTemp);
-      Plotly.newPlot("myPlot", data, layout);
-      a = a + 1;
+    function selectPlotValue(element)
+    {
+      plotValue = element.textContent;
+    }
+
+    $(document).ajaxComplete(function () {   
+      updatePlot(plotValue);
     });
   </script>
 
