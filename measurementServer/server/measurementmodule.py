@@ -4,7 +4,6 @@ from .msLogger import MsLogger
 from threading import Thread, Event
 import time
 
-
 class MeasurementModule:
 
     def __init__(self) -> None:
@@ -26,6 +25,8 @@ class MeasurementModule:
         self.stopFunc = f
 
     def __measurementsThreadFunc(self, duration, periodicity):
+        if duration <= 0:
+            duration = float("inf")
         expStart = time.time()
         timing = 0
         while time.time() - expStart <= duration:

@@ -30,6 +30,7 @@ class ValuesNames:
 	ch4LR 			: PhysicalValue = PhysicalValue('CH4LR',		'Methane concentration LR'			, 'ppm'			)
 	rsr0			: PhysicalValue = PhysicalValue('Rs/R0', 		'Relative sensor response'			, ''			)
 	ch4Ref			: PhysicalValue = PhysicalValue('CH4Ref', 		'Reference Methane Concentration'	, 'ppm' 		)
+	fanSpeed		: PhysicalValue = PhysicalValue('fanSpeed', 	'Fan speed'							, '%' 			)
 
 	stringToName = {
 		timestamp.getString() 		: timestamp.name,
@@ -42,8 +43,10 @@ class ValuesNames:
 		aHumidity.getString() 		: aHumidity.name,
 		pressure.getString() 		: pressure.name, 
 		ch4.getString() 			: ch4.name,
+		ch4LR.getString() 			: ch4LR.name,
 		rsr0.getString() 			: rsr0.name,
 		ch4Ref.getString() 			: ch4Ref.name,
+		fanSpeed.getString() 		: fanSpeed.name,
 	}
 
 @dataclass

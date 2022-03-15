@@ -95,6 +95,11 @@
     </tr>
 
     </tr>
+      <th>Скорость вентиляторов, % :</th>
+      <td id="fanSpeed">0</td>
+    </tr>
+
+    </tr>
       <th>Содержание метана, ppm :</th>
       <td id="CH4">Неизвестно</td>
     </tr>
@@ -152,6 +157,7 @@
     $('#current_series').html(data['current_series']);
     $('#current_calibration').html(data['current_calibration']);
     $('#device_status').html(data['device_status']);
+    $('#fanSpeed').html(data['fanSpeed']);
     $('#temperature').html(data['lastTemp']);
     $('#pressure').html(data['lastPres']);
     $('#r_humidity').html(data['lastRHum']);

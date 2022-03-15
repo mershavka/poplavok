@@ -275,7 +275,8 @@ class MethaneAnalyzer:
             ValuesNames.rHumidity.getString(),
             ValuesNames.aHumidity.getString(),
             ValuesNames.pressure.getString(),
-            ValuesNames.ch4.getString()	
+            ValuesNames.ch4.getString(),	
+            ValuesNames.fanSpeed.getString()	
             ])
         t = dt.datetime.now()
         time = [t + dt.timedelta(seconds=i + round(random.random(), 2)) for i in range(measuresCount)]

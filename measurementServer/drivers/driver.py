@@ -23,6 +23,7 @@ class Driver:
     rHumidityString		= ValuesNames.rHumidity.name
     aHumidityString 	= ValuesNames.aHumidity.name
     pressureString 		= ValuesNames.pressure.name
+    fanSpeedString      = ValuesNames.fanSpeed.name
 
     #0x2a - AmbiMate Sensor Module address (CO2)
     ambimate_addres = 0x2a
@@ -42,8 +43,8 @@ class Driver:
         self.pca9685 = PCA9685(self.i2c_bus, self.pca9685_address)
         #spi
         self.spi = spidev.SpiDev()
-        self.__lastData = dict.fromkeys([Driver.timeString, Driver.adcString, Driver.voltageString, Driver.temperatureString, Driver.rHumidityString, Driver.aHumidityString, Driver.pressureString])
-
+        self.__lastData = dict.fromkeys([Driver.timeString, Driver.adcString, Driver.voltageString, Driver.temperatureString, Driver.rHumidityString, Driver.aHumidityString, Driver.pressureString, Driver.fanSpeedString])
+        self.fanSpeed = 0
 
     def adcGetData(self):
         adcData = str()
@@ -85,6 +86,7 @@ class Driver:
             self.pca_turn_fans_on()
         else:
             self.__pca_set_fans_pwm(dutycycle=percentage)
+        self.fanSpeed = percentage
 
 
     def __pca_set_fans_pwm(self, dutycycle = 50, delay = 0):
@@ -133,5 +135,6 @@ class Driver:
             self.__lastData[Driver.rHumidityString] = bme280_data.humidity
             self.__lastData[Driver.aHumidityString] = Driver.absoluteHumidity(bme280_data.humidity, bme280_data.pressure, bme280_data.temperature)
             self.__lastData[Driver.pressureString] = bme280_data.pressure
+            self.__lastData[Driver.fanSpeedString] = self.fanSpeed
             self.pca_set_second_led(0)
             return self.__lastData

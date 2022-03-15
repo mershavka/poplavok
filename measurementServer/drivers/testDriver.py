@@ -11,6 +11,7 @@ class TestDriver:
     rHumidityString		= ValuesNames.rHumidity.name
     aHumidityString 	= ValuesNames.aHumidity.name
     pressureString 		= ValuesNames.pressure.name
+    fanSpeedString 		= ValuesNames.fanSpeed.name
             
     def __init__(self):
         pass
@@ -31,5 +32,6 @@ class TestDriver:
                         ValuesNames.aHumidity.name      : 0.014,
                         ValuesNames.pressure.name	    : 1013.25,
                         ValuesNames.ch4.name	        : 2.5,
+                        ValuesNames.fanSpeed.name	    : 0,
                     }
             

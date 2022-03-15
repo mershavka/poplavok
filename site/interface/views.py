@@ -56,6 +56,7 @@ def getStatus(request):
     p = lastDataDict[ValuesNames.pressure.name]
     aH = lastDataDict[ValuesNames.aHumidity.name]
     rH = lastDataDict[ValuesNames.rHumidity.name]
+    fanSpeed = lastDataDict[ValuesNames.fanSpeed.name]
     lastTemp = "{:2.2f}".format(t)
     lastPres = "{:4.2f}".format(p)
     lastRHum =  "{:2.2f}".format(rH)
@@ -82,6 +83,7 @@ def getStatus(request):
         'device_status' : deviceStatusString,
         'current_series': currentSeriesString,
         'current_calibration': currentCalibrationString,
+        'fanSpeed': fanSpeed,
         'lastTime': lastTime,
         'lastTemp' : lastTemp,
         'lastPres' : lastPres,
