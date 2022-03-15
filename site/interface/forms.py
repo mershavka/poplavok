@@ -8,7 +8,7 @@ from .models import MeasurmentSeries, Measurement
 from measurementServer.common import MeasureType
 
 class CreateSeriesForm(forms.Form):
-    name=CharField(max_length=50, label="Описание")
+    name=CharField(max_length=500, label="Описание")
     type=ChoiceField(label="Тип серии", choices=MeasureType.getList())
 
 
@@ -18,7 +18,7 @@ class CreateMeasurementSeriesForm(forms.ModelForm):
         fields = ['name', 'description', 'type']
 
 class StartExperimentForm(forms.Form):
-    name=forms.CharField(max_length=50, label = "Описание")
+    name=forms.CharField(max_length=500, label = "Описание")
     period=forms.FloatField(initial=1.0, label = "Периодичность измерений")
     duration=forms.FloatField(initial=10.0, label = "Длительность измерения")
 

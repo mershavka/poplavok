@@ -32,7 +32,7 @@
     <table class="w3-table">
       <tr>
         <th>Время последнего измерения :</th>
-        <td id="lastTime">32</td>
+        <td id="last_time">32</td>
       </tr>
 
       <tr>
@@ -52,8 +52,24 @@
   
       </tr>
         <th>Влажность, % :</th>
-        <td id="humidity">10</td>
+        <td id="r_humidity">10</td>
       </tr>
+  
+      </tr>
+        <th>Влажность, г/м³ :</th>
+        <td id="a_humidity">3</td>
+      </tr>
+  
+      </tr>
+        <th>Массовая доля влажности, ppmM :</th>
+        <td id="ppmM_H2O">5000</td>
+      </tr>
+  
+      </tr>
+        <th>Объемная доля влажности, ppmV :</th>
+        <td id="ppmV_H2O">9000</td>
+      </tr>
+	  
       </table> 
       </div> 
   <div class="w3-right w3-half">
@@ -140,8 +156,11 @@
               $('#device_status').html(data['device_status']);
               $('#temperature').html(data['lastTemp']);
               $('#pressure').html(data['lastPres']);
-              $('#humidity').html(data['lastHum']);
-              $('#lastTime').html(data['lastTime']);
+              $('#r_humidity').html(data['lastRHum']);
+              $('#a_humidity').html(data['lastAHum']);
+              $('#ppmM_H2O').html(data['lastH2OppmM']);
+              $('#ppmV_H2O').html(data['lastH2OppmV']);
+              $('#last_time').html(data['lastTime']);
               $('#voltage').html(data['lastVolt']);
               $('#CH4').html(data['lastCH4']);
           }

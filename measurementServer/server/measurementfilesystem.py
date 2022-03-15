@@ -222,7 +222,7 @@ class MeasurementFileSystem:
         jsonString = m.toJsonString()
         descriptionStr = os.path.splitext(measurementPath)
         descriptionStr = descriptionStr[0] + ".json"
-        with open(descriptionStr, 'w') as f:
+        with open(descriptionStr, 'w', encoding='utf-8') as f:
             f.write(jsonString)
         return
 

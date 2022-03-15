@@ -75,7 +75,7 @@ class CalibrationModule:
         return frame
 
     def Rs_by_R0_from_V0(V0, VL, Vref):
-	    return (np.array(V0) - Vref) / (np.array(VL) - Vref)
+        return (np.array(V0) - Vref) / (np.array(VL) - Vref)
 
     
     def calibrateFirstStep(self, dirPath, resultPath):
