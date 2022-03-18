@@ -60,12 +60,12 @@ class MethaneAnalyzer:
         plt.gca().xaxis.set_major_formatter(formatter)
         plt.gcf().autofmt_xdate()
         plt.title("Старт = {}, конец = {}".format(x[0], x[-1]), loc = 'left')
-        plt.xlabel("Время измерения")
-        plt.ylabel(variable)
+        plt.xlabel(ValuesNames.timestamp.getString())
+        plt.ylabel(list(ValuesNames.stringToName.keys())[list(ValuesNames.stringToName.values()).index(variable)])
         # plt.axis([xmin, xmax, ymin, ymax])
         plt.minorticks_on()
         ax.grid(b=True, which = 'major', axis='both')
-        ax.scatter(x,y)
+        ax.scatter(x,y, s=50)
         image_path = os.path.splitext(path)[0]+'_{}.png'.format(variable)
         fig.savefig(image_path)
         return image_path
@@ -112,6 +112,17 @@ class MethaneAnalyzer:
         df_CH4_observed_interpolated[ValuesNames.ch4LR.name] = df_CH4_observed_interpolated[ValuesNames.ch4Ref.name]
         step3models = self.getCalibratedModels(df_CH4_observed_interpolated, self.model3Templates)
         return step3models[0]
+
+    def firstStepCalibration(self, seriespath1):
+        df1 = self.concatCsvIntoFrame(seriespath1)
+        df1[ValuesNames.voltage0.name] = df1[ValuesNames.voltage.name]
+        step1models = self.getCalibratedModels(df1, self.model1Templates)
+        df_resultModels = DataFrame()
+        for model1 in step1models:
+            df_resultModels = pd.concat([df_resultModels, self.modelToDataFrame(ModelNames.model1, model1)], axis=0, ignore_index=True)
+        if not df_resultModels.empty:
+            df_resultModels.to_csv('firstStep.csv')
+        return step1models
 
     def calibration(self, seriespath1, seriespath2, referencePath):
         # Загрузить данные
