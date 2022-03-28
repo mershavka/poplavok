@@ -59,7 +59,7 @@ class MeasurementServer:
 
         self.logger.info("Path = {}, testModeOn = {}".format(path, testMode))
 
-        self.ma = MethaneAnalyzer()        
+        self.ma = MethaneAnalyzer(self.path)        
 
         self.series         = self.fs.loadSeries()
         self.refDatas       = self.fs.loadReferencesData()
@@ -256,6 +256,19 @@ class MeasurementServer:
 
     def getCalibrationsList(self):
         return [*self.resultModels.values()]
+
+    
+
+    def firstStepOfCalibration(self, seriesIdStep1):
+        self.logger.info('Into StartCalibration')      
+        series1Path = self.fs.getSeriesPathById(seriesIdStep1) # Путь к серии для калибровки V0
+        
+        if not series1Path:
+            self.logger.error("Series not found!")
+            return None
+        
+        result = self.ma.firstStepCalibration(series1Path)
+        return result
 
     def startCalibration(self, seriesIdStep1, seriesIdStep2): 
         self.logger.info('Into StartCalibration')      

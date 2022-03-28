@@ -49,6 +49,9 @@ class PyroMeasurementInterface(object):
 
     def startCalibration(self, seriesIdStep1, seriesIdStep2):
         return self.ms.startCalibration(seriesIdStep1, seriesIdStep2)
+
+    def firstStepOfCalibration(self, seriesIdStep1):
+        return self.ms.firstStepOfCalibration(seriesIdStep1)
     
     def getLastData(self):
         return self.ms.getLastData()

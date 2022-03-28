@@ -17,14 +17,19 @@ import random
 from math import exp
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
+from .msLogger import MsLogger
 
 class MethaneAnalyzer:
     
-    def __init__(self):        
+    def __init__(self, path):        
         self.Vref = 1.024
         self.model1Templates = [CalibrationModelTemplate(function_name=key, dependence_function=values[0], predictor_names=values[1], dependent_name=values[2]) for key, values in calib1Functions.items()]
         self.model2Templates = [CalibrationModelTemplate(function_name=key, dependence_function=values[0], predictor_names=values[1], dependent_name=values[2]) for key, values in calib2Functions.items()]
         self.model3Templates = [CalibrationModelTemplate(function_name=key, dependence_function=values[0], predictor_names=values[1], dependent_name=values[2]) for key, values in calib3Functions.items()]
+        self.path = path
+        self.logger = MsLogger(path + "/log").get_logger()
+        self.logger.info("MethaneAnalyzer Initialized!")
+        self.resultModelsDir = path + '/ResultModels'
 
     def concatCsvIntoFrame(self, dirPath):
         all_files = []
@@ -94,7 +99,7 @@ class MethaneAnalyzer:
 
         return modelsList
 
-    def calculateWithModel(self, df, model):
+    def calculateWithModel(self, df, model : CalibrationModel):
 
         hasAllColumns = all([name in list(df.keys()) for name in (model.predictor_names)])
         if not hasAllColumns:
@@ -117,12 +122,66 @@ class MethaneAnalyzer:
         df1 = self.concatCsvIntoFrame(seriespath1)
         df1[ValuesNames.voltage0.name] = df1[ValuesNames.voltage.name]
         step1models = self.getCalibratedModels(df1, self.model1Templates)
+        for model in step1models:
+            df_calculated = self.calculateWithModel(df1, model)
+            try:
+                y_observed = df1[ValuesNames.voltage.name].tolist()
+                y_predicted = df_calculated[ValuesNames.voltage0.name].tolist()
+                if model.predictors_count == 2:
+                    z_observed = y_observed
+                    fig = plt.figure(figsize=(16,10), dpi=300)
+                    ax = plt.axes(projection='3d')
+                    first_predictor_name = model.predictor_names[0]
+                    second_predictor_name = model.predictor_names[1]
+                    x = df1[first_predictor_name].tolist()
+                    y = df1[second_predictor_name].tolist()
+                    X = [min(x) + i*(max(x)-min(x))/100 for i in range(100)]
+                    Y = [min(y) + i*(max(y)-min(y))/100 for i in range(100)]
+                    xy_dict = {first_predictor_name : X, second_predictor_name : Y}
+                    z_predicted = model.calculate(xy_dict)  
+                    ax.plot3D(X, Y, z_predicted, 'r', label='predicted data')
+                    ax.scatter3D(x, y, z_observed, c=z_observed, s = fig.dpi/100, cmap='viridis', label='observed data')
+                    ax.set_zlabel(ValuesNames.voltage0.getString())
+                    ax.set_xlabel(list(ValuesNames.stringToName.keys())[list(ValuesNames.stringToName.values()).index(first_predictor_name)])
+                    ax.set_ylabel(list(ValuesNames.stringToName.keys())[list(ValuesNames.stringToName.values()).index(second_predictor_name)])
+                    ax.legend()
+                    plt.title("Функция {} с коэффицентами = {}.\nAdjusted R^2 = {:.3f}, RMSE = {:.4f}".format(model.function_name, model.coefficients, model.adjusted_r_squared, model.rmse))
+                    image_path = self.resultModelsDir + "/" + os.path.splitext(seriespath1)[0].split('/')[-1] + '_{}.png'.format(model.function_name)
+                    fig.savefig(image_path)
+                    continue
+                predictor_name = model.predictor_names[0]
+                x = df1[predictor_name].tolist()
+                X = [min(x) + i*(max(x)-min(x))/100 for i in range(100)]
+                x_dict = {predictor_name : X}
+                y_predicted = model.calculate(x_dict)  
+                fig, ax = plt.subplots(figsize=(16,10), dpi = 300)
+                plt.xlabel(list(ValuesNames.stringToName.keys())[list(ValuesNames.stringToName.values()).index(predictor_name)])
+                ax.scatter(x,y_observed, s = fig.dpi/100, label='observed data')
+                ax.plot(X,y_predicted, 'r', linewidth=3, label='predicted data')
+                plt.ylabel(ValuesNames.voltage0.getString())
+                plt.minorticks_on()
+                ax.grid(b=True, which = 'major', axis='both')
+                ax.legend()
+                plt.title("Функция {} с коэффицентами = {}.\nAdjusted R^2 = {:.3f}, RMSE = {:.4f}".format(model.function_name, model.coefficients, model.adjusted_r_squared, model.rmse))
+                image_path = self.resultModelsDir + "/" + os.path.splitext(seriespath1)[0].split('/')[-1] + '_{}.png'.format(model.function_name)
+                fig.savefig(image_path)
+            except Exception:
+                self.logger.error("Не удалось довести первый этап калибровки до конца, модель = {}".format(model.function_name))
+        
+
         df_resultModels = DataFrame()
         for model1 in step1models:
             df_resultModels = pd.concat([df_resultModels, self.modelToDataFrame(ModelNames.model1, model1)], axis=0, ignore_index=True)
         if not df_resultModels.empty:
-            df_resultModels.to_csv('firstStep.csv')
-        return step1models
+            d = dt.date.today()
+            df_resultModels.to_csv(self.resultModelsDir + '/firstStep_{}.csv'.format(os.path.splitext(seriespath1)[0].split('/')[-1]))
+            colV0PredCount = ModelNames.model1+ModelParameters.predictors_count
+            colV0r2 = ModelNames.model1+ModelParameters.adjusted_r_squared
+            colV0rmse = ModelNames.model1+ModelParameters.rmse
+            df_conditions = df_resultModels.loc[(df_resultModels[colV0r2]>0.8)]
+            df_sorted = df_conditions.sort_values(by=[colV0r2, colV0PredCount, colV0rmse], ascending=[False, True, True], inplace=False, ignore_index = True)
+            image_path = self.resultModelsDir + "/" + os.path.splitext(seriespath1)[0].split('/')[-1] + '_{}.png'.format(df_sorted.loc[0, 'V0Modelfunction_name'])
+        return image_path
 
     def calibration(self, seriespath1, seriespath2, referencePath):
         # Загрузить данные
@@ -164,7 +223,7 @@ class MethaneAnalyzer:
                          ModelNames.model3   : model3
                         }
         if not df_resultModels.empty:
-            df_resultModels.to_csv('models.csv')
+            df_resultModels.to_csv(self.resultModelsDir + '/models_{}.csv'.format(dt.date.today().strftime("%d_%m_%Y")))
             bestModelId = self.findBestModelId(df_resultModels)
             best_resultModel = None if not bestModelId else dict_resultModels[bestModelId]
             return df_resultModels, dict_resultModels, best_resultModel
@@ -350,7 +409,7 @@ class MethaneAnalyzer:
             df_ref[ValuesNames.ch4Ref.getString()] = CH4
             time = [t + dt.timedelta(seconds=i + round(random.random(), 2)) for i in range(measuresCount)]
             df_ref[ValuesNames.timestamp.getString()] = time
-            df_ref.to_csv('test_ref_data{}.csv'.format(step))
+            df_ref.to_csv(self.path + '/test_ref_data{}.csv'.format(step))
 
 
         df_test[ValuesNames.temperature.getString()] = list(temperature)
@@ -358,7 +417,7 @@ class MethaneAnalyzer:
         df_test[ValuesNames.aHumidity.getString()] = aH
         
 
-        df_test.to_csv('test_data_step{}.csv'.format(step))
+        df_test.to_csv(self.path + '/test_data_step{}.csv'.format(step))
 
     def absoluteHumidity(self, RH = 40, hPa = 1013.25, t = 20):
         #RH [%], P[гПa], t[C]	

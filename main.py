@@ -7,7 +7,7 @@ from datetime import datetime
 import traceback
 import warnings
 from time import sleep
-from measurementServer.drivers import driver
+# from measurementServer.drivers import driver
 
 # mbDriver = driver.Driver()
 # mbDriver.open()
@@ -29,11 +29,11 @@ from measurementServer.drivers import driver
 # mbDriver.pca_turn_fan_off(0)
 # mbDriver.pca_turn_fan_off(0)
 
-ms = MeasurementServer(path='/home/pi/MS_DATA')
+ms = MeasurementServer(path='MS_DATA')
 # logger = ms.getLogger()
 # print(ms.getServerStatus())
 # ms.plotMeasurement('T', '/home/pi/MS_DATA/series2_0_20220128211839/measure1_0_20220128212011.csv')
-print(ms.getSeriesList())
+print(ms.ma.firstStepCalibration("C:/Users/mershavka/Repositories/poplavok-algorithm/MS_DATA/series8_0_20220322111142"))
 # ms.chooseSeries(3)
 # ms.createSeries("Test with generated data")
 # ms.runMeasurement(10, 1, 'Check CH4')

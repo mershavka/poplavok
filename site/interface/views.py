@@ -164,17 +164,22 @@ def startCalibration(request):
     seriesIdsWithRefData = pmc.getRefIdsList()
     seriesTuple = [(s['id'], "id = {} ({}, {})".format(s['id'],s['description'],s['date'])) for s in series]
     seriesTupleWithRefData = [(s['id'], "id = {} ({}, {})".format(s['id'],s['description'],s['date'])) for s in series if s['id'] in seriesIdsWithRefData]
+    seriesTupleWithRefData.append((0, "Без второго шага"))
 
     if request.method == 'POST':
         form = StartCalibrationForm(seriesTuple, seriesTupleWithRefData, request.POST)
 
         series1Id = int(form.data['series1Id'])
         series2Id = int(form.data['series2Id'])
-        result = pmc.startCalibration(series1Id, series2Id)
-        if result:
-            messages.info(request, 'Калибровка успешно проведена')
-        else:
+        if series2Id == 0:
+            image_path = pmc.firstStepOfCalibration(series1Id)
+            if os.path.exists(image_path):
+                messages.info(request, 'Калибровка успешно проведена')        
+                with open(image_path, 'rb') as img:
+                    return HttpResponse(img.read(), content_type="image/png")
             messages.info(request, 'Что-то пошло не так')
+        else:
+            result = pmc.startCalibration(series1Id, series2Id)
 
     else:
         form = StartCalibrationForm(seriesTuple, seriesTupleWithRefData)
