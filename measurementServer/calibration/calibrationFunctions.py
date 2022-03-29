@@ -7,18 +7,36 @@ def V0_pow_aH_T(X, g, m, S, h, n):
     result = g * np.array(aH) ** h + m * np.array(T) ** n + S
     return result
 
+def V0_pow_aH(X, g, h, S):
+    aH = X[ValuesNames.aHumidity.name]
+    result = g * np.array(aH) ** h + S
+    return result
+
+def V0_pow_T(X, g, h, S):
+    T = X[ValuesNames.temperature.name]
+    result = g * np.array(T) ** h + S
+    return result
+
 def lin_X(x, a, b):
     x_key = list(x.keys())[0]
     x = x[x_key]
     return a * np.array(x) + b
 
-def V0_lin_aH(X,a,b):
+def V0_lin_aH(X, a, b):
 	aH = X[ValuesNames.aHumidity.name]    
 	return a * np.array(aH) + b
 
 def V0_lin_T(X,a,b):
 	T = X[ValuesNames.temperature.name]
 	return a * np.array(T) + b
+
+def V0_exp_T(X, a, b, c):
+	T = X[ValuesNames.temperature.name]
+	return a * np.exp(b * T) + c
+
+def V0_exp_aH(X, a, b, c):
+	aH = X[ValuesNames.aHumidity.name]
+	return a * np.exp(b * aH) + c
 
 def CH4LR_lin_CH4(X,a,b):
 	CH4 = X[ValuesNames.ch4.name]
@@ -70,12 +88,16 @@ def RsR0_calc(X):
     return (np.array(V0) - Vref) / (np.array(V) - Vref)
 
 calib1Functions = {
-    'powFunc_aHT'   : (V0_pow_aH_T,  [ValuesNames.aHumidity.name, ValuesNames.temperature.name], [ValuesNames.voltage0.name]),
     'linFunc_aH'	: (V0_lin_aH,  [ValuesNames.aHumidity.name], [ValuesNames.voltage0.name]),
     'linFunc_T'	    : (V0_lin_T,  [ValuesNames.temperature.name], [ValuesNames.voltage0.name]),
-    'V2Func_aHT'	: (V0_lin_aH_T,   [ValuesNames.aHumidity.name,ValuesNames.temperature.name], [ValuesNames.voltage0.name]),
-    'V5Func_aH'	    : (V0_fraction_X,   [ValuesNames.aHumidity.name], [ValuesNames.voltage0.name]),
-    'V5Func_T'	    : (V0_fraction_X,   [ValuesNames.temperature.name], [ValuesNames.voltage0.name]),
+    'powFunc_aH'   	: (V0_pow_aH,  [ValuesNames.aHumidity.name], [ValuesNames.voltage0.name]),
+    'powFunc_T'   	: (V0_pow_T,  [ValuesNames.temperature.name], [ValuesNames.voltage0.name]),
+	'expFunc_aH'   	: (V0_exp_aH,  [ValuesNames.aHumidity.name], [ValuesNames.voltage0.name]),
+    'expFunc_T'   	: (V0_exp_T,  [ValuesNames.temperature.name], [ValuesNames.voltage0.name]),
+    'powSurf_aHT'   : (V0_pow_aH_T,  [ValuesNames.aHumidity.name, ValuesNames.temperature.name], [ValuesNames.voltage0.name]),
+    'plane_aHT'		: (V0_lin_aH_T,   [ValuesNames.aHumidity.name,ValuesNames.temperature.name], [ValuesNames.voltage0.name]),
+    'hyperbola_aH'	: (V0_fraction_X,   [ValuesNames.aHumidity.name], [ValuesNames.voltage0.name]),
+    'hyperbola_T'	: (V0_fraction_X,   [ValuesNames.temperature.name], [ValuesNames.voltage0.name]),
 }
 
 calib2Functions = {

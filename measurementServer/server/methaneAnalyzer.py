@@ -137,15 +137,20 @@ class MethaneAnalyzer:
                     y = df1[second_predictor_name].tolist()
                     X = [min(x) + i*(max(x)-min(x))/100 for i in range(100)]
                     Y = [min(y) + i*(max(y)-min(y))/100 for i in range(100)]
+                    X, Y = np.meshgrid(X, Y)
                     xy_dict = {first_predictor_name : X, second_predictor_name : Y}
-                    z_predicted = model.calculate(xy_dict)  
-                    ax.plot3D(X, Y, z_predicted, 'r', label='predicted data')
+                    z_predicted = model.calculate(xy_dict)
+                    surf =  ax.plot_surface(X, Y, z_predicted, rstride=1, cstride=1, cmap='binary', edgecolor='none', label='predicted data')
+                    surf._facecolors2d=surf._facecolors3d
+                    surf._edgecolors2d=surf._edgecolors3d
                     ax.scatter3D(x, y, z_observed, c=z_observed, s = fig.dpi/100, cmap='viridis', label='observed data')
                     ax.set_zlabel(ValuesNames.voltage0.getString())
                     ax.set_xlabel(list(ValuesNames.stringToName.keys())[list(ValuesNames.stringToName.values()).index(first_predictor_name)])
                     ax.set_ylabel(list(ValuesNames.stringToName.keys())[list(ValuesNames.stringToName.values()).index(second_predictor_name)])
+                    # ax.view_init(60, 35)
                     ax.legend()
-                    plt.title("Функция {} с коэффицентами = {}.\nAdjusted R^2 = {:.3f}, RMSE = {:.4f}".format(model.function_name, model.coefficients, model.adjusted_r_squared, model.rmse))
+                    plt.title("Функция {} с коэффициентами = {}\nAdjusted R^2 = {:.3f}, RMSE = {:.4f}".format(model.function_name, model.coefficients, model.adjusted_r_squared, model.rmse))
+                    fig.colorbar(surf)
                     image_path = self.resultModelsDir + "/" + os.path.splitext(seriespath1)[0].split('/')[-1] + '_{}.png'.format(model.function_name)
                     fig.savefig(image_path)
                     continue
@@ -165,8 +170,8 @@ class MethaneAnalyzer:
                 plt.title("Функция {} с коэффицентами = {}.\nAdjusted R^2 = {:.3f}, RMSE = {:.4f}".format(model.function_name, model.coefficients, model.adjusted_r_squared, model.rmse))
                 image_path = self.resultModelsDir + "/" + os.path.splitext(seriespath1)[0].split('/')[-1] + '_{}.png'.format(model.function_name)
                 fig.savefig(image_path)
-            except Exception:
-                self.logger.error("Не удалось довести первый этап калибровки до конца, модель = {}".format(model.function_name))
+            except Exception as e:
+                self.logger.error("Не удалось довести первый этап калибровки до конца, модель = {}, текст ошибки: {}".format(model.function_name, e))
         
 
         df_resultModels = DataFrame()
