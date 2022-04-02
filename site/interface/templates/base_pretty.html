@@ -105,51 +105,16 @@
 <script src={% static 'plotly-latest.min.js' %}></script>
 <script src={% static 'w3_functions.js' %}></script>
 <script src={% static 'jquery-3.6.0.min.js' %}></script>
+<script src={% static 'poplavok.js' %}></script>
 
 {% block content %}
 {% endblock %}
 
-<script>
-  var statusBufferSize = 100;
-  var statusBuffer = [];
-  function fillHeader(data)
-  {
-    $('#server_time').html(data['server_time']);
-    $('#current_series').html(data['current_series']);
-    $('#current_calibration').html(data['current_calibration']);
-    $('#device_status').html(data['device_status']);
-    $('#fanSpeed').html(data['fanSpeed']);
-    $('#temperature').html(data['lastTemp']);
-    $('#pressure').html(data['lastPres']);
-    $('#r_humidity').html(data['lastRHum']);
-    $('#a_humidity').html(data['lastAHum']);
-    $('#ppmM_H2O').html(data['lastH2OppmM']);
-    $('#ppmV_H2O').html(data['lastH2OppmV']);
-    $('#last_time').html(data['lastTime']);
-    $('#voltage').html(data['lastVolt']);
-    $('#CH4').html(data['lastCH4']);
-  };
-
-  function updateStatusBuffer(data)
-  {
-    if (statusBuffer.length > statusBufferSize)
-    {
-      statusBuffer.shift();      
-    }
-    statusBuffer.push(data);
-  }
-  function refresh() {
-      $.ajax({
-          url: "{% url 'getStatus' %}",
-          success: function (data) { 
-            fillHeader(data); 
-            updateStatusBuffer(data);
-          },
-      });
-  };
+<script>  
   $(document).ready(function ($) {
-      refresh();
-      setInterval(refresh, 1000);
+      var statusURL = "{% url 'getStatus' %}";
+      refresh(statusURL);
+      setInterval(refresh, 1000, [statusURL]);
   });
 </script>
 {% block javascript %}{% endblock %}

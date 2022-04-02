@@ -1,27 +1,6 @@
 {% extends 'base_pretty.html' %}
 
 {% block content %}
-<!-- <p>
-<form action='startExperiment' method='GET'>
-    <button type="submit">Start Experiment</button>
-</form>
-</p> -->
-
-<script>
-
-  function setFansSpeed(speed) {
-    $.ajax({
-      url: `setFansSpeed/${speed}`,
-      success: function (data) {
-        fan_slider = document.getElementById('rangeValue')
-        if (data['status'] == 0) {
-          speed = 0
-        }
-        fan_slider.innerHTML = speed + '%'
-      }
-    })
-  }
-</script>
 <br><br>
 <div class="w3-center w3-row-padding">
   <a class="w3-button w3-border w3-third w3-theme" href="./startExperiment">Запустить эксперимент</a>
@@ -56,6 +35,7 @@
       {% endfor %}
     </div>
   </div>
+  <button onclick=clearStatusBuffer() class="w3-bar-item w3-button">Очистить график</button>
   <br><br>
   <div class="w3-center w3-card-4 w3-large" id="myPlot"></div>
 </div>
@@ -91,50 +71,9 @@
   <br><br>
   <script>
     var plotValue = 'lastTemp';
-    function updatePlot(valueName)
-    {
-      var timeArray = statusBuffer.map((d)=>new Date(d['lastTime']));
-      var dataArray = statusBuffer.map((d)=>parseFloat(d[valueName]));
-
-      var layout = {
-        xaxis: { 
-          range: [timeArray[0], timeArray.slice(-1)],
-          ticks: 'outside'
-        },
-        title: plotValue
-      };
-      var data = [{
-        x: timeArray,
-        y: dataArray,
-        mode: 'lines+markers'
-      }];
-      Plotly.newPlot("myPlot", data, layout,{staticPlot: true});
-    }
-
-    function selectPlotValue(element)
-    {
-      plotValue = element.textContent;
-    }
 
     $(document).ajaxComplete(function () {   
       updatePlot(plotValue);
     });
   </script>
-
-
-  <!-- <p>
-<form action='stopExperiment' method='GET'>
-    <button type="submit">Stop Experiment</button>
-</form>
-</p>
-<p>
-<form action='createSeries' method='GET'>
-    <button type="submit">Create Series</button>
-</form>
-</p>
-<p>
-<form action='chooseSeries' method='GET'>
-    <button type="submit">Chooes Series</button>
-</form>
-</p> -->
   {% endblock %}
