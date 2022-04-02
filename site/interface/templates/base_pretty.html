@@ -102,6 +102,19 @@
   </div>
 </header>
 
+{% if messages %}
+    <ul class="messages">
+    {% for message in messages %}
+      {% if message.tags == 'error' %}
+        <script>alert('{{ message }}');</script>
+      {% else %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }} {{ message.tags }}</li>
+
+      {% endif %}
+    {% endfor %}
+    </ul>
+{% endif %}
+
 <script src={% static 'plotly-latest.min.js' %}></script>
 <script src={% static 'w3_functions.js' %}></script>
 <script src={% static 'jquery-3.6.0.min.js' %}></script>

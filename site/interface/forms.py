@@ -4,6 +4,7 @@ from django.forms.fields import CharField, ChoiceField, FileField, FloatField, I
 from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
 
+
 from .models import MeasurmentSeries, Measurement
 from measurementServer.common import MeasureType
 
@@ -21,6 +22,12 @@ class StartExperimentForm(forms.Form):
     name=forms.CharField(max_length=500, label = "Описание")
     period=forms.FloatField(min_value=0.0, initial=1.0, label = "Периодичность измерений")
     duration=forms.FloatField(min_value=0.0, initial=10.0, label = "Длительность измерения")
+
+    def __init__(self, choicesList, *args, **kwargs):
+        super(StartExperimentForm, self).__init__(*args, **kwargs)
+        self.fields['seriesId'] = forms.ChoiceField(label="Серия",
+            choices=choicesList
+        )
 
 class StartCalibrationForm(forms.Form):
 

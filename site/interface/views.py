@@ -142,11 +142,22 @@ def chooseSeries(request, series_id=0):
     return redirect('/series')
 
 def startExperiment(request):
+    series = []
     currentSeries = pmc.getCurrentSeries()
-    if currentSeries is None:
+    if currentSeries:
+        series.append(currentSeries)
+        print(currentSeries)
+    else:
+        series = pmc.getSeriesList()
+    
+    if not series:
+        messages.error(request, 'Создайте серию перед началом эксперимента')
         return HttpResponseRedirect(reverse('index'))
+
+    seriesTuple = [(s['id'], "id = {} ({}, {})".format(s['id'],s['description'],s['date'])) for s in series]
+
     if request.method == 'POST':
-        form = StartExperimentForm(request.POST)
+        form = StartExperimentForm(seriesTuple, request.POST)
 
         name        = form.data['name']
         period      = float(form.data['period'])
@@ -155,8 +166,8 @@ def startExperiment(request):
 
         return HttpResponseRedirect(reverse('index'))
     else:
-        form  = StartExperimentForm()
-    return render(request, 'createSeries.html', {'form': form})
+        form  = StartExperimentForm(seriesTuple)
+    return render(request, 'startExperiment.html', {'form': form})
 
 def startCalibration(request):
     
