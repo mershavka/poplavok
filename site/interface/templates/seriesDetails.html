@@ -28,7 +28,13 @@
 	  <td>{{m.id}}</a></td> 
 	  <td>{{m.description}}</td>
 	  <td>{{m.date}}</td>
-	  <td><a href="{% url 'downloadPlot' series_id m.id 'T' %}">Температура</a>, <a href="{% url 'downloadPlot' series_id m.id 'rH' %}">Относительная влажность</a>, <a href="{% url 'downloadPlot' series_id m.id 'aH' %}">Абсолютная влажность</a>, <a href="{% url 'downloadPlot' series_id m.id 'CH4' %}">Метан</a>, <a href="{% url 'downloadPlot' series_id m.id 'P' %}">Давление</a></td>
+	  <td>
+		  <a href="{% url 'downloadPlot' series_id m.id 'T' %}">Температура</a>,
+		  <a href="{% url 'downloadPlot' series_id m.id 'rH' %}">Относительная влажность</a>,
+		  <a href="{% url 'downloadPlot' series_id m.id 'aH' %}">Абсолютная влажность</a>,
+		  <a href="{% url 'downloadPlot' series_id m.id 'CH4' %}">Метан</a>,
+		  <a href="{% url 'downloadPlot' series_id m.id 'P' %}">Давление</a>,
+		  <a href="{% url 'downloadPlot' series_id m.id 'V' %}">Напряжение</a></td>
 	</tr>
 	{% endfor %}
 	</tbody>

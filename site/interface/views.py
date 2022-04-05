@@ -71,7 +71,7 @@ def getStatus(request):
     lastPres = "{:4.2f}".format(p)
     lastRHum =  "{:2.2f}".format(rH)
     lastAHum =  "{:2.2f}".format(aH * 1000)
-    lastVolt = "{:.3f}".format(lastDataDict[ValuesNames.voltage.name])
+    lastVolt = "{:.5f}".format(lastDataDict[ValuesNames.voltage.name])
     lastCH4 = "{:.3f}".format(lastDataDict[ValuesNames.ch4.name]) if ValuesNames.ch4.name in lastDataDict.keys() else "-"
     lastH2OppmM = "{:.0f}".format(1000000 * aH / (aH + p*100*0.02897/8.31446261815324/(t+273)))
     lastH2OppmV = "{:.0f}".format(1000000 * aH / 0.01801528 / (aH/0.01801528 + p*100/8.31446261815324/(t+273)))
