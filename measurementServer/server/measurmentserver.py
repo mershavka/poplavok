@@ -259,15 +259,18 @@ class MeasurementServer:
 
     
 
-    def firstStepOfCalibration(self, seriesIdStep1):
+    def firstStepOfCalibration(self, seriesIdsStep1):
         self.logger.info('Into StartCalibration')      
-        series1Path = self.fs.getSeriesPathById(seriesIdStep1) # Путь к серии для калибровки V0
+        series1Paths = [] # Пути к сериям для калибровки V0
+        for id in seriesIdsStep1:
+            path = self.fs.getSeriesPathById(id) 
+            if not path:
+                self.logger.error("Series with id not found!".format(id))
+                continue
+            series1Paths.append(path)
         
-        if not series1Path:
-            self.logger.error("Series not found!")
-            return None
-        
-        result = self.ma.firstStepCalibration(series1Path)
+        result = self.ma.firstStepCalibration(series1Paths, seriesIdsStep1)
+        print(result)
         return result
 
     def startCalibration(self, seriesIdStep1, seriesIdStep2): 

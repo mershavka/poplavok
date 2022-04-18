@@ -118,8 +118,11 @@ class MethaneAnalyzer:
         step3models = self.getCalibratedModels(df_CH4_observed_interpolated, self.model3Templates)
         return step3models[0]
 
-    def firstStepCalibration(self, seriespath1):
-        df1 = self.concatCsvIntoFrame(seriespath1)
+    def firstStepCalibration(self, seriespaths1, seriesIdsStep1):
+        dfs = []
+        for path in seriespaths1:
+            dfs.append(self.concatCsvIntoFrame(path))
+        df1 = pd.concat(dfs, axis=0, ignore_index=True)
         df1[ValuesNames.voltage0.name] = df1[ValuesNames.voltage.name]
         step1models = self.getCalibratedModels(df1, self.model1Templates)
         for model in step1models:
@@ -141,8 +144,8 @@ class MethaneAnalyzer:
                     xy_dict = {first_predictor_name : X, second_predictor_name : Y}
                     z_predicted = model.calculate(xy_dict)
                     surf =  ax.plot_surface(X, Y, z_predicted, rstride=1, cstride=1, cmap='binary', edgecolor='none', label='predicted data')
-                    surf._facecolors2d=surf._facecolors3d
-                    surf._edgecolors2d=surf._edgecolors3d
+                    surf._facecolors2d = surf._facecolor3d
+                    surf._edgecolors2d = surf._edgecolor3d
                     ax.scatter3D(x, y, z_observed, c=z_observed, s = fig.dpi/100, cmap='viridis', label='observed data')
                     ax.set_zlabel(ValuesNames.voltage0.getString())
                     ax.set_xlabel(list(ValuesNames.stringToName.keys())[list(ValuesNames.stringToName.values()).index(first_predictor_name)])
@@ -151,7 +154,7 @@ class MethaneAnalyzer:
                     ax.legend()
                     plt.title("Функция {} с коэффициентами = {}\nAdjusted R^2 = {:.3f}, RMSE = {:.4f}".format(model.function_name, model.coefficients, model.adjusted_r_squared, model.rmse))
                     fig.colorbar(surf)
-                    image_path = self.resultModelsDir + "/" + os.path.splitext(seriespath1)[0].split('/')[-1] + '_{}.png'.format(model.function_name)
+                    image_path = self.resultModelsDir + "/series_" + "_".join(map(str, seriesIdsStep1)) + '_{}.png'.format(model.function_name)
                     fig.savefig(image_path)
                     continue
                 predictor_name = model.predictor_names[0]
@@ -168,7 +171,7 @@ class MethaneAnalyzer:
                 ax.grid(b=True, which = 'major', axis='both')
                 ax.legend()
                 plt.title("Функция {} с коэффицентами = {}.\nAdjusted R^2 = {:.3f}, RMSE = {:.4f}".format(model.function_name, model.coefficients, model.adjusted_r_squared, model.rmse))
-                image_path = self.resultModelsDir + "/" + os.path.splitext(seriespath1)[0].split('/')[-1] + '_{}.png'.format(model.function_name)
+                image_path = self.resultModelsDir + "/series_" + "_".join(map(str, seriesIdsStep1)) + '_{}.png'.format(model.function_name)
                 fig.savefig(image_path)
             except Exception as e:
                 self.logger.error("Не удалось довести первый этап калибровки до конца, модель = {}, текст ошибки: {}".format(model.function_name, e))
@@ -179,13 +182,13 @@ class MethaneAnalyzer:
             df_resultModels = pd.concat([df_resultModels, self.modelToDataFrame(ModelNames.model1, model1)], axis=0, ignore_index=True)
         if not df_resultModels.empty:
             d = dt.date.today()
-            df_resultModels.to_csv(self.resultModelsDir + '/firstStep_{}.csv'.format(os.path.splitext(seriespath1)[0].split('/')[-1]))
+            df_resultModels.to_csv(self.resultModelsDir + '/firstStep_series_{}.csv'.format("_".join(map(str, seriesIdsStep1))))
             colV0PredCount = ModelNames.model1+ModelParameters.predictors_count
             colV0r2 = ModelNames.model1+ModelParameters.adjusted_r_squared
             colV0rmse = ModelNames.model1+ModelParameters.rmse
             df_conditions = df_resultModels.loc[(df_resultModels[colV0r2]>0.8)]
             df_sorted = df_conditions.sort_values(by=[colV0r2, colV0PredCount, colV0rmse], ascending=[False, True, True], inplace=False, ignore_index = True)
-            image_path = self.resultModelsDir + "/" + os.path.splitext(seriespath1)[0].split('/')[-1] + '_{}.png'.format(df_sorted.loc[0, 'V0Modelfunction_name'])
+            image_path = self.resultModelsDir + "/series_" + "_".join(map(str, seriesIdsStep1)) + '_{}.png'.format(df_sorted.loc[0, 'V0Modelfunction_name'])
         return image_path
 
     def calibration(self, seriespath1, seriespath2, referencePath):

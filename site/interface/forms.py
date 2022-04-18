@@ -31,13 +31,22 @@ class StartExperimentForm(forms.Form):
 
 class StartCalibrationForm(forms.Form):
 
+    # def __init__(self, choicesList1, choicesList2, *args, **kwargs):
+    #     super(StartCalibrationForm, self).__init__(*args, **kwargs)
+    #     self.fields['series1Id'] = forms.ChoiceField(label="Id серии 1 шаг",
+    #         choices=choicesList1
+    #     )
+    #     self.fields['series2Id'] = forms.ChoiceField(label="Id серии 2 шаг",
+    #         choices=choicesList2
+    #     )
+
     def __init__(self, choicesList1, choicesList2, *args, **kwargs):
         super(StartCalibrationForm, self).__init__(*args, **kwargs)
-        self.fields['series1Id'] = forms.ChoiceField(label="Id серии 1 шаг",
-            choices=choicesList1
+        self.fields['series1Ids'] = forms.MultipleChoiceField(label="Id серий для 1 шага",
+            choices=choicesList1, widget=forms.CheckboxSelectMultiple
         )
-        self.fields['series2Id'] = forms.ChoiceField(label="Id серии 2 шаг",
-            choices=choicesList2
+        self.fields['series2Ids'] = forms.MultipleChoiceField(label="Id серий для 2 шага",
+            choices=choicesList2, widget=forms.CheckboxSelectMultiple
         )
 
 class UploadRefDataForm(forms.Form):
