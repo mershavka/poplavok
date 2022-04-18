@@ -9,10 +9,10 @@ import json
 
 class CalibrationResult:
     
-    def __init__(self, id:  Optional[int] = None, series1Id :  Optional[int] = None, series2Id:  Optional[int] = None, date=None, V0Model : Optional[CalibrationModel] = None, CH4Model : Optional[CalibrationModel] = None, CH4LRModel : Optional[CalibrationModel] = None) -> None:
+    def __init__(self, id:  Optional[int] = None, series1Ids :  Optional[list] = None, series2Ids:  Optional[list] = None, date=None, V0Model : Optional[CalibrationModel] = None, CH4Model : Optional[CalibrationModel] = None, CH4LRModel : Optional[CalibrationModel] = None) -> None:
         self.id = id
-        self.series1Id = series1Id
-        self.series2Id = series2Id
+        self.series1Ids = series1Ids
+        self.series2Ids = series2Ids
 
         self.date = date
 
@@ -30,8 +30,8 @@ class CalibrationResult:
     def toDict(self):
         data = {
             "id" : self.id,
-            "series1Id" : self.series1Id,
-            "series2Id" : self.series2Id,
+            "series1Id" : self.series1Ids,
+            "series2Id" : self.series2Ids,
             "date" : self.date.strftime(timeformat),
             "models" : [
                 {"V0Model" : self.V0Model.toDict()},
@@ -42,13 +42,12 @@ class CalibrationResult:
         return data
 
     def toJsonString(self):
-
         return json.dumps(self.toDict(), indent=4)
 
     def fromJson(self, jsonDict):
         self.id = int(jsonDict['id'])
-        self.series1Id = int(jsonDict['series1Id'])
-        self.series2Id = int(jsonDict['series2Id'])
+        self.series1Ids = jsonDict['series1Id']
+        self.series2Ids = jsonDict['series2Id']
         self.date = dt.strptime(jsonDict['date'], timeformat)
         self.V0Model = self.calibrationModelFromJson(jsonDict['models'][0]['V0Model'])
         self.CH4Model = self.calibrationModelFromJson(jsonDict['models'][1]['CH4Model'])

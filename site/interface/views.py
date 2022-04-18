@@ -186,13 +186,18 @@ def startCalibration(request):
         series2Ids = [int(id) for id in series2Ids]
         if 0 in series2Ids:
             image_path = pmc.firstStepOfCalibration(series1Ids)
-            if os.path.exists(image_path):
+            if image_path and os.path.exists(image_path):
                 messages.info(request, 'Калибровка успешно проведена')        
                 with open(image_path, 'rb') as img:
                     return HttpResponse(img.read(), content_type="image/png")
-            messages.info(request, 'Что-то пошло не так')
+            messages.warning(request, 'Что-то пошло не так')
         else:
             result = pmc.startCalibration(series1Ids, series2Ids)
+            if result:
+                messages.info(request, 'Калибровка успешно проведена')
+            else:
+                messages.warning(request, 'Не удалось провести калибровку')
+            form = StartCalibrationForm(seriesTuple, seriesTupleWithRefData)
 
     else:
         form = StartCalibrationForm(seriesTuple, seriesTupleWithRefData)

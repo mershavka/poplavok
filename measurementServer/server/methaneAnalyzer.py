@@ -45,6 +45,14 @@ class MethaneAnalyzer:
         frame_renamed = frame.rename(columns = ValuesNames.stringToName, inplace = False)
         return frame_renamed
 
+    def pathesIntoDataFrame(self, paths : list):
+        dfs = []
+        for path in paths:
+            dfs.append(self.concatCsvIntoFrame(path))
+        df = pd.concat(dfs, axis=0, ignore_index=True)
+        return df
+
+
     def appendRowToCsv(self, filename, listOfElements):
         with open(filename, 'a+', newline ='') as writeObj:
             writer = csv.writer(writeObj)
@@ -119,10 +127,7 @@ class MethaneAnalyzer:
         return step3models[0]
 
     def firstStepCalibration(self, seriespaths1, seriesIdsStep1):
-        dfs = []
-        for path in seriespaths1:
-            dfs.append(self.concatCsvIntoFrame(path))
-        df1 = pd.concat(dfs, axis=0, ignore_index=True)
+        df1 = self.pathesIntoDataFrame(seriespaths1)
         df1[ValuesNames.voltage0.name] = df1[ValuesNames.voltage.name]
         step1models = self.getCalibratedModels(df1, self.model1Templates)
         for model in step1models:
@@ -175,66 +180,74 @@ class MethaneAnalyzer:
                 fig.savefig(image_path)
             except Exception as e:
                 self.logger.error("Не удалось довести первый этап калибровки до конца, модель = {}, текст ошибки: {}".format(model.function_name, e))
-        
-
-        df_resultModels = DataFrame()
-        for model1 in step1models:
-            df_resultModels = pd.concat([df_resultModels, self.modelToDataFrame(ModelNames.model1, model1)], axis=0, ignore_index=True)
-        if not df_resultModels.empty:
-            d = dt.date.today()
-            df_resultModels.to_csv(self.resultModelsDir + '/firstStep_series_{}.csv'.format("_".join(map(str, seriesIdsStep1))))
-            colV0PredCount = ModelNames.model1+ModelParameters.predictors_count
-            colV0r2 = ModelNames.model1+ModelParameters.adjusted_r_squared
-            colV0rmse = ModelNames.model1+ModelParameters.rmse
-            df_conditions = df_resultModels.loc[(df_resultModels[colV0r2]>0.8)]
-            df_sorted = df_conditions.sort_values(by=[colV0r2, colV0PredCount, colV0rmse], ascending=[False, True, True], inplace=False, ignore_index = True)
-            image_path = self.resultModelsDir + "/series_" + "_".join(map(str, seriesIdsStep1)) + '_{}.png'.format(df_sorted.loc[0, 'V0Modelfunction_name'])
+        image_path = None
+        try:
+            df_resultModels = DataFrame()
+            for model1 in step1models:
+                df_resultModels = pd.concat([df_resultModels, self.modelToDataFrame(ModelNames.model1, model1)], axis=0, ignore_index=True)
+            if not df_resultModels.empty:
+                df_resultModels.to_csv(self.resultModelsDir + '/firstStep_series_{}.csv'.format("_".join(map(str, seriesIdsStep1))))
+                colV0PredCount = ModelNames.model1+ModelParameters.predictors_count
+                colV0r2 = ModelNames.model1+ModelParameters.adjusted_r_squared
+                colV0rmse = ModelNames.model1+ModelParameters.rmse
+                df_conditions = df_resultModels.loc[(df_resultModels[colV0r2]>0.8)]
+                df_sorted = df_conditions.sort_values(by=[colV0r2, colV0PredCount, colV0rmse], ascending=[False, True, True], inplace=False, ignore_index = True)
+                if not df_sorted.empty:
+                    model_name = df_sorted.loc[0, 'V0Modelfunction_name']
+                    image_path = self.resultModelsDir + "/series_" + "_".join(map(str, seriesIdsStep1)) + '_{}.png'.format(model_name)
+                    self.logger.info("Лучшая модель {}".format(model_name))
+                else:
+                    self.logger.warning("Не удалось найти лучшую модель для 1-го шага калибровки")
+        except Exception as e:
+            self.logger.error("Ошибка во время сортировки моделей: {}".format(e))
         return image_path
 
-    def calibration(self, seriespath1, seriespath2, referencePath):
-        # Загрузить данные
-        df1 = self.concatCsvIntoFrame(seriespath1)
-        df1[ValuesNames.voltage0.name] = df1[ValuesNames.voltage.name]
-        step1models = self.getCalibratedModels(df1, self.model1Templates)
+    def calibration(self, seriespaths1, seriespaths2, referencePaths, seriesIds1, seriesIds2):
+        try:
+            # Загрузить данные
+            df1 = self.pathesIntoDataFrame(seriespaths1)
+            df1[ValuesNames.voltage0.name] = df1[ValuesNames.voltage.name]
+            step1models = self.getCalibratedModels(df1, self.model1Templates)
+            # Подготовить данные
+            df2 = self.pathesIntoDataFrame(seriespaths2)
+            df_Ch4_Ref = self.pathesIntoDataFrame(referencePaths)
+            df2 = self.interpolateCH4RefData(df2, df_Ch4_Ref)
+            df2[ValuesNames.ch4.name] = df2[ValuesNames.ch4Ref.name]
 
-        # Подготовить данные
-        df2 = self.concatCsvIntoFrame(seriespath2)
-        df_Ch4_Ref = self.concatCsvIntoFrame(referencePath)
-        df2 = self.interpolateCH4RefData(df2, df_Ch4_Ref)
-        df2[ValuesNames.ch4.name] = df2[ValuesNames.ch4Ref.name]
+            # Создать массив готовых калибровок ResultModel и заполнить его
+            dict_resultModels = {}
+            df_resultModels = DataFrame()
+            # Рассчитать модели и сохранить их в массив
+            for model1 in step1models:
+                df_calc = self.calculateWithModel(df2, model1)
+                df_calc = self.addRsR0(df_calc)
+                step2models = self.getCalibratedModels(df_calc, self.model2Templates)
+                for model2 in step2models:
+                    df_calc2 = self.calculateWithModel(df_calc, model2)
+                    df_calc2[ValuesNames.ch4LR.name] = df_calc2[ValuesNames.ch4Ref.name]
+                    step3models = self.getCalibratedModels(df_calc2, self.model3Templates)
+                    for model3 in step3models:
+                        df_models = pd.concat([
+                            self.modelToDataFrame(ModelNames.model1, model1),
+                            self.modelToDataFrame(ModelNames.model2, model2),
+                            self.modelToDataFrame(ModelNames.model3, model3)
+                        ], axis=1)
+                        df_models['id'] = len(dict_resultModels)
 
-        # Создать массив готовых калибровок ResultModel и заполнить его
-        dict_resultModels = {}
-        df_resultModels = DataFrame()
-        # Рассчитать модели и сохранить их в массив
-        for model1 in step1models:
-            df_calc = self.calculateWithModel(df2, model1)
-            df_calc = self.addRsR0(df_calc)
-            step2models = self.getCalibratedModels(df_calc, self.model2Templates)
-            for model2 in step2models:
-                df_calc2 = self.calculateWithModel(df_calc, model2)
-                df_calc2[ValuesNames.ch4LR.name] = df_calc2[ValuesNames.ch4Ref.name]
-                step3models = self.getCalibratedModels(df_calc2, self.model3Templates)
-                for model3 in step3models:
-                    df_models = pd.concat([
-                        self.modelToDataFrame(ModelNames.model1, model1),
-                        self.modelToDataFrame(ModelNames.model2, model2),
-                        self.modelToDataFrame(ModelNames.model3, model3)
-                    ], axis=1)
-                    df_models['id'] = len(dict_resultModels)
+                        df_resultModels = pd.concat([df_resultModels, df_models], axis=0, ignore_index=True)
 
-                    df_resultModels = pd.concat([df_resultModels, df_models], axis=0, ignore_index=True)
-
-                    dict_resultModels[len(dict_resultModels)] = {
-                         ModelNames.model1   : model1,
-                         ModelNames.model2   : model2,
-                         ModelNames.model3   : model3
-                        }
-        if not df_resultModels.empty:
-            df_resultModels.to_csv(self.resultModelsDir + '/models_{}.csv'.format(dt.date.today().strftime("%d_%m_%Y")))
-            bestModelId = self.findBestModelId(df_resultModels)
-            best_resultModel = None if not bestModelId else dict_resultModels[bestModelId]
-            return df_resultModels, dict_resultModels, best_resultModel
+                        dict_resultModels[len(dict_resultModels)] = {
+                            ModelNames.model1   : model1,
+                            ModelNames.model2   : model2,
+                            ModelNames.model3   : model3
+                            }
+            if not df_resultModels.empty:
+                df_resultModels.to_csv(self.resultModelsDir + '/models_{}_series_{}.csv'.format(dt.date.today().strftime("%d_%m_%Y"), "_".join(map(str, seriesIds1 + seriesIds2))))
+                bestModelId = self.findBestModelId(df_resultModels)
+                best_resultModel = None if not bestModelId else dict_resultModels[bestModelId]
+                return df_resultModels, dict_resultModels, best_resultModel
+        except Exception as e:
+            self.logger.error("Во время калибровки возникала ошибка '{}'".format(e))
         return None, None, None
 
     def findBestModelId(self, df_resultModels):
