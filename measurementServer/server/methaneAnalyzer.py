@@ -213,7 +213,6 @@ class MethaneAnalyzer:
             df_Ch4_Ref = self.pathesIntoDataFrame(referencePaths)
             df2 = self.interpolateCH4RefData(df2, df_Ch4_Ref)
             df2[ValuesNames.ch4.name] = df2[ValuesNames.ch4Ref.name]
-
             # Создать массив готовых калибровок ResultModel и заполнить его
             dict_resultModels = {}
             df_resultModels = DataFrame()
@@ -245,7 +244,7 @@ class MethaneAnalyzer:
                 df_resultModels.to_csv(self.resultModelsDir + '/models_{}_series_{}.csv'.format(dt.date.today().strftime("%d_%m_%Y"), "_".join(map(str, seriesIds1 + seriesIds2))))
                 bestModelId = self.findBestModelId(df_resultModels)
                 best_resultModel = None if not bestModelId else dict_resultModels[bestModelId]
-                return df_resultModels, dict_resultModels, best_resultModel
+                return df2, dict_resultModels, best_resultModel
         except Exception as e:
             self.logger.error("Во время калибровки возникала ошибка '{}'".format(e))
         return None, None, None
@@ -259,8 +258,10 @@ class MethaneAnalyzer:
         colCH4r2 = ModelNames.model2+ModelParameters.adjusted_r_squared
         colCH4LRr2 = ModelNames.model3+ModelParameters.adjusted_r_squared
         colCH4LRrmse = ModelNames.model3+ModelParameters.rmse
-        df_conditions = df_resultModels.loc[(df_resultModels[colV0r2]>0.5) & (df_resultModels[colCH4r2]>0.5) & (df_resultModels[colCH4LRr2]>0.5)]
-        df_sorted = df_conditions.sort_values(by=[colV0r2, colCH4r2, colCH4LRr2, colV0PredCount, colCH4PredCount, colV0rmse, colCH4rmse, colCH4LRrmse], ascending=[False, False, False, True, True, True, True, True], inplace=False, ignore_index = True)
+        df_conditions = df_resultModels.loc[(df_resultModels[colV0r2]>0.8) & (df_resultModels[colCH4r2]>0.8) & (df_resultModels[colCH4LRr2]>0.9)]
+        sort_by = [colCH4LRr2, colV0r2, colCH4r2, colV0PredCount, colCH4PredCount, colCH4LRrmse, colV0rmse, colCH4rmse]
+        asc_desc = [False, False, False, True, True, True, True, True]
+        df_sorted = df_conditions.sort_values(by=sort_by, ascending=asc_desc, inplace=False, ignore_index = True)
         if not df_sorted.empty:
             return df_sorted.loc[0, 'id']
         return None

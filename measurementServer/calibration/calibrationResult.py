@@ -30,8 +30,8 @@ class CalibrationResult:
     def toDict(self):
         data = {
             "id" : self.id,
-            "series1Id" : self.series1Ids,
-            "series2Id" : self.series2Ids,
+            "series1Ids" : self.series1Ids,
+            "series2Ids" : self.series2Ids,
             "date" : self.date.strftime(timeformat),
             "models" : [
                 {"V0Model" : self.V0Model.toDict()},
@@ -46,8 +46,8 @@ class CalibrationResult:
 
     def fromJson(self, jsonDict):
         self.id = int(jsonDict['id'])
-        self.series1Ids = jsonDict['series1Id']
-        self.series2Ids = jsonDict['series2Id']
+        self.series1Ids = jsonDict['series1Ids']
+        self.series2Ids = jsonDict['series2Ids']
         self.date = dt.strptime(jsonDict['date'], timeformat)
         self.V0Model = self.calibrationModelFromJson(jsonDict['models'][0]['V0Model'])
         self.CH4Model = self.calibrationModelFromJson(jsonDict['models'][1]['CH4Model'])

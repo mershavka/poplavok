@@ -25,13 +25,13 @@ class TestDriver:
     def readData(self):
             return { 	
                         ValuesNames.timestamp.name		: dt.datetime.now(),  
-                        ValuesNames.adc.name			: 52428,
-                        ValuesNames.voltage.name		: 2,
-                        ValuesNames.temperature.name	: 25,
-                        ValuesNames.rHumidity.name	    : 60,
-                        ValuesNames.aHumidity.name      : 0.014,
-                        ValuesNames.pressure.name	    : 1013.25,
-                        ValuesNames.ch4.name	        : 2.5,
+                        ValuesNames.adc.name			: 28545,
+                        ValuesNames.voltage.name		: 1.09,
+                        ValuesNames.temperature.name	: 23.2,
+                        ValuesNames.rHumidity.name	    : 18.9,
+                        ValuesNames.aHumidity.name      : 0.004,
+                        ValuesNames.pressure.name	    : 971.4,
+                        ValuesNames.ch4.name	        : 2.4,
                         ValuesNames.fanSpeed.name	    : 0,
                     }
             

@@ -1,3 +1,4 @@
+from operator import index
 from ..common import *
 from .measurementmodule import MeasurementModule
 from .measurementfilesystem import MeasurementFileSystem
@@ -300,7 +301,7 @@ class MeasurementServer:
             self.logger.error("Series not found!")
             return None
 
-        methaneModels_df, methaneModels_dict, bestMethaneModelDict = self.ma.calibration(series1Paths, series2Paths, refDataPaths, seriesIdsStep1, seriesIdsStep2)
+        series2data_df, methaneModels_dict, bestMethaneModelDict = self.ma.calibration(series1Paths, series2Paths, refDataPaths, seriesIdsStep1, seriesIdsStep2)
         if bestMethaneModelDict:
             id = self.lastResultModelId + 1
             self.lastResultModelId = id
@@ -308,6 +309,17 @@ class MeasurementServer:
             self.fs.addResultModel(bestMethaneModel)
             self.resultModels[id] = bestMethaneModel
             self.currentCalibration = bestMethaneModel
+            self.logger.info("Sucessfull calibration")
+            try:
+                df_calculated = bestMethaneModel.calculateCH4(series2data_df)
+                df_calculated.sort_values(by=[ValuesNames.timestamp.name], inplace=True)
+                formats = {ValuesNames.temperature.name : '{:.1f}', ValuesNames.rHumidity.name : '{:.1f}', ValuesNames.aHumidity.name : '{:.5f}', ValuesNames.pressure.name : '{:.1f}', ValuesNames.ch4LR.name : '{:.3f}', ValuesNames.ch4.name : '{:.3f}', ValuesNames.ch4Ref.name : '{:.3f}'}
+
+                for col, f in formats.items():
+                    df_calculated[col] = df_calculated[col].map(lambda x: f.format(x))
+                df_calculated.to_csv('test_recalculation_{}.csv'.format("_".join(map(str, seriesIdsStep1+seriesIdsStep2))), index=None, float_format='%.5f')
+            except Exception as e:
+                self.logger.error("Не удалось рассчитать значения по лучшей модели")
             return bestMethaneModel
         self.logger.error("Calibration failed, no model found")
         return None
@@ -326,7 +338,7 @@ class MeasurementServer:
         refDataPath = self.fs.refDataToPath(self.refDatas[seriesId])
         oldCalibrationResult = self.resultModels[calibrationId]
         resultModel3 = self.ma.recalibration(seriesPath, refDataPath)
-        recalibrationResult = CalibrationResult(date=dt.datetime.now(), series1Ids=oldCalibrationResult.series1Id, series2Ids=oldCalibrationResult.series2Id, V0Model=oldCalibrationResult.V0Model, CH4Model=oldCalibrationResult.CH4Model, CH4LRModel=resultModel3)
+        recalibrationResult = CalibrationResult(date=dt.datetime.now(), series1Ids=oldCalibrationResult.series1Ids, series2Ids=oldCalibrationResult.series2Ids, V0Model=oldCalibrationResult.V0Model, CH4Model=oldCalibrationResult.CH4Model, CH4LRModel=resultModel3)
         recalibrationResultWithId = self.updateCurrentCalibration(recalibrationResult)
         return recalibrationResultWithId
 
