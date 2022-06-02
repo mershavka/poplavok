@@ -258,8 +258,8 @@ class MethaneAnalyzer:
         colCH4r2 = ModelNames.model2+ModelParameters.adjusted_r_squared
         colCH4LRr2 = ModelNames.model3+ModelParameters.adjusted_r_squared
         colCH4LRrmse = ModelNames.model3+ModelParameters.rmse
-        df_conditions = df_resultModels.loc[(df_resultModels[colV0r2]>0.8) & (df_resultModels[colCH4r2]>0.8) & (df_resultModels[colCH4LRr2]>0.9)]
-        sort_by = [colCH4LRr2, colV0r2, colCH4r2, colV0PredCount, colCH4PredCount, colCH4LRrmse, colV0rmse, colCH4rmse]
+        df_conditions = df_resultModels.loc[(df_resultModels[colV0r2]>0.8) & (df_resultModels[colCH4r2]>0.9) & (df_resultModels[colCH4LRr2]>0.85)]
+        sort_by = [colCH4r2, colV0r2, colCH4LRr2, colV0PredCount, colCH4PredCount, colCH4LRrmse, colV0rmse, colCH4rmse]
         asc_desc = [False, False, False, True, True, True, True, True]
         df_sorted = df_conditions.sort_values(by=sort_by, ascending=asc_desc, inplace=False, ignore_index = True)
         if not df_sorted.empty:

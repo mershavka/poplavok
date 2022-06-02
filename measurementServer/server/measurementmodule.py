@@ -52,7 +52,6 @@ class MeasurementModule:
         period = m.periodicity
         self.th = Thread(target=MeasurementModule.__measurementsThreadFunc, args=(self, duration, period))
         self.stopEvent.clear()
-        time.sleep(3)
         self.th.start()
         self.logger.info("Measurement started")
     

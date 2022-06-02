@@ -141,10 +141,10 @@ class MeasurementServer:
             self.logger.error('Choose a series before measuring')
             return
         type = self.currentSeries.type
-        if type != self.currentSeries.type:
-            self.status = Status.ERROR
-            self.logger.warning("Measurement and Series types are different")
-            return
+        # if type != self.currentSeries.type:
+        #     self.status = Status.ERROR
+        #     self.logger.warning("Measurement and Series types are different")
+        #     return
         if not self.currentCalibration:
             if type == MeasureType.EXPERIMENT:
                 self.logger.error("No calibration")
@@ -154,7 +154,7 @@ class MeasurementServer:
         m_id = 1
         if self.currentSeries.getMeasurementsIds():
             m_id += max(self.currentSeries.getMeasurementsIds())		
-        new_measurement = Measurement(seriesId=self.currentSeries.id, duration=duration, periodicity=periodicity, date=dt.datetime.now(), description=description, calibrationId=calibrationId, id=m_id)
+        new_measurement = Measurement(seriesId=self.currentSeries.id, duration=duration, periodicity=periodicity, date=dt.datetime.now(), description=description, type = type, calibrationId=calibrationId, id=m_id)
         self.fs.addMeasurement(new_measurement)
         self.currentSeries.addMeasurement(m_id, new_measurement)
         self.currentMeasurement = new_measurement
@@ -341,6 +341,33 @@ class MeasurementServer:
         recalibrationResult = CalibrationResult(date=dt.datetime.now(), series1Ids=oldCalibrationResult.series1Ids, series2Ids=oldCalibrationResult.series2Ids, V0Model=oldCalibrationResult.V0Model, CH4Model=oldCalibrationResult.CH4Model, CH4LRModel=resultModel3)
         recalibrationResultWithId = self.updateCurrentCalibration(recalibrationResult)
         return recalibrationResultWithId
+
+    def calculateCH4FromFileWithCalibration(self, seriesIds):
+        if self.currentCalibration:
+            seriesPathes = []
+            refDataPathes = []
+            for id in seriesIds:
+                if not id in self.series.keys():
+                    self.logger.warning(f"No series with id={id} found")
+                    return None
+                if not (id in self.refDatas.keys()):
+                    self.logger.error("Reference data for series with id = {} not found!".format(id))
+                    return None
+                seriesPathes.append(self.fs.getSeriesPathById(id))
+                refDataPathes.append(self.fs.refDataToPath(self.refDatas[id]))
+            df = self.ma.pathesIntoDataFrame(seriesPathes)
+            df_Ch4_Ref = self.ma.pathesIntoDataFrame(refDataPathes)
+            df = self.ma.interpolateCH4RefData(df, df_Ch4_Ref)
+            df_calculated = self.currentCalibration.calculateCH4(df)
+            df_calculated.sort_values(by=[ValuesNames.timestamp.name], inplace=True)
+            formats = {ValuesNames.temperature.name : '{:.1f}', ValuesNames.rHumidity.name : '{:.1f}', ValuesNames.aHumidity.name : '{:.5f}', ValuesNames.pressure.name : '{:.1f}', ValuesNames.ch4LR.name : '{:.3f}', ValuesNames.ch4.name : '{:.3f}', ValuesNames.ch4Ref.name : '{:.3f}'}
+
+            for col, f in formats.items():
+                df_calculated[col] = df_calculated[col].map(lambda x: f.format(x))
+            df_calculated.to_csv('calculated_with_calibration{}_series_{}.csv'.format(self.currentCalibration.id, "_".join(map(str, seriesIds))), index=None, float_format='%.5f')
+            return df_calculated
+        return None
+        
 
     def updateCurrentCalibration(self, calibrationResult : CalibrationResult):
             id = self.lastResultModelId + 1
