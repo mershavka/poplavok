@@ -301,7 +301,7 @@ class MeasurementServer:
             self.logger.error("Series not found!")
             return None
 
-        series2data_df, methaneModels_dict, bestMethaneModelDict = self.ma.calibration(series1Paths, series2Paths, refDataPaths, seriesIdsStep1, seriesIdsStep2)
+        series2data_df, list_sortedModelDicts, bestMethaneModelDict = self.ma.calibration(series1Paths, series2Paths, refDataPaths, seriesIdsStep1, seriesIdsStep2)
         if bestMethaneModelDict:
             id = self.lastResultModelId + 1
             self.lastResultModelId = id
@@ -317,9 +317,14 @@ class MeasurementServer:
 
                 for col, f in formats.items():
                     df_calculated[col] = df_calculated[col].map(lambda x: f.format(x))
-                df_calculated.to_csv('test_recalculation_{}.csv'.format("_".join(map(str, seriesIdsStep1+seriesIdsStep2))), index=None, float_format='%.5f')
+                df_calculated.to_csv(f'calculated_by_model_{id}_series_{"_".join(map(str, seriesIdsStep1+seriesIdsStep2))}.csv', index=None, float_format='%.5f')
             except Exception as e:
                 self.logger.error("Не удалось рассчитать значения по лучшей модели")
+            if list_sortedModelDicts:
+                for modelDict in list_sortedModelDicts:
+                    goodModel = CalibrationResult(id=id, date=dt.datetime.now(), series1Ids=seriesIdsStep1, series2Ids=seriesIdsStep2, V0Model=modelDict[ModelNames.model1], CH4Model=modelDict[ModelNames.model2], CH4LRModel=modelDict[ModelNames.model3])
+                    self.fs.addGoodModel(goodModel)
+                self.logger.info("Good models added")
             return bestMethaneModel
         self.logger.error("Calibration failed, no model found")
         return None
@@ -359,13 +364,13 @@ class MeasurementServer:
             df_Ch4_Ref = self.ma.pathesIntoDataFrame(refDataPathes)
             df = self.ma.interpolateCH4RefData(df, df_Ch4_Ref)
             df_calculated = self.currentCalibration.calculateCH4(df)
-            df_calculated.sort_values(by=[ValuesNames.timestamp.name], inplace=True)
+            df_calculated_upd = df_calculated.sort_values(by=[ValuesNames.timestamp.name], inplace=False)
             formats = {ValuesNames.temperature.name : '{:.1f}', ValuesNames.rHumidity.name : '{:.1f}', ValuesNames.aHumidity.name : '{:.5f}', ValuesNames.pressure.name : '{:.1f}', ValuesNames.ch4LR.name : '{:.3f}', ValuesNames.ch4.name : '{:.3f}', ValuesNames.ch4Ref.name : '{:.3f}'}
 
             for col, f in formats.items():
-                df_calculated[col] = df_calculated[col].map(lambda x: f.format(x))
-            df_calculated.to_csv('calculated_with_calibration{}_series_{}.csv'.format(self.currentCalibration.id, "_".join(map(str, seriesIds))), index=None, float_format='%.5f')
-            return df_calculated
+                df_calculated_upd[col] = df_calculated_upd[col].map(lambda x: f.format(x))
+            df_calculated_upd.to_csv(f'calculated_with_calibration{self.currentCalibration.id}_series_{"_".join(map(str, seriesIds))}.csv', index=None, float_format='%.5f')
+            return df
         return None
         
 

@@ -158,11 +158,15 @@ class MeasurementFileSystem:
         resultModelPath = self.resultModelsPath + "/resultModel{}_{}_{}_{}.json".format(bestModel.id, bestModel.date.strftime(timeformat), bestModel.V0Model.function_name, bestModel.CH4Model.function_name)
         return resultModelPath
 
+    def __goodModelToPath(self, goodModel : CalibrationResult):
+        goodModelPath = self.resultModelsPath + "/goodModel{}_{}_{}_{}.json".format(goodModel.id, goodModel.date.strftime(timeformat), goodModel.V0Model.function_name, goodModel.CH4Model.function_name)
+        return goodModelPath
+
     def updateConfig(self, config : MeasurementServerConfig):
         configPath = self.path + '/measurementServerConfig.json'
         with open(configPath, 'w') as json_file:
             json_file.write(config.toJsonString())
-
+        self.logger.info("Config updated!")
 
     def loadConfig(self) -> MeasurementServerConfig:
         config = MeasurementServerConfig()
@@ -172,6 +176,7 @@ class MeasurementFileSystem:
                 config.fromJson(json.load(json_file))
         except Exception:
             self.updateConfig(config)
+        self.logger.info("Config loaded!")
         return config
 
     def loadSeries(self):
@@ -183,6 +188,7 @@ class MeasurementFileSystem:
             s = self.__pathToSeries(seriesPath)
             if not s is None:
                 seriesDict[s.id] = s
+        self.logger.info("Series loaded!")
         return seriesDict
 
     def loadReferencesData(self):
@@ -196,6 +202,7 @@ class MeasurementFileSystem:
                 if refData.loadingDate <= refDataDict[refData.seriesId].loadingDate :
                     continue
             refDataDict[refData.seriesId] = refData
+        self.logger.info("Reference data loaded!")
         return refDataDict
 
     def loadResultModels(self):
@@ -206,6 +213,7 @@ class MeasurementFileSystem:
             if resultModel is None:
                 continue
             resultModelsDict[resultModel.id] = resultModel
+        self.logger.info("Result models loaded!")
         return resultModelsDict
 
     def addSeries(self, s: Series):
@@ -238,6 +246,13 @@ class MeasurementFileSystem:
         bestModelPath = self.__resultModelToPath(bestModel)
         jsonString = bestModel.toJsonString()
         with open(bestModelPath, 'w') as f:
+            f.write(jsonString)
+        return
+
+    def addGoodModel(self, goodModel : CalibrationResult):
+        goodModelPath = self.__goodModelToPath(goodModel)
+        jsonString = goodModel.toJsonString()
+        with open(goodModelPath, 'w') as f:
             f.write(jsonString)
         return
 
