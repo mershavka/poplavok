@@ -138,5 +138,5 @@ dmypy.json
 cython_debug/
 
 MServer/
-sandbox/
+sandbox/Garbage
 /MS_DATA
