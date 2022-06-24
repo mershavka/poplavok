@@ -23,11 +23,11 @@ class StartExperimentForm(forms.Form):
     period=forms.FloatField(min_value=0.0, initial=1.0, label = "Периодичность измерений")
     duration=forms.FloatField(min_value=0.0, initial=10.0, label = "Длительность измерения")
 
-    def __init__(self, choicesList, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(StartExperimentForm, self).__init__(*args, **kwargs)
-        self.fields['seriesId'] = forms.ChoiceField(label="Серия",
-            choices=choicesList
-        )
+        # self.fields['seriesId'] = forms.ChoiceField(label="Серия",
+        #     choices=choicesList
+        # )
 
 class StartCalibrationForm(forms.Form):
 

@@ -72,7 +72,7 @@ def getStatus(request):
     lastRHum =  "{:2.2f}".format(rH)
     lastAHum =  "{:2.2f}".format(aH * 1000)
     lastVolt = "{:.5f}".format(lastDataDict[ValuesNames.voltage.name])
-    lastCH4 = "{:.3f}".format(lastDataDict[ValuesNames.ch4.name]) if ValuesNames.ch4.name in lastDataDict.keys() else "-"
+    lastCH4 = "{:.3f}".format(lastDataDict[ValuesNames.ch4LR.name]) if ValuesNames.ch4LR.name in lastDataDict.keys() else "-"
     lastH2OppmM = "{:.0f}".format(1000000 * aH / (aH + p*100*0.02897/8.31446261815324/(t+273)))
     lastH2OppmV = "{:.0f}".format(1000000 * aH / 0.01801528 / (aH/0.01801528 + p*100/8.31446261815324/(t+273)))
     
@@ -142,22 +142,16 @@ def chooseSeries(request, series_id=0):
     return redirect('/series')
 
 def startExperiment(request):
-    series = []
-    currentSeries = pmc.getCurrentSeries()
-    if currentSeries:
-        series.append(currentSeries)
-        print(currentSeries)
-    else:
-        series = pmc.getSeriesList()
-    
-    if not series:
-        messages.error(request, 'Создайте серию перед началом эксперимента')
-        return HttpResponseRedirect(reverse('index'))
 
-    seriesTuple = [(s['id'], "id = {} ({}, {})".format(s['id'],s['description'],s['date'])) for s in series]
+    series = pmc.getCurrentSeries()
+    form  = StartExperimentForm()
 
     if request.method == 'POST':
-        form = StartExperimentForm(seriesTuple, request.POST)
+        if not series:
+            messages.error(request, 'Создайте серию перед началом эксперимента')
+            return render(request, 'startExperiment.html', {'form': form})
+
+        form = StartExperimentForm(request.POST)
 
         name        = form.data['name']
         period      = float(form.data['period'])
@@ -165,8 +159,7 @@ def startExperiment(request):
         pmc.runMeasurement(duration, period, name)
 
         return HttpResponseRedirect(reverse('index'))
-    else:
-        form  = StartExperimentForm(seriesTuple)
+
     return render(request, 'startExperiment.html', {'form': form})
 
 def startCalibration(request):
