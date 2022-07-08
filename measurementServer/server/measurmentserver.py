@@ -373,6 +373,23 @@ class MeasurementServer:
             return df
         return None
         
+    def calculateCH4FromFileWithCalibrationNoRef(self, seriesIds):
+        if self.currentCalibration:
+            seriesPathes = []
+            for id in seriesIds:
+                if not id in self.series.keys():
+                    self.logger.warning(f"No series with id={id} found")
+                seriesPathes.append(self.fs.getSeriesPathById(id))
+            df = self.ma.pathesIntoDataFrame(seriesPathes)
+            df_calculated = self.currentCalibration.calculateCH4(df)
+            df_calculated_upd = df_calculated.sort_values(by=[ValuesNames.timestamp.name], inplace=False)
+            formats = {ValuesNames.temperature.name : '{:.0f}', ValuesNames.rHumidity.name : '{:.0f}', ValuesNames.aHumidity.name : '{:.5f}', ValuesNames.pressure.name : '{:.0f}', ValuesNames.ch4LR.name : '{:.2f}', ValuesNames.ch4.name : '{:.2f}', ValuesNames.fanSpeed.name : '{:.0f}'}
+
+            for col, f in formats.items():
+                df_calculated_upd[col] = df_calculated_upd[col].map(lambda x: f.format(x))
+            df_calculated_upd.to_csv(f'calculated_with_calibration{self.currentCalibration.id}_series_{"_".join(map(str, seriesIds))}.csv', index=None, float_format='%.5f')
+            return df
+        return None
 
     def updateCurrentCalibration(self, calibrationResult : CalibrationResult):
             id = self.lastResultModelId + 1
